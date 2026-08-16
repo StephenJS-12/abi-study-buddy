@@ -16,6 +16,34 @@ import {
 import { login, logout } from './login.js';
 import { progress } from './progress.js';
 
+/* The login page, by both the name it has on disk and the name Cloudflare
+   rewrites it to. The asset server normalises away the .html extension, so a
+   browser sent to /login.html is bounced to /login — and if the Worker only
+   recognised the first spelling it would send it straight back, forever. */
+const LOGIN_PATHS = new Set(['/login', '/login.html']);
+
+/* Serves a file from public/, absorbing any redirect the asset server issues
+   on the way rather than passing it back to the browser.
+
+   Those redirects are what caused an infinite loop: the platform rewrites
+   /login.html to /login for tidiness, the browser follows it, and the Worker
+   sees a path it was not expecting. Resolving them in here means the Worker's
+   idea of a path is the only one the browser ever acts on. */
+async function serveAsset(env, request, pathname) {
+  let target = new URL(pathname || new URL(request.url).pathname, request.url);
+
+  for (let hop = 0; hop < 3; hop++) {
+    const response = await env.ASSETS.fetch(new Request(target, request));
+    if (response.status < 300 || response.status >= 400) return response;
+
+    const location = response.headers.get('Location');
+    if (!location) return response;
+    target = new URL(location, target);
+  }
+
+  return new Response('The site could not resolve that file.', { status: 508 });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -49,7 +77,7 @@ export default {
 
     /* The password page itself, and nothing else. It is deliberately
        self-contained so it needs no stylesheet from behind the gate. */
-    if (url.pathname === '/login.html') return env.ASSETS.fetch(request);
+    if (LOGIN_PATHS.has(url.pathname)) return serveAsset(env, request, '/login.html');
 
     /* ── everything below needs a valid session ────────────────── */
 
@@ -61,7 +89,9 @@ export default {
       if (url.pathname.startsWith('/api/')) {
         return json({ error: 'not_signed_in' }, 401);
       }
-      const loginUrl = new URL('/login.html', url);
+      /* Sent to the extensionless spelling, which is the one the asset server
+         considers canonical — so nothing further rewrites it. */
+      const loginUrl = new URL('/login', url);
       if (url.pathname !== '/') {
         loginUrl.searchParams.set('next', url.pathname + url.search);
       }
@@ -80,6 +110,6 @@ export default {
        say so rather than quietly serving the site's index. */
     if (url.pathname.startsWith('/api/')) return json({ error: 'not_found' }, 404);
 
-    return env.ASSETS.fetch(request);
+    return serveAsset(env, request);
   },
 };

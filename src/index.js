@@ -20,6 +20,21 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    /* Deliberately ahead of the config check, and deliberately open: when the
+       site is locked because a secret is missing, this is the one thing that
+       can still say WHICH one. It reports only whether each binding arrived —
+       never a value, never a length, so it gives away nothing worth having. */
+    if (url.pathname === '/api/health') {
+      return json({
+        ok: true,
+        sitePassword: Boolean(env.SITE_PASSWORD),
+        sessionSecret: Boolean(env.SESSION_SECRET),
+        progressStore: Boolean(env.PROGRESS),
+        assets: Boolean(env.ASSETS),
+        seen: Object.keys(env).sort(),
+      });
+    }
+
     /* A deploy that forgot a secret must lock the site, not publish it. */
     const unconfigured = missingConfig(env);
     if (unconfigured) return unconfigured;

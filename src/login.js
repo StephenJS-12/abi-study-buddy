@@ -38,7 +38,12 @@ export async function login(request, env) {
     return json({ error: 'bad_request' }, 400);
   }
 
-  if (!sameSecret(password, env.SITE_PASSWORD)) {
+  /* Both sides are trimmed. A password pasted into the Cloudflare dashboard
+     easily carries a trailing newline, and a phone keyboard just as easily
+     adds a space after the last character — neither is something anyone
+     intended to be part of the password, and an exact match rejects both
+     with no clue as to why. */
+  if (!sameSecret(password.trim(), String(env.SITE_PASSWORD).trim())) {
     if (env.PROGRESS) {
       await env.PROGRESS.put(attemptKey, String(attempts + 1), {
         expirationTtl: WINDOW_SECONDS,

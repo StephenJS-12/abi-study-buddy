@@ -1,0 +1,31 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "abi-study-buddy",
+  "main": "src/index.js",
+  "compatibility_date": "2026-08-01",
+
+  "assets": {
+    // The whole site. Nothing outside public/ is ever reachable over the web.
+    "directory": "./public",
+    "binding": "ASSETS",
+
+    // CRITICAL, and the one setting the whole password gate depends on.
+    //
+    // By default Cloudflare serves a matching static file BEFORE the Worker
+    // runs, which would hand out every page, stylesheet and script to anyone
+    // who knew the URL — the Worker would never see the request, so no amount
+    // of code could stop it. This forces every request through src/index.js
+    // first; assets are then served deliberately, via env.ASSETS.fetch().
+    //
+    // If this line is ever removed, the site silently becomes public.
+    "run_worker_first": true
+  }
+
+  // Progress storage is added once the KV namespace exists — see README.
+  // The code already copes with it being absent, so the first deploy works
+  // without it.
+  //
+  // "kv_namespaces": [
+  //   { "binding": "PROGRESS", "id": "<namespace id from the dashboard>" }
+  // ]
+}

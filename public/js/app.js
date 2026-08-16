@@ -110,6 +110,14 @@ var App = (function () {
     Quiz.clear();
     route = { name: name, params: params || {} };
     window.scrollTo({ top: 0 });
+
+    /* Reset to general chat before drawing. Screens that want Pip to know
+       something more specific — a notes topic, a live question — say so
+       during their own render, which happens inside draw(). */
+    if (window.Buddy) {
+      Buddy.setContext({ id: 'app:' + name, title: 'Abi\'s Study Buddy', mode: 'app' });
+    }
+
     draw();
   }
 
@@ -478,7 +486,6 @@ var App = (function () {
       '<h1>' + t.emoji + ' ' + esc(t.title) + '</h1>' +
       '<p>' + esc(t.summary) + '</p></div>' +
       Notes.renderBlocks(t, true) +
-      Tutor.card({ mode: 'notes' }) +
       '<div class="card" style="margin-top:1.6rem;text-align:center;background:linear-gradient(150deg,var(--lilac-50),var(--pink-50))">' +
         '<p style="font-weight:700;margin-bottom:.8rem">Feeling ready to try some questions?</p>' +
         '<button class="btn btn-pink btn-lg" type="button" id="toQuiz">Practise this topic 🌱</button>' +
@@ -489,7 +496,7 @@ var App = (function () {
     /* The tutor is given the notes as rendered on this page, so it is talking
        about exactly what she is looking at — and can never drift out of step
        with the content the way a separate copy would. */
-    Tutor.wire({ id: t.id, title: t.title, mode: 'notes', notes: screen.textContent || '' });
+    Buddy.setContext({ id: t.id, title: t.title, mode: 'notes', notes: screen.textContent || '' });
 
     document.getElementById('toQuiz').addEventListener('click', function () {
       Quiz.start({
@@ -938,6 +945,11 @@ var App = (function () {
     applyMotion();
     showSaveWarning();
     refreshPoints();
+
+    /* Appended to the body rather than to a screen, so she stays put while
+       the page changes underneath her. */
+    if (window.Buddy) Buddy.mount();
+
     go('home');
   }
 

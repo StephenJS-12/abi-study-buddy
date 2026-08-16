@@ -201,21 +201,20 @@ var Quiz = (function () {
         answerAreaHtml(q) +
         '<div id="verdictSlot"></div>' +
         '<div class="qfoot" id="qfoot"></div>' +
-      '</div>' +
-      Tutor.card({ mode: S.mode });
+      '</div>';
 
     var screen = document.getElementById('screen');
     screen.innerHTML = html;
     App.setCrumb('Leave ' + MODE_LOWER[S.mode], confirmLeave);
 
-    /* What the tutor is allowed to say is decided by the mode it is handed.
-       In practise it may explain the method; in a test or exam it may only
-       help her find her next move.
+    /* What Pip is allowed to say is decided by the mode she is handed. In
+       practise she may explain the method; in a test or exam she may only
+       help Abi find her next move.
 
        Only the wording of the question travels — `q.answer` and the worked
-       solution stay here. A tutor that was never told the answer cannot let
+       solution stay here. A helper that was never told the answer cannot let
        it slip, whatever it is asked. */
-    Tutor.wire({
+    Buddy.setContext({
       id: q._topicId,
       title: q._topicTitle,
       mode: S.mode,
@@ -417,6 +416,9 @@ var Quiz = (function () {
         }
       }
       Celebrate.correct(S.streak, anchorEl);
+      /* Pip joins in, so she reads as watching rather than as a button that
+         happens to be sitting there. */
+      if (window.Buddy) Buddy.cheer();
     } else {
       S.streak = 0;
       var card = document.getElementById('qcard');

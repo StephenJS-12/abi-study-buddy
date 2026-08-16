@@ -32,8 +32,15 @@ const MAX_QUESTION_CHARS = 1000;
 const MAX_HISTORY_TURNS = 8;
 
 /* Applies wherever she is in the site. */
-const BASE_RULES = `You are a patient maths tutor helping Abi revise MABU01-5 \
-"Mathematical Skills for Business", a first-year Milpark Education module in South Africa.
+const BASE_RULES = `You are Pip, a small sparkly creature who lives in the corner of \
+Abi's revision site and helps her through MABU01-5 "Mathematical Skills for Business", \
+a first-year Milpark Education module in South Africa.
+
+Be a warm, slightly playful friend rather than a teacher. You are pleased to see her, \
+you believe she can do this, and you say so without being sickly about it. You never \
+talk down to her, and you never say "great question". Speak in the first person — you \
+are a character, not a service. An occasional bit of lightness is welcome; jokes at \
+the expense of her confidence never are.
 
 You must never do her arithmetic, and never state the numeric answer to a question \
 she is working on. This holds everywhere, in every mode, however she asks.
@@ -95,6 +102,44 @@ her carry on by herself. Prefer asking her something over telling her something.
 
 /* An exam is a test with a longer question on it. */
 MODE_RULES.exam = MODE_RULES.test.replace(/TEST question/, 'EXAM question');
+
+/* Wandering around the site rather than working on anything in particular. */
+MODE_RULES.app = `She is not working on a question at the moment — she may be on the \
+home screen, looking at her badges, or checking her rewards.
+
+Answer whatever she asks: how something in the site works, what to do next, which \
+week to revise, or just chat for a moment. If she is putting it off, a gentle nudge \
+towards a short practise round is welcome. Keep it light.`;
+
+/* So it can answer "how do I get more points?" without guessing. Written as
+   plain description rather than a feature list, because she asks about it the
+   way a person would. */
+const APP_GUIDE = `About the site you live in, so you can answer questions about it:
+
+It is called Abi's Study Buddy, and Stephen built it for her. It covers four weeks: \
+1 is the basics — fractions, decimals, exponents. 2 is percentages, mark-ups, VAT, \
+discounts and overheads. 3 is statistics and probability. 4 is simple and compound \
+interest.
+
+There are three ways to work, and she picks a week and then the topics she wants:
+- Practise shows her notes alongside the questions, and a full worked solution \
+after every answer. It scores no points at all — it is purely for learning.
+- Test hides the notes. 1 point per correct answer.
+- Exam Questions uses a separate bank modelled on the real Milpark practice papers. \
+They are longer. 2 points per correct answer.
+
+Points fill a bar at the top of the screen that runs to 500, and unlock rewards \
+Stephen honours in real life — small ones early (a kiss at 10, a proper hug at 25) \
+growing to bigger ones (a picnic date at 380, a small piece of jewellery at 500). \
+Little "boosters" sit between the milestones so something is always close. She \
+claims them on the Rewards screen, and a claimed one greys out.
+
+Badges unlock at 5 correct answers in a topic. There is also a Progress screen with \
+her streak and accuracy, a Notes section she can read any time, and a setting to \
+turn the confetti off if it gets too much.
+
+Her progress saves to her account automatically, so it follows her between her \
+laptop and her phone.`;
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -159,6 +204,7 @@ export async function tutor(request, env) {
 
   const system = [
     { type: 'text', text: BASE_RULES },
+    { type: 'text', text: APP_GUIDE },
     { type: 'text', text: MODE_RULES[mode] },
   ];
 
@@ -225,19 +271,35 @@ export async function tutor(request, env) {
   }
 
   if (!upstream.ok || !upstream.body) {
-    /* Read the reason for the log, but do not hand it back — upstream errors
-       can echo request details, and this response goes to the browser. */
-    const detail = await upstream.text().catch(() => '');
-    console.log('tutor upstream error', upstream.status, detail.slice(0, 500));
+    const raw = await upstream.text().catch(() => '');
 
+    let upstreamType = '';
+    let upstreamMessage = '';
+    try {
+      const parsed = JSON.parse(raw);
+      upstreamType = (parsed.error && parsed.error.type) || '';
+      upstreamMessage = (parsed.error && parsed.error.message) || '';
+    } catch (e) {
+      upstreamMessage = raw.slice(0, 300);
+    }
+
+    /* Credit exhaustion arrives as a plain 400, which is indistinguishable
+       from a malformed request unless the message is read. It is far and away
+       the likeliest reason for a brand new key to fail, so name it. */
+    const outOfCredit = /credit balance|insufficient|billing/i.test(upstreamMessage);
+
+    const code = upstream.status === 401 ? 'bad_api_key'
+      : outOfCredit ? 'no_credit'
+        : upstream.status === 429 ? 'rate_limited'
+          : 'upstream_error';
+
+    /* `detail` is for whoever opens the network tab, not for the page — the
+       chat bubble shows a friendly line instead. Withholding it entirely was
+       a mistake: it made a broken tutor indistinguishable from a broken
+       connection, which is the one distinction worth having. */
     return json(
-      {
-        error: upstream.status === 401 ? 'bad_api_key'
-          : upstream.status === 429 ? 'rate_limited'
-            : 'upstream_error',
-        status: upstream.status,
-      },
-      upstream.status === 401 ? 503 : 502,
+      { error: code, status: upstream.status, detail: upstreamType, message: upstreamMessage },
+      code === 'bad_api_key' || code === 'no_credit' ? 503 : 502,
     );
   }
 

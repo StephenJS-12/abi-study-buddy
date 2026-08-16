@@ -344,54 +344,6 @@
 .modal .field:focus { outline: none; border-color: var(--lilac-400); background: #fff; }
 .modal-actions { display: flex; gap: .7rem; justify-content: flex-end; flex-wrap: wrap; }
 
-/* ─────────────────────────── study helper ─────────────────────────── */
-
-.tutor-thread {
-  max-height: 22rem;
-  overflow-y: auto;
-  margin: 1rem 0 .9rem;
-}
-.tutor-thread:empty { display: none; }
-
-.tutor-msg {
-  border-radius: var(--r-md);
-  padding: .65rem .95rem;
-  margin-bottom: .6rem;
-  font-size: .93rem;
-  line-height: 1.55;
-  max-width: 90%;
-}
-.tutor-msg p { margin: 0 0 .6rem; }
-.tutor-msg p:last-child { margin-bottom: 0; }
-
-/* Her own questions sit to the right, the way a chat reads. */
-.tutor-msg.is-her {
-  margin-left: auto;
-  background: var(--lilac-100);
-  border-bottom-right-radius: .35rem;
-}
-.tutor-msg.is-them {
-  background: var(--pink-50);
-  border-bottom-left-radius: .35rem;
-}
-.tutor-wait { color: var(--muted); font-style: italic; }
-
-.tutor-ask { display: flex; gap: .6rem; align-items: center; }
-.tutor-ask .field {
-  flex: 1;
-  border: 2px solid var(--lilac-100);
-  border-radius: var(--r-md);
-  padding: .7rem .95rem;
-  background: var(--lilac-50);
-  min-width: 0;              /* lets the input shrink instead of overflowing */
-}
-.tutor-ask .field:focus { outline: none; border-color: var(--lilac-400); background: #fff; }
-
-@media (max-width: 30rem) {
-  .tutor-ask { flex-wrap: wrap; }
-  .tutor-ask .btn { width: 100%; }
-}
-
 /* Shown across the top only when the browser refuses to save. Loud on purpose:
    everything still works while it is up, so nothing else would give the game away
    until the window is closed and the evening's points are gone. */

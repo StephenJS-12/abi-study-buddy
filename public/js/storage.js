@@ -105,6 +105,14 @@ var Store = (function () {
 
   function save() {
     state.lastSaved = new Date().toISOString();
+
+    /* Mirrored to her account when the site is hosted. Looked up late rather
+       than imported, because this file also has to work opened from a folder,
+       where there is no server and no Cloud at all. */
+    if (typeof Cloud !== 'undefined' && Cloud.enabled()) {
+      Cloud.push(JSON.parse(JSON.stringify(state)));
+    }
+
     try {
       localStorage.setItem(KEY, JSON.stringify(state));
       writeError = null;

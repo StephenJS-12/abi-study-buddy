@@ -624,18 +624,7 @@ var App = (function () {
       '</div>' +
 
       saveHealthCard() +
-
-      '<div class="card" style="margin-top:1.2rem">' +
-        '<h3>📦 Moving to another laptop</h3>' +
-        '<p style="font-size:.93rem;color:var(--ink-soft)">Your points and badges are saved in this ' +
-        'browser, on this computer — copying the site across does not bring them with it. ' +
-        'This turns everything you have earned into one line of text you can send to yourself ' +
-        'and paste in on the other side.</p>' +
-        '<div class="pillrow" style="margin-top:.9rem">' +
-          '<button class="btn btn-primary" type="button" id="codeOutBtn">Get my code</button>' +
-          '<button class="btn btn-ghost" type="button" id="codeInBtn">Paste a code in</button>' +
-        '</div>' +
-      '</div>' +
+      travelCard() +
 
       '<div class="card" style="margin-top:1.2rem;border:2px solid var(--pink-200)">' +
         '<h3>Start completely fresh</h3>' +
@@ -656,8 +645,11 @@ var App = (function () {
       });
     });
 
-    document.getElementById('codeOutBtn').addEventListener('click', showCodeOut);
-    document.getElementById('codeInBtn').addEventListener('click', showCodeIn);
+    /* Absent on the hosted site, where syncing replaces them entirely. */
+    var codeOut = document.getElementById('codeOutBtn');
+    var codeIn = document.getElementById('codeInBtn');
+    if (codeOut) codeOut.addEventListener('click', showCodeOut);
+    if (codeIn) codeIn.addEventListener('click', showCodeIn);
 
     document.getElementById('wipeBtn').addEventListener('click', function () {
       modal({
@@ -671,6 +663,10 @@ var App = (function () {
         confirmClass: 'btn-danger',
         onConfirm: function () {
           Store.wipe();
+          /* Clears the account copy too. Without this the next sync would pull
+             everything straight back down, and "delete everything" would look
+             like it had silently failed. */
+          if (window.Cloud && Cloud.enabled()) Cloud.wipe();
           applyMotion();
           refreshPoints();
           go('home');
@@ -697,6 +693,45 @@ var App = (function () {
     var d = new Date(iso);
     var mins = d.getMinutes();
     return day + ' at ' + d.getHours() + ':' + (mins < 10 ? '0' + mins : mins);
+  }
+
+  /* How her progress gets from one device to another.
+
+     On the hosted site that happens by itself, so this reports on it. Opened
+     from a folder there is no account to sync with, and the transfer code is
+     the only way across — the two never appear together, because there should
+     only ever be one way to do a thing. */
+  function travelCard() {
+    if (!(window.Cloud && Cloud.enabled())) {
+      return '<div class="card" style="margin-top:1.2rem">' +
+        '<h3>📦 Moving to another laptop</h3>' +
+        '<p style="font-size:.93rem;color:var(--ink-soft)">Your points and badges are saved in this ' +
+        'browser, on this computer — copying the site across does not bring them with it. ' +
+        'This turns everything you have earned into one line of text you can send to yourself ' +
+        'and paste in on the other side.</p>' +
+        '<div class="pillrow" style="margin-top:.9rem">' +
+          '<button class="btn btn-primary" type="button" id="codeOutBtn">Get my code</button>' +
+          '<button class="btn btn-ghost" type="button" id="codeInBtn">Paste a code in</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    var sync = Cloud.status();
+    var when = whenText(sync.savedAt);
+
+    var line = sync.problem
+      ? 'Could not reach your account just now, so this device is working on its own copy. ' +
+        'Everything you do is still being kept here and will go up as soon as you are back online.'
+      : when
+        ? 'Last saved to your account on <b>' + when + '</b>. Sign in on any other device with the ' +
+          'same password and it will all be waiting for you.'
+        : 'Your progress saves to your account automatically. Sign in on your phone or another ' +
+          'laptop with the same password and it will all be there.';
+
+    return '<div class="card" style="margin-top:1.2rem">' +
+      '<h3>' + (sync.problem ? '📴 Working offline' : '☁️ Saved to your account') + '</h3>' +
+      '<p style="font-size:.93rem;color:var(--ink-soft)">' + line + '</p>' +
+    '</div>';
   }
 
   /* The panel on the Progress screen. Its whole job is to answer one question without
@@ -924,4 +959,11 @@ var App = (function () {
   };
 })();
 
-document.addEventListener('DOMContentLoaded', App.init);
+/* Her saved progress is fetched before the first screen is drawn, so she never
+   sees a stale points total flick up to the real one a second later. Cloud.pull
+   always calls back, including when the server cannot be reached — a lost
+   connection must leave her working offline, not staring at a blank page. */
+document.addEventListener('DOMContentLoaded', function () {
+  if (window.Cloud && Cloud.enabled()) Cloud.pull(App.init);
+  else App.init();
+});

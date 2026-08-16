@@ -1,0 +1,10 @@
+# Local launcher artefacts — these are for running the site off a folder,
+# and are meaningless once it is hosted.
+/public/browserdata/
+
+# Node modules, if a build ever installs them locally.
+node_modules/
+
+# Windows
+Thumbs.db
+desktop.ini

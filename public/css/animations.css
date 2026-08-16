@@ -1,0 +1,156 @@
+/* Abi's Study Buddy — motion */
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(.82); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-7px); }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  50%      { opacity: .55; transform: scale(.82) rotate(20deg); }
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.07); }
+}
+@keyframes shimmer {
+  from { background-position: 0% 0; }
+  to   { background-position: 200% 0; }
+}
+
+/* Correct-answer celebration: confetti + sparkle burst */
+.confetti {
+  position: absolute;
+  width: 11px;
+  height: 11px;
+  will-change: transform, opacity;
+  animation: confettiFall var(--dur, 1500ms) cubic-bezier(.18,.7,.5,1) forwards;
+}
+@keyframes confettiFall {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--dx, 0px), var(--dy, 420px), 0) rotate(var(--rot, 540deg)) scale(.35);
+  }
+}
+
+.sparkle {
+  position: absolute;
+  font-size: var(--size, 22px);
+  will-change: transform, opacity;
+  animation: sparklePop var(--dur, 900ms) var(--ease-out) forwards;
+  pointer-events: none;
+}
+@keyframes sparklePop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(.2) rotate(0deg); }
+  35%  { opacity: 1; transform: translate(-50%, -50%) scale(1.15) rotate(90deg); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--dx, 0px)), calc(-50% + var(--dy, -60px))) scale(.5) rotate(200deg); }
+}
+
+/* Big centred "nice one" flash */
+.hypeword {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%);
+  font-size: clamp(2rem, 8vw, 3.6rem);
+  font-weight: 900;
+  letter-spacing: -.03em;
+  text-align: center;
+  background: linear-gradient(100deg, var(--pink-600), var(--lilac-600), var(--mint-600));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: hype 3200ms var(--ease-bounce) forwards;
+  text-shadow: 0 4px 20px rgba(255,255,255,.9);
+  white-space: nowrap;
+}
+/* Percentages are tuned so the pop stays snappy and the extra time is spent
+   holding the message on screen, not slowing down the entrance. */
+@keyframes hype {
+  0%   { opacity: 0; transform: translate(-50%,-50%) scale(.5) rotate(-6deg); }
+  8%   { opacity: 1; transform: translate(-50%,-50%) scale(1.1) rotate(2deg); }
+  15%  { opacity: 1; transform: translate(-50%,-50%) scale(1) rotate(0deg); }
+  85%  { opacity: 1; transform: translate(-50%,-50%) scale(1) rotate(0deg); }
+  100% { opacity: 0; transform: translate(-50%,-80%) scale(.94); }
+}
+
+/* Points bar gaining a point */
+.pbar.bump { animation: barBump .45s var(--ease-bounce); }
+@keyframes barBump {
+  0%, 100% { transform: scale(1); }
+  40%      { transform: scale(1.09, 1.4); }
+}
+
+/* Badge unlock toast */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 2rem;
+  transform: translateX(-50%);
+  z-index: 95;
+  background: linear-gradient(140deg, var(--butter-100), var(--pink-100));
+  border: 2px solid var(--butter-400);
+  border-radius: var(--r-lg);
+  padding: .9rem 1.5rem;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: .8rem;
+  font-weight: 700;
+  animation: toastIn .4s var(--ease-bounce), toastOut .4s var(--ease-out) 3.4s forwards;
+  max-width: calc(100vw - 2rem);
+}
+.toast .tf { font-size: 1.8rem; }
+.toast .tt { font-size: .78rem; color: var(--butter-600); letter-spacing: .09em; text-transform: uppercase; font-weight: 800; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translate(-50%, 30px) scale(.9); }
+  to   { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@keyframes toastOut {
+  to { opacity: 0; transform: translate(-50%, 20px); }
+}
+
+/* Reward unlocks stay up longer than badges — they matter more */
+.toast-reward {
+  background: linear-gradient(140deg, var(--pink-100), var(--lilac-100));
+  border-color: var(--pink-400);
+  animation: toastIn .4s var(--ease-bounce), toastOut .5s var(--ease-out) 4.5s forwards;
+}
+.toast-reward .tt { color: var(--pink-600); }
+
+/* Wrong answer — gentle shake, never harsh */
+.shake { animation: shake .42s var(--ease-out); }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-7px); }
+  40%      { transform: translateX(6px); }
+  60%      { transform: translateX(-4px); }
+  80%      { transform: translateX(2px); }
+}
+
+/* Motion is controlled by the in-app setting, not by the OS media query.
+   Windows here has animations turned off globally, which would otherwise
+   suppress every celebration — so the app owns this decision instead.
+   app.js adds .reduce-motion to <body> when she turns celebrations off. */
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+}

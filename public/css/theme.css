@@ -1,0 +1,164 @@
+/* Abi's Study Buddy — design tokens & base
+   Soft pastel + sparkles. Committed light theme. */
+
+:root {
+  /* Core palette */
+  --lilac-50:  #F6F1FF;
+  --lilac-100: #EBE0FF;
+  --lilac-200: #D9C7FA;
+  --lilac-400: #B79CED;
+  --lilac-600: #8B6DD9;
+  --lilac-700: #6E52B8;
+
+  --pink-50:   #FFF2F8;
+  --pink-100:  #FFE1EE;
+  --pink-200:  #FFC7DE;
+  --pink-400:  #FF9EC4;
+  --pink-600:  #F0669F;
+
+  --mint-50:   #EFFCF7;
+  --mint-100:  #D7F6EB;
+  --mint-400:  #8FE3C8;
+  --mint-600:  #34A98A;
+
+  --butter-100:#FFF3D1;
+  --butter-400:#FFD667;
+  --butter-600:#C9931B;
+
+  --sky-100:   #E4F1FF;
+  --sky-400:   #93C4F5;
+  --sky-600:   #3A7FC4;
+
+  --ink:       #4A3457;
+  --ink-soft:  #6E5C7C;
+  --muted:     #9A88A8;
+  --line:      #EFE6F6;
+
+  --bg:        #FDF8FC;
+  --surface:   #FFFFFF;
+
+  /* Shape */
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 26px;
+  --r-xl: 34px;
+  --r-pill: 999px;
+
+  /* Depth — soft, coloured, never grey */
+  --shadow-sm: 0 2px 6px rgba(139,109,217,.10);
+  --shadow-md: 0 6px 18px rgba(139,109,217,.14);
+  --shadow-lg: 0 14px 38px rgba(139,109,217,.18);
+  --shadow-pop: 0 10px 0 rgba(139,109,217,.18);
+
+  --ease-bounce: cubic-bezier(.34,1.56,.64,1);
+  --ease-out: cubic-bezier(.22,.9,.3,1);
+}
+
+* { box-sizing: border-box; }
+
+/* The hidden attribute must always beat component display rules.
+   Without this, `display: grid` on .modal-veil overrides the UA's
+   [hidden] { display: none } and the overlay covers the whole page. */
+[hidden] { display: none !important; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI Variable Display", "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Decorative background wash — soft blobs, fixed behind everything */
+.sky {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(closest-side at 12% 8%,  var(--pink-100), transparent 70%),
+    radial-gradient(closest-side at 88% 4%,  var(--lilac-100), transparent 72%),
+    radial-gradient(closest-side at 78% 82%, var(--mint-100), transparent 70%),
+    radial-gradient(closest-side at 6% 74%,  var(--sky-100), transparent 70%),
+    var(--bg);
+  background-size: 70% 60%, 60% 55%, 65% 60%, 55% 55%, auto;
+  background-repeat: no-repeat;
+}
+
+h1, h2, h3, h4 {
+  margin: 0 0 .4em;
+  line-height: 1.2;
+  letter-spacing: -.015em;
+  font-weight: 700;
+}
+
+h1 { font-size: clamp(1.9rem, 4.5vw, 2.7rem); }
+h2 { font-size: clamp(1.35rem, 3vw, 1.7rem); }
+h3 { font-size: 1.12rem; }
+
+p { margin: 0 0 1em; }
+p:last-child { margin-bottom: 0; }
+
+a { color: var(--lilac-600); }
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid var(--lilac-400);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Maths bits shared everywhere */
+.math {
+  font-family: "Cambria Math", "Segoe UI Symbol", Georgia, serif;
+  font-size: 1.06em;
+  font-style: italic;
+  letter-spacing: .01em;
+}
+.math-block {
+  font-family: "Cambria Math", Georgia, serif;
+  font-size: 1.1rem;
+  background: var(--lilac-50);
+  border: 1px solid var(--lilac-100);
+  border-radius: var(--r-md);
+  padding: .85rem 1.1rem;
+  margin: .7rem 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  vertical-align: middle;
+  text-align: center;
+  margin: 0 .18em;
+  line-height: 1.15;
+  font-size: .92em;
+}
+.frac > span:first-child { border-bottom: 1.5px solid currentColor; padding: 0 .3em; }
+.frac > span:last-child  { padding: 0 .3em; }
+
+/* Utility */
+.stack > * + * { margin-top: 1rem; }
+.center { text-align: center; }
+.rand { font-variant-numeric: tabular-nums; }

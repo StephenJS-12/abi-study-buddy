@@ -26,6 +26,25 @@ var Tutor = (function () {
     if (id !== topicId) { history = []; topicId = id; }
   }
 
+  /* Everything that gets sent to the server, built in one place and by naming
+     each field explicitly rather than spreading the context object.
+
+     That is the whole point: the caller in quiz.js holds the live question,
+     answer and worked solution together. Listing the fields by hand means a
+     future change there cannot accidentally widen what travels — a tutor that
+     was never told the answer cannot let it slip, however it is asked. */
+  function payload(context, question, past) {
+    return {
+      topicId: context.id,
+      topicTitle: context.title,
+      mode: context.mode || 'notes',
+      notes: context.notes || '',
+      questionText: context.questionText || '',
+      question: question,
+      history: past
+    };
+  }
+
   function esc(s) {
     return String(s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -100,23 +119,49 @@ var Tutor = (function () {
 
   /* ── the panel ─────────────────────────────────────────────────── */
 
-  function card() {
+  /* What the panel promises depends on what it is allowed to do there. Saying
+     "it will not give you the answer" on a test screen is not a disclaimer —
+     it saves her spending three questions finding that out. */
+  var BLURB = {
+    notes: {
+      title: '💬 Stuck on this bit?',
+      body: 'Ask about anything on this page and it will explain it another way.',
+      placeholder: 'Why do we divide by n − 1?'
+    },
+    practise: {
+      title: '💬 Not sure how to start?',
+      body: 'It will talk you through the method. It will not do the sum for you — ' +
+            'the full working appears once you have answered.',
+      placeholder: 'How do I approach this one?'
+    },
+    test: {
+      title: '💬 Need a nudge?',
+      body: 'This is a test, so it will only help you find your next move — not the ' +
+            'method, and never the answer.',
+      placeholder: 'Where should I start?'
+    }
+  };
+  BLURB.exam = BLURB.test;
+
+  function card(context) {
     if (!hosted) return '';
+    var mode = (context && context.mode) || 'notes';
+    var words = BLURB[mode] || BLURB.test;
+
     return '<div class="card tutor" id="tutorCard" style="margin-top:1.6rem">' +
-      '<h3>💬 Stuck on this bit?</h3>' +
-      '<p style="font-size:.9rem;color:var(--ink-soft)">Ask about anything on this page ' +
-      'and it will explain it another way. It will not give you answers to the ' +
-      'questions — that is the point of it.</p>' +
+      '<h3>' + words.title + '</h3>' +
+      '<p style="font-size:.9rem;color:var(--ink-soft)">' + esc(words.body) + '</p>' +
       '<div class="tutor-thread" id="tutorThread"></div>' +
       '<form class="tutor-ask" id="tutorForm">' +
         '<input class="field" id="tutorInput" type="text" autocomplete="off" ' +
-               'placeholder="Why do we divide by n − 1?">' +
+               'placeholder="' + esc(words.placeholder) + '">' +
         '<button class="btn btn-primary" type="submit" id="tutorSend">Ask</button>' +
       '</form>' +
     '</div>';
   }
 
-  function wire(topic, notesText) {
+  /* context: { id, title, mode, notes, questionText } */
+  function wire(context) {
     if (!hosted) return;
 
     var form = document.getElementById('tutorForm');
@@ -125,8 +170,13 @@ var Tutor = (function () {
     var input = document.getElementById('tutorInput');
     var send = document.getElementById('tutorSend');
     var thread = document.getElementById('tutorThread');
+    var topic = { id: context.id, title: context.title };
+    var notesText = context.notes || '';
 
-    reset(topic.id);
+    /* Keyed on the question during a quiz, not just the topic — each new
+       question is a fresh problem, and carrying the last one's hints into it
+       would have the tutor nudging her about something she has moved past. */
+    reset(context.questionText ? context.id + '|' + context.questionText : context.id);
 
     function bubble(who, html) {
       var el = document.createElement('div');
@@ -156,13 +206,7 @@ var Tutor = (function () {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          topicId: topic.id,
-          topicTitle: topic.title,
-          notes: notesText,
-          question: question,
-          history: history
-        })
+        body: JSON.stringify(payload(context, question, history))
       }).then(function (response) {
         if (response.ok && response.body) {
           consume(response, function (piece) {
@@ -198,6 +242,7 @@ var Tutor = (function () {
 
   return {
     available: available,
+    payload: payload,
     card: card,
     wire: wire
   };

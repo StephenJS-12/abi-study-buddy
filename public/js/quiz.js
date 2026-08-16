@@ -141,6 +141,25 @@ var Quiz = (function () {
 
   /* ───────────────────────── rendering ───────────────────────── */
 
+  /* Question prompts carry markup for fractions and emphasis. The tutor wants
+     the words, not the HTML, and a stray tag would only spend tokens. */
+  function stripTags(html) {
+    return String(html)
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /* The topic's notes as plain text, for practise mode only. In a test or exam
+     she is meant to be recalling this, not being handed it. */
+  function notesTextFor(topicId) {
+    var topic = Content.topic(topicId);
+    if (!topic) return '';
+    var holder = document.createElement('div');
+    holder.innerHTML = Notes.renderBlocks(topic, false);
+    return stripTags(holder.textContent || '');
+  }
+
   function render() {
     if (!S) return;
     if (S.idx >= S.questions.length) return renderResults();
@@ -182,11 +201,27 @@ var Quiz = (function () {
         answerAreaHtml(q) +
         '<div id="verdictSlot"></div>' +
         '<div class="qfoot" id="qfoot"></div>' +
-      '</div>';
+      '</div>' +
+      Tutor.card({ mode: S.mode });
 
     var screen = document.getElementById('screen');
     screen.innerHTML = html;
     App.setCrumb('Leave ' + MODE_LOWER[S.mode], confirmLeave);
+
+    /* What the tutor is allowed to say is decided by the mode it is handed.
+       In practise it may explain the method; in a test or exam it may only
+       help her find her next move.
+
+       Only the wording of the question travels — `q.answer` and the worked
+       solution stay here. A tutor that was never told the answer cannot let
+       it slip, whatever it is asked. */
+    Tutor.wire({
+      id: q._topicId,
+      title: q._topicTitle,
+      mode: S.mode,
+      questionText: stripTags((q.scenario || '') + ' ' + q.prompt),
+      notes: S.mode === 'practise' ? notesTextFor(q._topicId) : ''
+    });
 
     if (S.mode === 'practise') {
       document.getElementById('helperToggle').addEventListener('click', function () {

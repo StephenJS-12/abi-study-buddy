@@ -19,13 +19,20 @@
     //
     // If this line is ever removed, the site silently becomes public.
     "run_worker_first": true
-  }
+  },
 
-  // Progress storage is added once the KV namespace exists — see README.
-  // The code already copes with it being absent, so the first deploy works
-  // without it.
+  // Where her points, badges and answer history actually live, plus the
+  // per-IP counters that throttle password guessing.
   //
-  // "kv_namespaces": [
-  //   { "binding": "PROGRESS", "id": "<namespace id from the dashboard>" }
-  // ]
+  // This has to be declared here rather than added through the dashboard's
+  // Bindings tab: `wrangler deploy` treats this file as the complete list and
+  // drops anything it does not find, so a dashboard-added binding would
+  // disappear on the next push. Secrets are the exception — those are stored
+  // separately and survive deploys, which is why they are not in this file
+  // (and must not be, since it is committed to git).
+  //
+  // The id is an account-scoped identifier, not a credential.
+  "kv_namespaces": [
+    { "binding": "PROGRESS", "id": "efd8c0153a9d44859ff4d381165f3853" }
+  ]
 }

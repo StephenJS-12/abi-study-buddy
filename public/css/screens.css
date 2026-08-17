@@ -748,3 +748,45 @@ ul.tickly li::before {
 }
 .modgrid .tile { padding: 1.8rem 1.6rem 1.6rem; }
 .modgrid .tile-emoji { font-size: 2.6rem; }
+
+/* ── the two things you can do in a module ────────────────────────── */
+
+.bigbox {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+  margin-bottom: 1.4rem;
+  box-shadow: var(--shadow-md);
+}
+
+/* Notes is a single button; Questions is a section containing controls, so
+   only the button form gets hover treatment. */
+button.bigbox {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  transition: transform .18s var(--ease-bounce), box-shadow .18s, border-color .18s;
+}
+button.bigbox:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--lilac-100);
+}
+
+.bigbox-head { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1.2rem; }
+.bigbox-emoji { font-size: 2.4rem; line-height: 1; flex: none; }
+.bigbox-body { display: block; flex: 1; min-width: 0; }
+.bigbox-title { display: block; font-size: 1.3rem; font-weight: 800; letter-spacing: -.02em; }
+.bigbox-desc { display: block; font-size: .93rem; color: var(--ink-soft); margin-top: .2rem; }
+.bigbox-go { font-size: 1.6rem; font-weight: 800; color: var(--lilac-400); flex: none; }
+
+@media (max-width: 30rem) {
+  .bigbox { padding: 1.2rem; }
+  .bigbox-emoji { font-size: 2rem; }
+  .bigbox-title { font-size: 1.15rem; }
+}

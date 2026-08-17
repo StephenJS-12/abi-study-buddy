@@ -141,7 +141,7 @@ var App = (function () {
     switch (route.name) {
       case 'modules':   return screenModules();
       case 'home':      return screenHome();
-      case 'week':      return screenWeek(route.params.weekId);
+      case 'week':      return screenWeek(route.params.weekId, route.params.mode);
       case 'notes':     return screenNotesWeeks();
       case 'notesWeek': return screenNotesTopics(route.params.weekId);
       case 'notesTopic':return screenNotesTopic(route.params.topicId);
@@ -160,14 +160,6 @@ var App = (function () {
   /* The first thing she sees: which subject is she doing today.
      Points and rewards are shown here rather than per module, because there is
      only one ladder — study whichever she likes, it all feeds the same bar. */
-  function greeting() {
-    var h = new Date().getHours();
-    if (h < 5) return 'Still up';
-    if (h < 12) return 'Good morning';
-    if (h < 17) return 'Good afternoon';
-    return 'Good evening';
-  }
-
   function screenModules() {
     setCrumb(null);
 
@@ -237,7 +229,7 @@ var App = (function () {
 
     screen.innerHTML =
       '<section class="hero">' +
-        '<p class="hero-hi">' + greeting() + ', Abi <span class="hero-star">✦</span></p>' +
+        '<p class="hero-hi">' + esc(Copy.greeting()) + '</p>' +
         '<h1 class="hero-title">What are we doing today?</h1>' +
 
         '<div class="hero-goal">' +
@@ -277,47 +269,83 @@ var App = (function () {
     go('home');
   }
 
+  /* Which kind of session she last picked. Held here rather than per week,
+     because the choice is about how she wants to work today, not about which
+     week she is on. */
+  var chosenMode = 'practise';
+
+  var MODE_CARDS = [
+    { id: 'practise', emoji: '🌱', name: 'Practise',
+      blurb: 'Notes right there above each question, and the full working after every answer. No points, no pressure.' },
+    { id: 'test', emoji: '⭐', name: 'Test',
+      blurb: 'Questions only — no notes, no hints. <b>1 point</b> for each one you get right.' },
+    { id: 'exam', emoji: '📝', name: 'Exam Questions',
+      blurb: 'Longer questions like the real practice papers, from their own separate bank. <b>2 points</b> each.' }
+  ];
+
   function screenHome() {
     var mod = Content.module();
 
     /* Back to the picker, unless this is the only module she has — in which
        case there is nothing to go back to and the crumb would be a dead end. */
-    if (Modules.ready().length > 1 || Modules.all().length > 1) {
+    if (Modules.all().length > 1) {
       setCrumb('All modules', function () { go('modules'); });
     } else {
       setCrumb(null);
     }
 
-    var st = Store.get();
     var weeks = Content.weeks();
     var readyNow = Rewards.readyCount(Store.points());
-    var nextReward = Rewards.next(Store.points());
+
+    /* Exam Questions only exists where a practice paper has been built. Offering
+       it and then showing her nothing to pick would be worse than not offering
+       it at all. */
+    var anyExam = weeks.some(function (w) { return Content.hasExam(w.id); });
+    if (chosenMode === 'exam' && !anyExam) chosenMode = 'practise';
+
+    var modeCards = MODE_CARDS.filter(function (m) {
+      return m.id !== 'exam' || anyExam;
+    }).map(function (m) {
+      return '<button class="modecard' + (chosenMode === m.id ? ' is-on' : '') + '" ' +
+        'type="button" data-pickmode="' + m.id + '">' +
+        '<div class="modecard-top"><span class="em">' + m.emoji + '</span>' +
+        '<span class="nm">' + m.name + '</span></div>' +
+        '<p>' + m.blurb + '</p>' +
+      '</button>';
+    }).join('');
 
     var weekTiles = weeks.map(function (w) {
+      var usable = chosenMode === 'exam' ? Content.hasExam(w.id) : !w.comingSoon;
       var qn = (w.topics || []).reduce(function (n, t) { return n + t.questions.length; }, 0);
-      if (w.comingSoon) {
+
+      if (!usable) {
+        var why = w.comingSoon
+          ? 'Coming soon'
+          : 'No exam paper for this week yet';
         return '<button class="tile acc-' + w.accent + ' is-locked" type="button" disabled>' +
           '<span class="tile-glow"></span>' +
           '<span class="tile-emoji">' + w.emoji + '</span>' +
           '<span class="tile-kicker">Week ' + w.number + '</span>' +
           '<h3 class="tile-title">' + esc(w.title) + '</h3>' +
-          '<p class="tile-desc">Coming soon 🌸</p></button>';
+          '<p class="tile-desc">' + why + '</p>' +
+        '</button>';
       }
+
       return '<button class="tile acc-' + w.accent + '" type="button" data-week="' + w.id + '">' +
         '<span class="tile-glow"></span>' +
         '<span class="tile-emoji">' + w.emoji + '</span>' +
         '<span class="tile-kicker">Week ' + w.number + '</span>' +
         '<h3 class="tile-title">' + esc(w.title) + '</h3>' +
         '<p class="tile-desc">' + esc(w.blurb) + '</p>' +
-        '<div style="margin-top:.8rem"><span class="chip">' + w.topics.length + ' topics</span> ' +
-        '<span class="chip chip-mint">' + qn + ' questions</span></div>' +
-        '</button>';
+        '<p class="tile-desc" style="margin-top:.4rem;font-weight:700;color:var(--lilac-700)">' +
+          (w.topics || []).length + ' topics · ' + qn + '+ questions</p>' +
+      '</button>';
     }).join('');
 
     screen.innerHTML =
       '<div class="hero">' +
         '<span class="hero-orb">' + (mod ? mod.emoji : '✨') + '</span>' +
-        '<h1>Hey Abi — ready to study?</h1>' +
+        '<h1>' + esc(Copy.moduleHello()) + '</h1>' +
         /* Named from the module she actually opened. This used to be the maths
            module hardcoded, which would have been quietly wrong the moment a
            second module went live. */
@@ -326,36 +354,63 @@ var App = (function () {
         '</p>' +
       '</div>' +
 
-      '<div class="statstrip">' +
-        '<div class="stat"><div class="stat-num">' + Store.points() + '<span style="font-size:.6em;color:var(--muted)">/' + Store.POINT_CAP + '</span></div><div class="stat-lab">Points</div></div>' +
-        '<div class="stat"><div class="stat-num">' + readyNow + '</div><div class="stat-lab">Rewards ready</div></div>' +
-        '<div class="stat"><div class="stat-num">' + Store.badgeCount() + '</div><div class="stat-lab">Badges</div></div>' +
-        '<div class="stat"><div class="stat-num">' + st.bestStreak + '</div><div class="stat-lab">Best streak</div></div>' +
-        '<div class="stat"><div class="stat-num">' + Store.accuracy() + '%</div><div class="stat-lab">Accuracy</div></div>' +
-      '</div>' +
+      /* Two things to do in a module: read about it, or answer questions on it.
+         Everything else on this screen used to sit at the same level, which
+         made choosing harder than it needed to be. */
+      '<button class="bigbox bigbox-notes" type="button" data-goto="notes">' +
+        '<span class="bigbox-emoji">📖</span>' +
+        '<span class="bigbox-body">' +
+          '<span class="bigbox-title">Notes</span>' +
+          '<span class="bigbox-desc">Read through the explanations and worked examples, ' +
+          'topic by topic. Nothing is marked and nothing counts — just reading.</span>' +
+        '</span>' +
+        '<span class="bigbox-go">›</span>' +
+      '</button>' +
 
-      '<div class="section-title">Pick a week</div>' +
-      '<div class="grid-weeks">' + weekTiles + '</div>' +
+      '<section class="bigbox bigbox-tests">' +
+        '<div class="bigbox-head">' +
+          '<span class="bigbox-emoji">✏️</span>' +
+          '<span class="bigbox-body">' +
+            '<span class="bigbox-title">Questions</span>' +
+            '<span class="bigbox-desc">Pick how you want to work, then choose a week.</span>' +
+          '</span>' +
+        '</div>' +
 
-      '<div class="section-title">Everything else</div>' +
-      '<div class="grid-2">' +
-        '<button class="tile acc-1" type="button" data-goto="notes">' +
-          '<span class="tile-glow"></span><span class="tile-emoji">📖</span>' +
-          '<h3 class="tile-title">Notes</h3>' +
-          '<p class="tile-desc">Read the explanations and worked examples, topic by topic.</p></button>' +
+        '<div class="modecards">' + modeCards + '</div>' +
+
+        '<div class="section-title" style="margin-top:1.6rem">Which week?</div>' +
+        '<div class="grid-weeks">' + weekTiles + '</div>' +
+      '</section>' +
+
+      '<div class="grid-2" style="margin-top:2rem">' +
         '<button class="tile acc-3" type="button" data-goto="progress">' +
           '<span class="tile-glow"></span><span class="tile-emoji">🏆</span>' +
           '<h3 class="tile-title">Progress &amp; rewards</h3>' +
           '<p class="tile-desc">' +
             (readyNow > 0
               ? '<b>' + readyNow + ' ready to claim!</b>'
-              : (nextReward
-                  ? (nextReward.at - Store.points()) + ' points to ' + nextReward.emoji + ' ' + esc(nextReward.title)
-                  : 'Every reward unlocked.')) +
+              : 'Your points, badges and everything you have unlocked.') +
           '</p></button>' +
       '</div>';
 
-    bindTiles();
+    Array.prototype.forEach.call(screen.querySelectorAll('[data-pickmode]'), function (b) {
+      b.addEventListener('click', function () {
+        chosenMode = b.getAttribute('data-pickmode');
+        screenHome();          // redraw: the week tiles depend on the mode
+      });
+    });
+
+    /* The week carries the mode with it, so the setup screen no longer has to
+       ask again — she has already answered that question here. */
+    Array.prototype.forEach.call(screen.querySelectorAll('[data-week]'), function (b) {
+      b.addEventListener('click', function () {
+        go('week', { weekId: b.getAttribute('data-week'), mode: chosenMode });
+      });
+    });
+
+    Array.prototype.forEach.call(screen.querySelectorAll('[data-goto]'), function (b) {
+      b.addEventListener('click', function () { go(b.getAttribute('data-goto'), {}); });
+    });
   }
 
   function bindTiles() {
@@ -369,7 +424,7 @@ var App = (function () {
 
   /* ───────────────────────── week setup ───────────────────────── */
 
-  function screenWeek(weekId) {
+  function screenWeek(weekId, wantedMode) {
     var w = Content.week(weekId);
     if (!w) return go('home');
 
@@ -378,7 +433,10 @@ var App = (function () {
     var saved = Store.recallSetup(weekId) || {};
     var exam = Content.examFor(weekId);
 
-    var mode = saved.mode || 'practise';
+    /* She chose the kind of session on the module home, so this screen no
+       longer asks. Falling back to the remembered choice covers arriving here
+       by any other route. */
+    var mode = wantedMode || saved.mode || 'practise';
     if (mode === 'exam' && !exam) mode = 'practise';
     var count = saved.count || 10;
 
@@ -428,29 +486,11 @@ var App = (function () {
         '<p>' + esc(w.blurb) + '</p>' +
       '</div>' +
 
-      '<div class="setup-block">' +
-        '<h3><span class="step-no">1</span> What kind of session?</h3>' +
-        '<div class="modecards">' +
-          '<button class="modecard' + (mode === 'practise' ? ' is-on' : '') + '" type="button" data-mode="practise">' +
-            '<div class="modecard-top"><span class="em">🌱</span><span class="nm">Practise</span></div>' +
-            '<p>The notes for each topic sit right above the question — open them whenever you need, hide them when you don\'t. No points, no pressure.</p>' +
-          '</button>' +
-          '<button class="modecard' + (mode === 'test' ? ' is-on' : '') + '" type="button" data-mode="test">' +
-            '<div class="modecard-top"><span class="em">⭐</span><span class="nm">Test</span></div>' +
-            '<p>Questions only — no notes, no hints. Every correct answer earns you <b>1 point</b>.</p>' +
-          '</button>' +
-          (exam
-            ? '<button class="modecard' + (mode === 'exam' ? ' is-on' : '') + '" type="button" data-mode="exam">' +
-                '<div class="modecard-top"><span class="em">📝</span><span class="nm">Exam Questions</span></div>' +
-                '<p>Longer, multi-step questions in the style of the real practice paper. Its own separate question bank. ' +
-                '<b>2 points</b> each.</p>' +
-              '</button>'
-            : '') +
-        '</div>' +
-      '</div>' +
+      /* The kind of session was chosen on the module home. Asking again here
+         would be the same question twice, one screen apart. */
 
       '<div class="setup-block">' +
-        '<h3><span class="step-no">2</span> Which topics?</h3>' +
+        '<h3><span class="step-no">1</span> Which topics?</h3>' +
         '<div class="pillrow" style="margin-bottom:.8rem">' +
           '<button class="pill" type="button" id="selAll">Select all</button>' +
           '<button class="pill" type="button" id="selNone">Clear all</button>' +
@@ -459,7 +499,7 @@ var App = (function () {
       '</div>' +
 
       '<div class="setup-block">' +
-        '<h3><span class="step-no">3</span> How many questions?</h3>' +
+        '<h3><span class="step-no">2</span> How many questions?</h3>' +
         '<div class="pillrow" id="countRow">' + countPills() + '</div>' +
       '</div>' +
 
@@ -526,27 +566,8 @@ var App = (function () {
       updateInfo();
     });
 
-    Array.prototype.forEach.call(screen.querySelectorAll('[data-mode]'), function (b) {
-      b.addEventListener('click', function () {
-        var previous = mode;
-        mode = b.getAttribute('data-mode');
-        Array.prototype.forEach.call(screen.querySelectorAll('[data-mode]'), function (o) {
-          o.classList.toggle('is-on', o === b);
-        });
-
-        // Exam mode uses a different set of topics, so the picklist has to be rebuilt
-        if ((previous === 'exam') !== (mode === 'exam')) {
-          selectAllFor(mode);
-          document.getElementById('picklist').innerHTML = picklist();
-          rebindPicks();
-        }
-
-        if (COUNTS[mode].indexOf(count) === -1) count = COUNTS[mode][0];
-        document.getElementById('countRow').innerHTML = countPills();
-        bindCounts();
-        updateInfo();
-      });
-    });
+    /* No mode buttons on this screen any more — that choice is made on the
+       module home and arrives as a route parameter. */
 
     function bindCounts() {
       Array.prototype.forEach.call(screen.querySelectorAll('[data-count]'), function (b) {

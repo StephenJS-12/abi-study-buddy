@@ -136,3 +136,9 @@ body.reduce-motion .set-panel { animation: none; }
 }
 .modbadges-emoji { font-size: 1.3rem; line-height: 1; }
 .modbadges-head .chip { margin-left: auto; }
+
+/* On the home screen the hero shows her points in full, so the top bar's copy
+   is hidden rather than repeating the same figure twice on one screen. The
+   brand and cog keep their positions because both sides of the bar still flex
+   equally against the gap where it was. */
+body.at-home .pointsdock { display: none; }

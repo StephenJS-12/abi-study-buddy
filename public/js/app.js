@@ -133,6 +133,11 @@ var App = (function () {
   }
 
   function draw() {
+    /* The home hero carries her points in full, so the copy in the top bar
+       would be the same number twice on the same screen. Everywhere else the
+       bar is the only place she can see it. */
+    document.body.classList.toggle('at-home', route.name === 'modules');
+
     switch (route.name) {
       case 'modules':   return screenModules();
       case 'home':      return screenHome();
@@ -296,9 +301,14 @@ var App = (function () {
 
     screen.innerHTML =
       '<div class="hero">' +
-        '<span class="hero-orb">✨</span>' +
+        '<span class="hero-orb">' + (mod ? mod.emoji : '✨') + '</span>' +
         '<h1>Hey Abi — ready to study?</h1>' +
-        '<p class="hero-sub">Mathematical Skills for Business · MABU01-5</p>' +
+        /* Named from the module she actually opened. This used to be the maths
+           module hardcoded, which would have been quietly wrong the moment a
+           second module went live. */
+        '<p class="hero-sub">' +
+          (mod ? esc(mod.title) + ' · ' + esc(mod.code) : 'Choose a module to begin') +
+        '</p>' +
       '</div>' +
 
       '<div class="statstrip">' +

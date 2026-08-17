@@ -19,13 +19,9 @@
 }
 .pagehead p { color: var(--ink-soft); max-width: 62ch; margin-top: .2rem; }
 
-/* ── Home ─────────────────────────────────────────── */
-.hero {
-  text-align: center;
-  margin-bottom: 2.2rem;
-}
-.hero h1 { margin-bottom: .2rem; }
-.hero .hero-sub { color: var(--ink-soft); font-size: 1.05rem; }
+/* The home hero is defined in full at the end of this file. The old rule that
+   sat here has moved there, so there are not two .hero blocks quietly merging
+   into each other. */
 .hero-orb {
   font-size: 3.2rem;
   display: inline-block;
@@ -670,6 +666,7 @@ ul.tickly li::before {
 .hero {
   position: relative;
   overflow: hidden;
+  text-align: center;
   border-radius: var(--r-lg);
   padding: clamp(1.6rem, 5vw, 2.6rem);
   margin-bottom: 2rem;
@@ -679,6 +676,11 @@ ul.tickly li::before {
     linear-gradient(140deg, var(--lilac-100), var(--lilac-50) 55%, #fff);
   box-shadow: var(--shadow-md);
 }
+
+/* Shared with the module home, which uses a plain h1 and a subtitle.
+   .hero-orb is defined further up and keeps its bob — no need to restate it. */
+.hero h1 { margin-bottom: .2rem; }
+.hero .hero-sub { color: var(--ink-soft); font-size: 1.05rem; margin: 0; }
 
 .hero-hi {
   margin: 0 0 .2rem;
@@ -698,7 +700,9 @@ ul.tickly li::before {
   line-height: 1.12;
 }
 
-.hero-goal { max-width: 32rem; }
+/* Full width of the hero. It was capped at 32rem, which left the bar stopping
+   short of the panel it sits in and looking like a layout mistake. */
+.hero-goal { width: 100%; }
 
 .hero-points {
   font-size: 1.9rem;

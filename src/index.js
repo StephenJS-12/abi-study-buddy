@@ -53,7 +53,13 @@ export default {
     /* Deliberately ahead of the config check, and deliberately open: when the
        site is locked because a secret is missing, this is the one thing that
        can still say WHICH one. It reports only whether each binding arrived —
-       never a value, never a length, so it gives away nothing worth having. */
+       never a value, never a length, so it gives away nothing worth having.
+       This is also the only endpoint a stranger can read, so it says as little
+       as it can while still being able to answer that question.
+
+       `seen` used to list every key on env. That named the services behind the
+       site to anyone who asked, which is free reconnaissance for no benefit —
+       the named checks below already cover everything a deploy can get wrong. */
     if (url.pathname === '/api/health') {
       return json({
         ok: true,
@@ -64,7 +70,6 @@ export default {
         emailKey: Boolean(env.RESEND_API_KEY),
         emailTo: Boolean(env.NOTIFY_EMAIL),
         assets: Boolean(env.ASSETS),
-        seen: Object.keys(env).sort(),
       });
     }
 

@@ -70,10 +70,24 @@
   var note = document.getElementById('note');
 
   /* Only ever follow a same-site path, so a crafted ?next= cannot bounce her
-     off to somebody else's page after a successful login. */
+     off to somebody else's page after a successful login.
+
+     Resolved through the URL parser and checked by origin, rather than pattern
+     matched. The previous test required a leading slash that was not followed
+     by a second one, which correctly rejected "//evil.com" but still allowed
+     "/\evil.com" — browsers normalise a backslash to a forward slash while
+     resolving, so that lands on the same off-site address the check was
+     written to stop. Anything the parser does not place on this origin, and
+     any parse failure, falls back to the home page. */
   function destination() {
     var wanted = new URLSearchParams(location.search).get('next') || '/';
-    return /^\/(?!\/)/.test(wanted) ? wanted : '/';
+    try {
+      var target = new URL(wanted, location.origin);
+      if (target.origin !== location.origin) return '/';
+      return target.pathname + target.search;
+    } catch (e) {
+      return '/';
+    }
   }
 
   form.addEventListener('submit', async function (event) {

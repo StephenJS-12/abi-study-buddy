@@ -191,6 +191,11 @@
 }
 .tile-title { font-size: 1.2rem; font-weight: 800; margin: 0 0 .3rem; letter-spacing: -.02em; }
 .tile-desc { font-size: .92rem; color: var(--ink-soft); margin: 0; }
+
+/* The one standing figure on a tile — badges earned, topics and questions.
+   Now that the descriptions above these are gone it is the only line under the
+   title, so it carries the emphasis rather than trailing a sentence. */
+.tile-stat { font-weight: 700; color: var(--lilac-700); }
 .tile-glow {
   position: absolute;
   top: -40px; right: -40px;

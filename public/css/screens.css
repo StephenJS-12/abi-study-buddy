@@ -682,16 +682,8 @@ ul.tickly li::before {
 .hero h1 { margin-bottom: .2rem; }
 .hero .hero-sub { color: var(--ink-soft); font-size: 1.05rem; margin: 0; }
 
-.hero-hi {
-  margin: 0 0 .2rem;
-  font-size: .95rem;
-  font-weight: 700;
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: var(--lilac-700);
-  opacity: .85;
-}
-.hero-star { color: var(--pink-400); animation: twinkle 2.6s ease-in-out infinite; }
+/* .hero-hi and .hero-star lived here for the small uppercase greeting that sat
+   above the heading. The greeting is the heading now, so both are gone. */
 
 .hero-title {
   margin: 0 0 1.4rem;

@@ -196,9 +196,9 @@ var App = (function () {
         '<span class="tile-emoji">' + m.emoji + '</span>' +
         '<span class="tile-kicker">' + esc(m.code) + '</span>' +
         '<h3 class="tile-title">' + esc(m.title) + '</h3>' +
-        '<p class="tile-desc">' + esc(m.blurb) + '</p>' +
-        '<p class="tile-desc" style="margin-top:.5rem;font-weight:700;color:var(--lilac-700)">' +
-          badges + ' of ' + topics + ' badges earned</p>' +
+        /* Just the standing figure. The module blurb sat above this saying what
+           the subject is, which she already knows — it is her degree. */
+        '<p class="tile-desc tile-stat">' + badges + ' of ' + topics + ' badges</p>' +
       '</button>';
     }).join('');
 
@@ -229,8 +229,10 @@ var App = (function () {
 
     screen.innerHTML =
       '<section class="hero">' +
-        '<p class="hero-hi">' + esc(Copy.greeting()) + '</p>' +
-        '<h1 class="hero-title">What are we doing today?</h1>' +
+        /* The greeting IS the heading. It used to sit above "What are we doing
+           today?" in small uppercase, which made the warm line the caption and
+           the filler line the headline. */
+        '<h1 class="hero-title">' + esc(Copy.greeting()) + '</h1>' +
 
         '<div class="hero-goal">' +
           '<div class="hero-points">' + points + target + '</div>' +
@@ -253,7 +255,7 @@ var App = (function () {
           '<p class="tile-desc">' +
             (readyNow > 0
               ? '<b>' + readyNow + ' ready to claim!</b>'
-              : 'Your points, badges and everything you have unlocked.') +
+              : 'Points, badges and rewards') +
           '</p></button>' +
       '</div>';
 
@@ -280,12 +282,14 @@ var App = (function () {
   var chosenWeeks = {};
 
   var MODE_CARDS = [
+    /* Kept short deliberately. These three sit side by side, so what matters is
+       the difference between them, not a full description of each. */
     { id: 'practise', emoji: '🌱', name: 'Practise',
-      blurb: 'Notes right there above each question, and the full working after every answer. No points, no pressure.' },
+      blurb: 'Notes and full working shown. No points.' },
     { id: 'test', emoji: '⭐', name: 'Test',
-      blurb: 'Questions only — no notes, no hints. <b>1 point</b> for each one you get right.' },
+      blurb: 'No notes, no hints. <b>1 point</b> each.' },
     { id: 'exam', emoji: '📝', name: 'Exam Questions',
-      blurb: 'Longer questions like the real practice papers, from their own separate bank. <b>2 points</b> each.' }
+      blurb: 'Longer, from the practice papers. <b>2 points</b> each.' }
   ];
 
   function screenHome() {
@@ -364,9 +368,9 @@ var App = (function () {
         '<span class="tile-emoji">' + w.emoji + '</span>' +
         '<span class="tile-kicker">Week ' + w.number + '</span>' +
         '<h3 class="tile-title">' + esc(w.title) + '</h3>' +
-        '<p class="tile-desc">' + esc(w.blurb) + '</p>' +
-        '<p class="tile-desc" style="margin-top:.4rem;font-weight:700;color:var(--lilac-700)">' +
-          (w.topics || []).length + ' topics · ' + qn + '+ questions</p>' +
+        /* The week title already says what the week covers; the blurb underneath
+           was saying it again at greater length. */
+        '<p class="tile-desc tile-stat">' + (w.topics || []).length + ' topics · ' + qn + '+ questions</p>' +
       '</button>';
     }).join('');
 
@@ -389,8 +393,7 @@ var App = (function () {
         '<span class="bigbox-emoji">📖</span>' +
         '<span class="bigbox-body">' +
           '<span class="bigbox-title">Notes</span>' +
-          '<span class="bigbox-desc">Read through the explanations and worked examples, ' +
-          'topic by topic. Nothing is marked and nothing counts — just reading.</span>' +
+          '<span class="bigbox-desc">Explanations and worked examples. Nothing is marked.</span>' +
         '</span>' +
         '<span class="bigbox-go">›</span>' +
       '</button>' +
@@ -399,17 +402,17 @@ var App = (function () {
         '<div class="bigbox-head">' +
           '<span class="bigbox-emoji">✏️</span>' +
           '<span class="bigbox-body">' +
+            /* No description — the three mode cards directly below say what the
+               choice is far better than a sentence introducing them. */
             '<span class="bigbox-title">Questions</span>' +
-            '<span class="bigbox-desc">Pick how you want to work, then choose a week.</span>' +
           '</span>' +
         '</div>' +
 
         '<div class="modecards">' + modeCards + '</div>' +
 
+        /* The pills and the ticked tiles show that more than one is allowed, so
+           the paragraph explaining it was only ever restating the interface. */
         '<div class="section-title" style="margin-top:1.6rem">Which weeks?</div>' +
-        '<p style="font-size:.9rem;color:var(--ink-soft);margin:-.6rem 0 .9rem">' +
-          'Pick as many as you like — mixing weeks together is much closer to what a ' +
-          'real test feels like.</p>' +
         '<div class="pillrow" style="margin-bottom:1rem">' +
           '<button class="pill' + (allPicked ? ' is-on' : '') + '" type="button" id="weekAll">' +
             'All weeks</button>' +
@@ -436,7 +439,7 @@ var App = (function () {
           '<p class="tile-desc">' +
             (readyNow > 0
               ? '<b>' + readyNow + ' ready to claim!</b>'
-              : 'Your points, badges and everything you have unlocked.') +
+              : 'Points, badges and rewards') +
           '</p></button>' +
       '</div>';
 
@@ -605,8 +608,7 @@ var App = (function () {
         '<p>' +
           (picked.length === 1
             ? esc(picked[0].blurb)
-            : 'Questions from all of these, shuffled together — much closer to what a ' +
-              'real test feels like.') + '</p>' +
+            : 'Shuffled together.') + '</p>' +
       '</div>' +
 
       /* The kind of session was chosen on the module home. Asking again here
@@ -740,8 +742,7 @@ var App = (function () {
 
     screen.innerHTML =
       '<div class="pagehead"><span class="kicker">Notes</span>' +
-      '<h1>📖 Your study notes</h1>' +
-      '<p>Concepts explained from the ground up, with worked examples you can follow step by step.</p></div>' +
+      '<h1>📖 Your study notes</h1></div>' +
       '<div class="grid-weeks">' + tiles + '</div>';
 
     Array.prototype.forEach.call(screen.querySelectorAll('[data-nweek]'), function (b) {
@@ -765,8 +766,7 @@ var App = (function () {
 
     screen.innerHTML =
       '<div class="pagehead"><span class="kicker">Week ' + w.number + ' notes</span>' +
-      '<h1>' + w.emoji + ' ' + esc(w.title) + '</h1>' +
-      '<p>Choose a topic to read.</p></div>' +
+      '<h1>' + w.emoji + ' ' + esc(w.title) + '</h1></div>' +
       '<div class="picklist">' + list + '</div>';
 
     Array.prototype.forEach.call(screen.querySelectorAll('[data-ntopic]'), function (b) {
@@ -925,8 +925,7 @@ var App = (function () {
     screen.innerHTML =
       '<div class="pagehead"><span class="kicker">Your progress</span>' +
       '<h1>🏆 How you\'re doing</h1>' +
-      '<p>Every correct answer in Test mode is 1 point, and in Exam Questions it is 2. ' +
-      'Points from every module go to the same rewards.</p></div>' +
+      '<p>Test answers are 1 point, exam questions 2. Every module feeds the same ladder.</p></div>' +
 
       '<div class="statstrip">' +
         '<div class="stat"><div class="stat-num">' + points +

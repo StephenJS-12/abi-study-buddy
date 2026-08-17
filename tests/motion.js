@@ -125,7 +125,41 @@ var reloadedStore = store;
 check(/"motion":true/.test(reloadedStore["sparkleStudy.v1"] || ""),
       "motion preference should be persisted to storage");
 
-WScript.Echo("Celebration checks run: 8");
+// 9-11. Pip is drawn twice - on her button and in the panel header - and an id
+// may only exist once on a page. When both copies named their gradients
+// "pipSkin", "pipFlesh" and "pipStone", every fill resolved to whichever came
+// first in the document: the copy inside the panel, which is hidden until she is
+// opened. Her skin, flesh and stone painted with nothing, so she sat in the
+// corner as a leaf and a floating face and only gained colour once clicked.
+// Checked in the source because it is a rendering fault with no rendering here.
+var buddySrc = read(JS + "buddy.js");
+
+// Scoped to the three gradients. The panel's own ids - pipPanel, pipInput and
+// the rest - are fixed on purpose: that markup is built once.
+check(!/(id="|url\(#)(pipSkin|pipFlesh|pipStone)\b/.test(buddySrc),
+      "gradient ids in buddy.js must be built per copy, not written as fixed strings");
+
+check(!/\bface\(\s*\)/.test(buddySrc),
+      "every face() call must pass a tag, or two copies of Pip share gradient ids");
+
+var tags = [], seenTag = {}, dupTag = false, m;
+var tagRe = /face\('([^']*)'\)/g;
+while ((m = tagRe.exec(buddySrc)) !== null) {
+    if (!m[1] || seenTag[m[1]]) dupTag = true;
+    seenTag[m[1]] = true;
+    tags.push(m[1]);
+}
+check(tags.length >= 2 && !dupTag,
+      "each copy of Pip needs its own non-empty tag (found: " + tags.join(", ") + ")");
+
+// 12. and the pattern above has to actually catch the fault it was written for.
+var BROKEN = '<linearGradient id="pipSkin"><path fill="url(#pipStone)"/>';
+check(/(id="|url\(#)(pipSkin|pipFlesh|pipStone)\b/.test(BROKEN),
+      "GUARD BROKEN: the gradient-id check no longer recognises the original fault");
+check(!/(id="|url\(#)(pipSkin|pipFlesh|pipStone)\b/.test('<span id="pipPanel">'),
+      "GUARD BROKEN: the gradient-id check is flagging the panel's own element ids");
+
+WScript.Echo("Celebration and Pip checks run: 12");
 WScript.Echo("");
 if (!fails.length) {
     WScript.Echo("Celebrations fire by default and the toggle works.");

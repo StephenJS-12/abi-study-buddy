@@ -63,16 +63,25 @@ var Buddy = (function () {
 
      Everything animated carries its own class, so the CSS can move one piece
      without disturbing the rest. */
-  function face() {
+  /* `tag` keeps the gradient ids unique per copy of her.
+     Pip is drawn twice — once on the button, once in the panel header — and an
+     id may only exist once on a page. With both copies calling their gradient
+     "pipSkin", every fill resolved to whichever came first in the document:
+     the one inside the panel, which is hidden until she is opened. So her skin,
+     flesh and stone painted with nothing, and she sat in the corner as a leaf
+     and a floating face until you clicked her. The parts that stayed visible
+     were exactly the ones drawn with a plain colour rather than a gradient. */
+  function face(tag) {
+    var skin = 'pipSkin-' + tag, flesh = 'pipFlesh-' + tag, stone = 'pipStone-' + tag;
     return '<svg viewBox="0 0 64 64" class="pip-face" aria-hidden="true">' +
       '<defs>' +
-        '<linearGradient id="pipSkin" x1="0" y1="0" x2="0" y2="1">' +
+        '<linearGradient id="' + skin + '" x1="0" y1="0" x2="0" y2="1">' +
           '<stop offset="0" stop-color="#5E8C3E"/><stop offset="1" stop-color="#416B2A"/>' +
         '</linearGradient>' +
-        '<linearGradient id="pipFlesh" x1="0" y1="0" x2="0" y2="1">' +
+        '<linearGradient id="' + flesh + '" x1="0" y1="0" x2="0" y2="1">' +
           '<stop offset="0" stop-color="#E4F3B8"/><stop offset="1" stop-color="#C7E48C"/>' +
         '</linearGradient>' +
-        '<linearGradient id="pipStone" x1="0" y1="0" x2="0" y2="1">' +
+        '<linearGradient id="' + stone + '" x1="0" y1="0" x2="0" y2="1">' +
           '<stop offset="0" stop-color="#B87A4A"/><stop offset="1" stop-color="#96552F"/>' +
         '</linearGradient>' +
       '</defs>' +
@@ -87,13 +96,13 @@ var Buddy = (function () {
 
         /* Skin, then flesh inset from it — the dark rim is what makes it read
            as an avocado rather than a pear. */
-        '<path class="pip-skin" fill="url(#pipSkin)" d="M32 10 C21 10 15 21 15 31 ' +
+        '<path class="pip-skin" fill="url(#' + skin + ')" d="M32 10 C21 10 15 21 15 31 ' +
           'C15 46 22 59 32 59 C42 59 49 46 49 31 C49 21 43 10 32 10 Z"/>' +
-        '<path fill="url(#pipFlesh)" d="M32 14 C24 14 19 23 19 31 ' +
+        '<path fill="url(#' + flesh + ')" d="M32 14 C24 14 19 23 19 31 ' +
           'C19 44 25 55 32 55 C39 55 45 44 45 31 C45 23 40 14 32 14 Z"/>' +
 
         '<g class="pip-stone">' +
-          '<circle cx="32" cy="37" r="11.5" fill="url(#pipStone)"/>' +
+          '<circle cx="32" cy="37" r="11.5" fill="url(#' + stone + ')"/>' +
           '<ellipse cx="28" cy="32" rx="3" ry="2" fill="#D89A6A" opacity=".45"/>' +
 
           '<g class="pip-eyes">' +
@@ -120,7 +129,7 @@ var Buddy = (function () {
     root.innerHTML =
       '<div class="pip-panel" id="pipPanel" hidden>' +
         '<div class="pip-panel-head">' +
-          '<span class="pip-head-face">' + face() + '</span>' +
+          '<span class="pip-head-face">' + face('head') + '</span>' +
           '<span class="pip-head-text">' +
             '<span class="pip-name">Pip</span>' +
             '<span class="pip-status" id="pipStatus">here to help 💚</span>' +
@@ -139,7 +148,7 @@ var Buddy = (function () {
         '<span class="pip-tail" aria-hidden="true"></span>' +
       '</div>' +
       '<button class="pip-button" id="pipButton" type="button" aria-label="Ask Pip">' +
-        face() +
+        face('button') +
         '<span class="pip-ping" id="pipPing" hidden></span>' +
       '</button>';
 

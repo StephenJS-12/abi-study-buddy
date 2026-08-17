@@ -1,0 +1,12 @@
+{
+  "name": "abi-study-buddy",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Abi's Study Buddy — the Worker and the site it serves. This file exists so the build has a pinned wrangler to install and cache, rather than fetching whatever npm hands back on the day.",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.123.0"
+  }
+}

@@ -103,101 +103,177 @@ body.reduce-motion .pip-button { animation: none; }
   border: 2px solid #fff;
 }
 
-/* ── the panel ───────────────────────────────────────────────────── */
+/* â”€â”€ the panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+   It should read as Pip talking, not as a support widget that appeared in the
+   corner. So: her face in the header, a tail pointing back down at her, bubbles
+   that pop in one at a time, and no straight-edged grey anywhere. */
 
 .pip-panel {
-  width: min(22rem, calc(100vw - 2.2rem));
-  background: #fff;
-  border-radius: 1.2rem;
-  box-shadow: 0 18px 46px rgba(74, 52, 87, .22);
-  overflow: hidden;
+  position: relative;
+  width: min(23rem, calc(100vw - 2.2rem));
+  background: linear-gradient(170deg, #fff 0%, var(--lilac-50) 100%);
+  border: 2px solid var(--lilac-100);
+  border-radius: 1.6rem;
+  box-shadow: 0 20px 50px rgba(74, 52, 87, .26);
   display: flex;
   flex-direction: column;
-  max-height: min(28rem, calc(100vh - 8rem));
+  max-height: min(30rem, calc(100vh - 8rem));
+  transform-origin: bottom right;
+  animation: pip-pop .32s var(--ease-bounce, cubic-bezier(.34,1.56,.64,1));
+}
+
+/* Springs out of the corner she lives in, rather than fading in from nowhere. */
+@keyframes pip-pop {
+  0%   { opacity: 0; transform: scale(.6) translate(18px, 24px); }
+  100% { opacity: 1; transform: scale(1) translate(0, 0); }
+}
+body.reduce-motion .pip-panel { animation: none; }
+
+/* The point at the bottom, aimed back at Pip. */
+.pip-tail {
+  position: absolute;
+  right: 1.9rem;
+  bottom: -11px;
+  width: 20px;
+  height: 20px;
+  background: var(--lilac-50);
+  border-right: 2px solid var(--lilac-100);
+  border-bottom: 2px solid var(--lilac-100);
+  transform: rotate(45deg);
+  border-bottom-right-radius: 5px;
 }
 
 .pip-panel-head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: .7rem 1rem;
-  background: linear-gradient(135deg, var(--lilac-400), var(--pink-400));
+  gap: .7rem;
+  padding: .7rem .9rem;
+  border-radius: 1.45rem 1.45rem 0 0;
+  background:
+    radial-gradient(closest-side at 90% 20%, rgba(255,255,255,.35), transparent 70%),
+    linear-gradient(135deg, var(--lilac-400), var(--pink-400));
   color: #fff;
 }
-.pip-name { font-weight: 800; letter-spacing: .02em; }
-.pip-close {
-  background: none; border: 0; color: #fff; cursor: pointer;
-  font-size: 1.35rem; line-height: 1; padding: 0 .2rem;
+.pip-head-face {
+  width: 2.2rem; height: 2.2rem;
+  flex: none;
+  display: grid; place-items: center;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 3px 10px rgba(74, 52, 87, .2);
 }
+.pip-head-face .pip-face { width: 1.7rem; height: 1.7rem; }
+.pip-head-text { display: flex; flex-direction: column; line-height: 1.15; flex: 1; min-width: 0; }
+.pip-name { font-weight: 800; letter-spacing: .01em; }
+.pip-status { font-size: .74rem; opacity: .9; }
+.pip-close {
+  background: rgba(255,255,255,.22); border: 0; color: #fff; cursor: pointer;
+  font-size: 1.15rem; line-height: 1; flex: none;
+  width: 1.7rem; height: 1.7rem; border-radius: 50%;
+  transition: background .16s, transform .16s;
+}
+.pip-close:hover { background: rgba(255,255,255,.38); transform: rotate(90deg); }
 
 .pip-thread {
   flex: 1;
   overflow-y: auto;
-  padding: .9rem 1rem;
-  font-size: .92rem;
+  padding: .9rem;
+  font-size: .93rem;
   line-height: 1.55;
 }
 
 .pip-msg {
-  border-radius: var(--r-md, .8rem);
-  padding: .55rem .85rem;
+  border-radius: 1.1rem;
+  padding: .6rem .9rem;
   margin-bottom: .55rem;
-  max-width: 92%;
+  max-width: 88%;
+  /* Each bubble arrives on its own rather than the whole list redrawing. */
+  animation: pip-bubble .3s var(--ease-bounce, cubic-bezier(.34,1.56,.64,1));
 }
+@keyframes pip-bubble {
+  0%   { opacity: 0; transform: translateY(8px) scale(.94); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+body.reduce-motion .pip-msg { animation: none; }
+
 .pip-msg p { margin: 0 0 .5rem; }
 .pip-msg p:last-child { margin-bottom: 0; }
 
 .pip-msg.is-her {
   margin-left: auto;
-  background: var(--lilac-100);
-  border-bottom-right-radius: .3rem;
+  background: linear-gradient(135deg, var(--lilac-400), var(--lilac-600, #8B6DD9));
+  color: #fff;
+  border-bottom-right-radius: .35rem;
 }
 .pip-msg.is-pip {
-  background: var(--pink-50);
-  border-bottom-left-radius: .3rem;
+  background: #fff;
+  border: 1.5px solid var(--pink-100);
+  border-bottom-left-radius: .35rem;
 }
-.pip-msg.is-sorry { background: var(--lilac-50); color: var(--ink-soft); }
+.pip-msg.is-sorry { background: var(--butter-100, #FFF4D6); border-color: var(--butter-400, #F5D67B); }
 
 /* Three dots while she thinks, so the wait has something in it. */
-.pip-dots { display: inline-flex; gap: .28rem; padding: .18rem 0; }
+.pip-dots { display: inline-flex; gap: .3rem; padding: .2rem 0; }
 .pip-dots i {
-  width: .4rem; height: .4rem; border-radius: 50%;
+  width: .45rem; height: .45rem; border-radius: 50%;
   background: var(--pink-400);
   animation: pip-dot 1.3s infinite ease-in-out;
 }
 .pip-dots i:nth-child(2) { animation-delay: .18s; }
 .pip-dots i:nth-child(3) { animation-delay: .36s; }
 @keyframes pip-dot {
-  0%, 60%, 100% { opacity: .3; transform: translateY(0); }
-  30%           { opacity: 1;  transform: translateY(-3px); }
+  0%, 60%, 100% { opacity: .3; transform: translateY(0) scale(1); }
+  30%           { opacity: 1;  transform: translateY(-4px) scale(1.15); }
 }
 body.reduce-motion .pip-dots i { animation: none; opacity: .6; }
+
+/* Tappable openers while the conversation is empty. A blank text box is the
+   quickest way to close a chat panel and never open it again. */
+.pip-chips { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0 .9rem .2rem; }
+.pip-chips:empty { display: none; }
+.pip-chip {
+  border: 1.5px solid var(--lilac-200, var(--lilac-100));
+  background: #fff;
+  color: var(--lilac-700);
+  border-radius: 999px;
+  padding: .35rem .75rem;
+  font: inherit;
+  font-size: .8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform .16s var(--ease-bounce, ease-out), background .16s;
+}
+.pip-chip:hover { background: var(--lilac-50); transform: translateY(-2px); }
 
 .pip-ask {
   display: flex;
   gap: .5rem;
-  padding: .7rem .8rem .8rem;
-  border-top: 1px solid var(--lilac-100);
+  padding: .7rem .9rem .9rem;
 }
 .pip-ask input {
   flex: 1;
   min-width: 0;                /* lets it shrink rather than overflow the panel */
   font: inherit;
   font-size: .93rem;
-  padding: .6rem .8rem;
+  padding: .65rem .95rem;
   border: 2px solid var(--lilac-100);
   border-radius: 999px;
-  background: var(--lilac-50);
+  background: #fff;
   color: inherit;
 }
-.pip-ask input:focus { outline: none; border-color: var(--lilac-400); background: #fff; }
+.pip-ask input:focus { outline: none; border-color: var(--lilac-400); }
 .pip-ask button {
   border: 0; cursor: pointer; flex: 0 0 auto;
-  width: 2.4rem; height: 2.4rem; border-radius: 50%;
-  color: #fff; font-size: .95rem;
+  width: 2.5rem; height: 2.5rem; border-radius: 50%;
+  font-size: 1rem;
+  display: grid; place-items: center;
   background: linear-gradient(135deg, var(--lilac-400), var(--pink-400));
+  box-shadow: 0 4px 12px rgba(183, 156, 255, .5);
+  transition: transform .16s var(--ease-bounce, ease-out);
 }
+.pip-ask button:hover:not(:disabled) { transform: scale(1.12) rotate(-12deg); }
 .pip-ask button:disabled { opacity: .55; cursor: default; }
+.pip-send-icon { display: block; }
 
 /* On a phone the panel takes the width it needs, and the character tucks in
    closer so it does not sit over the answer buttons. */

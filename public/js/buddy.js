@@ -24,11 +24,21 @@ var Buddy = (function () {
   /* Openers, so she is not greeted by an empty box. Kept short — the point is
      to make starting easy, not to fill the panel with chatter. */
   var HELLOS = {
-    app: 'Hallo! Ask me anything — about your modules, or about how this place works.',
-    notes: 'Reading through? Ask me about any bit that will not stick.',
-    practise: 'I can talk you through how to approach this one. Just not the actual sum.',
-    test: 'Test time! I can only nudge you here — where to start, what it is really asking.',
-    exam: 'Exam question. I will help you find your first move, but the rest is yours.'
+    app: 'Hallo hallo! 🥑 Ask me anything — the maths, or how this whole place works.',
+    notes: 'Ooh, reading time. Poke me about any bit that refuses to stick.',
+    practise: 'I can talk you through how to tackle this one. Not the actual sum though — that bit is yours.',
+    test: 'Test mode! I can only nudge here. Where to start, what it is really asking. Go on then.',
+    exam: 'Exam question — the proper stuff. I will help you find your first move and then get out of your way.'
+  };
+
+  /* Something to tap when the box is empty. Staring at a blank text field is the
+     quickest way to close a chat panel and never open it again. */
+  var STARTERS = {
+    app: ['How do I get more points?', 'What should I revise?', 'How does this site work?'],
+    notes: ['Explain this simply', 'Why does that work?', 'When would I use this?'],
+    practise: ['How do I start this one?', 'Which method is this?', 'I do not get the question'],
+    test: ['Where do I start?', 'What is it actually asking?', 'Which bit matters here?'],
+    exam: ['Where do I start?', 'What is it actually asking?', 'Break the question down']
   };
 
   function esc(s) {
@@ -110,14 +120,23 @@ var Buddy = (function () {
     root.innerHTML =
       '<div class="pip-panel" id="pipPanel" hidden>' +
         '<div class="pip-panel-head">' +
-          '<span class="pip-name">Pip</span>' +
+          '<span class="pip-head-face">' + face() + '</span>' +
+          '<span class="pip-head-text">' +
+            '<span class="pip-name">Pip</span>' +
+            '<span class="pip-status" id="pipStatus">here to help 💚</span>' +
+          '</span>' +
           '<button class="pip-close" type="button" id="pipClose" aria-label="Close">×</button>' +
         '</div>' +
         '<div class="pip-thread" id="pipThread"></div>' +
+        '<div class="pip-chips" id="pipChips"></div>' +
         '<form class="pip-ask" id="pipForm">' +
           '<input id="pipInput" type="text" autocomplete="off" placeholder="Ask me anything…">' +
-          '<button type="submit" id="pipSend" aria-label="Send">➤</button>' +
+          '<button type="submit" id="pipSend" aria-label="Send">' +
+            '<span class="pip-send-icon">🚀</span></button>' +
         '</form>' +
+        /* The little point at the bottom, aimed at Pip herself, so the panel
+           reads as her talking rather than as a widget that appeared. */
+        '<span class="pip-tail" aria-hidden="true"></span>' +
       '</div>' +
       '<button class="pip-button" id="pipButton" type="button" aria-label="Ask Pip">' +
         face() +
@@ -145,9 +164,36 @@ var Buddy = (function () {
     document.getElementById('pipPing').hidden = true;
 
     if (open) {
-      if (!thread.childNodes.length) say(HELLOS[context.mode] || HELLOS.app);
+      if (!thread.childNodes.length) {
+        say(HELLOS[context.mode] || HELLOS.app);
+        showChips();
+      }
       setTimeout(function () { document.getElementById('pipInput').focus(); }, 60);
     }
+  }
+
+  /* Tappable openers, shown only while the conversation is empty — once she is
+     talking they are clutter. */
+  function showChips() {
+    var box = document.getElementById('pipChips');
+    if (!box) return;
+
+    var list = STARTERS[context.mode] || STARTERS.app;
+    box.innerHTML = list.map(function (text) {
+      return '<button class="pip-chip" type="button">' + esc(text) + '</button>';
+    }).join('');
+
+    Array.prototype.forEach.call(box.querySelectorAll('.pip-chip'), function (b) {
+      b.addEventListener('click', function () {
+        document.getElementById('pipInput').value = b.textContent;
+        document.getElementById('pipForm').dispatchEvent(new Event('submit', { cancelable: true }));
+      });
+    });
+  }
+
+  function hideChips() {
+    var box = document.getElementById('pipChips');
+    if (box) box.innerHTML = '';
   }
 
   function bubble(who, html) {
@@ -161,6 +207,11 @@ var Buddy = (function () {
 
   function say(text) { return bubble('pip', '<p>' + esc(text) + '</p>'); }
 
+  function setStatus(text) {
+    var el = document.getElementById('pipStatus');
+    if (el) el.textContent = text;
+  }
+
   function onAsk(event) {
     event.preventDefault();
     if (busy) return;
@@ -171,8 +222,10 @@ var Buddy = (function () {
 
     busy = true;
     input.value = '';
+    hideChips();
     document.getElementById('pipSend').disabled = true;
     root.classList.add('is-thinking');
+    setStatus('thinking…');
 
     bubble('her', '<p>' + esc(question) + '</p>');
     var reply = bubble('pip', '<span class="pip-dots"><i></i><i></i><i></i></span>');
@@ -195,6 +248,7 @@ var Buddy = (function () {
         busy = false;
         document.getElementById('pipSend').disabled = false;
         root.classList.remove('is-thinking');
+        setStatus('here to help 💚');
         input.focus();
       });
   }

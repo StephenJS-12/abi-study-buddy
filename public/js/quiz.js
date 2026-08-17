@@ -118,12 +118,16 @@ var Quiz = (function () {
     var count = Math.min(cfg.count, pool.length);
 
     S = {
-      weekId: cfg.weekId,
+      weekIds: cfg.weekIds || (cfg.weekId ? [cfg.weekId] : []),
       topicIds: cfg.topicIds,
       mode: cfg.mode,               // 'practise' | 'test' | 'exam'
       /* Where to go when she finishes or leaves. Starting a practise round from a notes
          page should return her to that notes page, not to the week's setup screen. */
-      origin: cfg.origin || { name: 'week', params: { weekId: cfg.weekId }, label: null },
+      origin: cfg.origin || {
+        name: 'week',
+        params: { weekIds: cfg.weekIds || (cfg.weekId ? [cfg.weekId] : []), mode: cfg.mode },
+        label: null
+      },
       questions: pool.slice(0, count).map(shuffleOptions),
       idx: 0,
       streak: 0,
@@ -544,14 +548,17 @@ var Quiz = (function () {
       '<div class="qfoot" style="margin-top:2rem">' +
         '<button class="btn btn-ghost btn-lg" type="button" id="againBtn">Go again 🔁</button>' +
         '<button class="btn btn-primary btn-lg" type="button" id="doneBtn">' +
-          (S.origin.label || 'Back to Week ' + (Content.week(S.weekId) ? Content.week(S.weekId).number : '')) +
+          (S.origin.label ||
+            (S.weekIds.length === 1 && Content.week(S.weekIds[0])
+              ? 'Back to Week ' + Content.week(S.weekIds[0]).number
+              : 'Back to the questions')) +
         '</button>' +
       '</div>';
 
     Celebrate.finish(pct);
     App.setCrumb(null);
 
-    var cfg = { weekId: S.weekId, topicIds: S.topicIds, mode: S.mode, count: total, origin: S.origin };
+    var cfg = { weekIds: S.weekIds, topicIds: S.topicIds, mode: S.mode, count: total, origin: S.origin };
     var origin = S.origin;
     S.finished = true;   // the round is over, so leaving needs no confirmation
     document.getElementById('againBtn').addEventListener('click', function () { start(cfg); });

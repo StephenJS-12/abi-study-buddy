@@ -141,7 +141,7 @@ var App = (function () {
     switch (route.name) {
       case 'modules':   return screenModules();
       case 'home':      return screenHome();
-      case 'week':      return screenWeek(route.params.weekId, route.params.mode);
+      case 'week':      return screenWeek(route.params.weekIds || route.params.weekId, route.params.mode);
       case 'notes':     return screenNotesWeeks();
       case 'notesWeek': return screenNotesTopics(route.params.weekId);
       case 'notesTopic':return screenNotesTopic(route.params.topicId);
@@ -274,6 +274,11 @@ var App = (function () {
      week she is on. */
   var chosenMode = 'practise';
 
+  /* Which weeks she wants in the next round. More than one is the normal case —
+     revising a single week at a time is nothing like sitting a real test, where
+     everything is mixed together. */
+  var chosenWeeks = {};
+
   var MODE_CARDS = [
     { id: 'practise', emoji: '🌱', name: 'Practise',
       blurb: 'Notes right there above each question, and the full working after every answer. No points, no pressure.' },
@@ -314,14 +319,34 @@ var App = (function () {
       '</button>';
     }).join('');
 
+    /* Which weeks she can actually use in this mode. Exam Questions only exists
+       where a practice paper has been built. */
+    function weekUsable(w) {
+      return chosenMode === 'exam' ? Content.hasExam(w.id) : !w.comingSoon;
+    }
+    var usableWeeks = weeks.filter(weekUsable);
+
+    /* Drop any week that the mode she just picked cannot offer, so a selection
+       made under Practise cannot silently carry an impossible week into Exam. */
+    var stillValid = {};
+    usableWeeks.forEach(function (w) { if (chosenWeeks[w.id]) stillValid[w.id] = true; });
+    chosenWeeks = stillValid;
+
+    /* Nothing chosen means nothing to launch, which is a dead end on first
+       visit — so default to everything. Revising across weeks at once is the
+       point of allowing more than one. */
+    if (!Object.keys(chosenWeeks).length) {
+      usableWeeks.forEach(function (w) { chosenWeeks[w.id] = true; });
+    }
+
+    var pickedCount = Object.keys(chosenWeeks).length;
+    var allPicked = pickedCount === usableWeeks.length && pickedCount > 0;
+
     var weekTiles = weeks.map(function (w) {
-      var usable = chosenMode === 'exam' ? Content.hasExam(w.id) : !w.comingSoon;
       var qn = (w.topics || []).reduce(function (n, t) { return n + t.questions.length; }, 0);
 
-      if (!usable) {
-        var why = w.comingSoon
-          ? 'Coming soon'
-          : 'No exam paper for this week yet';
+      if (!weekUsable(w)) {
+        var why = w.comingSoon ? 'Coming soon' : 'No exam paper for this week yet';
         return '<button class="tile acc-' + w.accent + ' is-locked" type="button" disabled>' +
           '<span class="tile-glow"></span>' +
           '<span class="tile-emoji">' + w.emoji + '</span>' +
@@ -331,8 +356,11 @@ var App = (function () {
         '</button>';
       }
 
-      return '<button class="tile acc-' + w.accent + '" type="button" data-week="' + w.id + '">' +
+      var on = !!chosenWeeks[w.id];
+      return '<button class="tile weektile acc-' + w.accent + (on ? ' is-picked' : '') + '" ' +
+        'type="button" data-weekpick="' + w.id + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
         '<span class="tile-glow"></span>' +
+        '<span class="weektile-tick">' + (on ? '✓' : '') + '</span>' +
         '<span class="tile-emoji">' + w.emoji + '</span>' +
         '<span class="tile-kicker">Week ' + w.number + '</span>' +
         '<h3 class="tile-title">' + esc(w.title) + '</h3>' +
@@ -378,8 +406,27 @@ var App = (function () {
 
         '<div class="modecards">' + modeCards + '</div>' +
 
-        '<div class="section-title" style="margin-top:1.6rem">Which week?</div>' +
+        '<div class="section-title" style="margin-top:1.6rem">Which weeks?</div>' +
+        '<p style="font-size:.9rem;color:var(--ink-soft);margin:-.6rem 0 .9rem">' +
+          'Pick as many as you like — mixing weeks together is much closer to what a ' +
+          'real test feels like.</p>' +
+        '<div class="pillrow" style="margin-bottom:1rem">' +
+          '<button class="pill' + (allPicked ? ' is-on' : '') + '" type="button" id="weekAll">' +
+            'All weeks</button>' +
+          '<button class="pill" type="button" id="weekNone">Clear</button>' +
+        '</div>' +
         '<div class="grid-weeks">' + weekTiles + '</div>' +
+
+        '<div class="launchbar" style="margin-top:1.4rem">' +
+          '<div class="lb-info">' +
+            (pickedCount
+              ? '<b>' + pickedCount + '</b> week' + (pickedCount === 1 ? '' : 's') +
+                ' · <b>' + MODE_CARDS.filter(function (m) { return m.id === chosenMode; })[0].name + '</b>'
+              : 'Choose at least one week.') +
+          '</div>' +
+          '<button class="btn btn-pink btn-lg" type="button" id="weekGo"' +
+            (pickedCount ? '' : ' disabled') + '>Next ✨</button>' +
+        '</div>' +
       '</section>' +
 
       '<div class="grid-2" style="margin-top:2rem">' +
@@ -400,12 +447,43 @@ var App = (function () {
       });
     });
 
-    /* The week carries the mode with it, so the setup screen no longer has to
-       ask again — she has already answered that question here. */
-    Array.prototype.forEach.call(screen.querySelectorAll('[data-week]'), function (b) {
+    Array.prototype.forEach.call(screen.querySelectorAll('[data-weekpick]'), function (b) {
       b.addEventListener('click', function () {
-        go('week', { weekId: b.getAttribute('data-week'), mode: chosenMode });
+        var id = b.getAttribute('data-weekpick');
+        if (chosenWeeks[id]) delete chosenWeeks[id];
+        else chosenWeeks[id] = true;
+        screenHome();          // redraw: the launch bar and the All pill both change
       });
+    });
+
+    document.getElementById('weekAll').addEventListener('click', function () {
+      chosenWeeks = {};
+      usableWeeks.forEach(function (w) { chosenWeeks[w.id] = true; });
+      screenHome();
+    });
+
+    document.getElementById('weekNone').addEventListener('click', function () {
+      /* Deliberately left empty rather than snapping back to everything — the
+         redraw's "nothing chosen" default only applies on arrival, so Clear
+         actually clears. */
+      chosenWeeks = { __cleared: true };
+      delete chosenWeeks.__cleared;
+      var el = document.getElementById('weekGo');
+      Array.prototype.forEach.call(screen.querySelectorAll('[data-weekpick]'), function (t) {
+        t.classList.remove('is-picked');
+        t.setAttribute('aria-pressed', 'false');
+        t.querySelector('.weektile-tick').textContent = '';
+      });
+      el.disabled = true;
+      document.querySelector('.lb-info').innerHTML = 'Choose at least one week.';
+      document.getElementById('weekAll').classList.remove('is-on');
+    });
+
+    /* The weeks and the mode both travel to the setup screen, so it never has
+       to ask anything she has already answered here. */
+    document.getElementById('weekGo').addEventListener('click', function () {
+      var ids = Object.keys(chosenWeeks);
+      if (ids.length) go('week', { weekIds: ids, mode: chosenMode });
     });
 
     Array.prototype.forEach.call(screen.querySelectorAll('[data-goto]'), function (b) {
@@ -415,7 +493,7 @@ var App = (function () {
 
   function bindTiles() {
     Array.prototype.forEach.call(screen.querySelectorAll('[data-week]'), function (b) {
-      b.addEventListener('click', function () { go('week', { weekId: b.getAttribute('data-week') }); });
+      b.addEventListener('click', function () { go('week', { weekIds: [b.getAttribute('data-week')] }); });
     });
     Array.prototype.forEach.call(screen.querySelectorAll('[data-goto]'), function (b) {
       b.addEventListener('click', function () { go(b.getAttribute('data-goto'), {}); });
@@ -424,27 +502,49 @@ var App = (function () {
 
   /* ───────────────────────── week setup ───────────────────────── */
 
-  function screenWeek(weekId, wantedMode) {
-    var w = Content.week(weekId);
-    if (!w) return go('home');
+  function screenWeek(weekIds, wantedMode) {
+    /* Arrives as a list. A single id is still accepted so an older link, or a
+       route built anywhere else, keeps working. */
+    if (typeof weekIds === 'string') weekIds = [weekIds];
 
-    setCrumb('All weeks', function () { go('home'); });
+    var picked = (weekIds || []).map(Content.week).filter(function (w) { return !!w; });
+    if (!picked.length) return go('home');
 
-    var saved = Store.recallSetup(weekId) || {};
-    var exam = Content.examFor(weekId);
+    setCrumb('Back', function () { go('home'); });
 
-    /* She chose the kind of session on the module home, so this screen no
-       longer asks. Falling back to the remembered choice covers arriving here
-       by any other route. */
+    /* The remembered setup is keyed on the whole selection, so choosing weeks
+       1 and 3 together remembers its own topic choice rather than inheriting
+       whatever week 1 was last set to on its own. */
+    var setupKey = picked.map(function (w) { return w.id; }).sort().join('+');
+    var saved = Store.recallSetup(setupKey) || {};
+
     var mode = wantedMode || saved.mode || 'practise';
-    if (mode === 'exam' && !exam) mode = 'practise';
-    var count = saved.count || 10;
 
+    /* Exam Questions only exists where a paper has been built. Any week without
+       one simply drops out of the selection rather than blocking the round. */
+    var withExams = picked.filter(function (w) { return Content.hasExam(w.id); });
+    if (mode === 'exam' && !withExams.length) mode = 'practise';
+
+    var count = saved.count || 10;
     var COUNTS = { practise: [5, 10, 15, 20, 30], test: [10, 20, 30], exam: [10, 20, 30] };
 
-    /* Exam mode has its own topics and its own question bank — no crossover. */
+    /* Exam mode has its own topics and its own question bank — no crossover.
+       Returns [{ week, topics }] so the picklist can keep them grouped: a flat
+       list of thirty topics from four weeks is unreadable. */
+    function groupsFor(m) {
+      var source = m === 'exam' ? withExams : picked;
+      return source.map(function (w) {
+        var topics = m === 'exam' ? (Content.examFor(w.id) || {}).topics || [] : (w.topics || []);
+        return { week: w, topics: topics };
+      }).filter(function (g) { return g.topics.length; });
+    }
+
     function topicsFor(m) {
-      return m === 'exam' ? (exam ? exam.topics : []) : w.topics;
+      var out = [];
+      groupsFor(m).forEach(function (g) {
+        g.topics.forEach(function (t) { out.push(t); });
+      });
+      return out;
     }
 
     var chosen = {};
@@ -458,18 +558,29 @@ var App = (function () {
     if (!Object.keys(chosen).length) selectAllFor(mode);
 
     function picklist() {
-      return topicsFor(mode).map(function (t) {
-        var badge = Store.hasBadge(t.id) ? ' 🏅' : '';
-        var supply = Content.isUnlimited([t.id])
-          ? '∞ questions'
-          : t.questions.length + ' questions';
-        return '<button class="pick' + (chosen[t.id] ? ' is-on' : '') + '" type="button" data-topic="' + t.id + '">' +
-          '<span class="pick-box">✓</span>' +
-          '<span class="pick-emoji">' + t.emoji + '</span>' +
-          '<span class="pick-body">' +
-            '<span class="pick-title">' + esc(t.title) + badge + '</span>' +
-            '<span class="pick-meta">' + supply + ' · ' + esc(t.summary) + '</span>' +
-          '</span></button>';
+      var groups = groupsFor(mode);
+      var showHeadings = groups.length > 1;
+
+      return groups.map(function (g) {
+        var rows = g.topics.map(function (t) {
+          var badge = Store.hasBadge(t.id) ? ' 🏅' : '';
+          var supply = Content.isUnlimited([t.id])
+            ? '∞ questions'
+            : t.questions.length + ' questions';
+          return '<button class="pick' + (chosen[t.id] ? ' is-on' : '') + '" type="button" data-topic="' + t.id + '">' +
+            '<span class="pick-box">✓</span>' +
+            '<span class="pick-emoji">' + t.emoji + '</span>' +
+            '<span class="pick-body">' +
+              '<span class="pick-title">' + esc(t.title) + badge + '</span>' +
+              '<span class="pick-meta">' + supply + ' · ' + esc(t.summary) + '</span>' +
+            '</span></button>';
+        }).join('');
+
+        /* Only labelled when there is more than one week to tell apart. */
+        return (showHeadings
+          ? '<div class="picklist-week">' + g.week.emoji + ' Week ' + g.week.number +
+            ' · ' + esc(g.week.title) + '</div>'
+          : '') + rows;
       }).join('');
     }
 
@@ -481,9 +592,21 @@ var App = (function () {
 
     screen.innerHTML =
       '<div class="pagehead">' +
-        '<span class="kicker">Week ' + w.number + '</span>' +
-        '<h1>' + w.emoji + ' ' + esc(w.title) + '</h1>' +
-        '<p>' + esc(w.blurb) + '</p>' +
+        '<span class="kicker">' +
+          (picked.length === 1
+            ? 'Week ' + picked[0].number
+            : picked.length + ' weeks together') + '</span>' +
+        '<h1>' +
+          (picked.length === 1
+            ? picked[0].emoji + ' ' + esc(picked[0].title)
+            : '🎲 ' + picked.map(function (w) { return w.number; }).sort().join(', ')
+              .replace(/,([^,]*)$/, ' and$1').replace(/^/, 'Weeks ')) +
+        '</h1>' +
+        '<p>' +
+          (picked.length === 1
+            ? esc(picked[0].blurb)
+            : 'Questions from all of these, shuffled together — much closer to what a ' +
+              'real test feels like.') + '</p>' +
       '</div>' +
 
       /* The kind of session was chosen on the module home. Asking again here
@@ -586,8 +709,13 @@ var App = (function () {
     document.getElementById('startBtn').addEventListener('click', function () {
       var ids = chosenIds();
       if (!ids.length) return;
-      Store.rememberSetup(weekId, { topics: ids, mode: mode, count: count });
-      Quiz.start({ weekId: weekId, topicIds: ids, mode: mode, count: count });
+      Store.rememberSetup(setupKey, { topics: ids, mode: mode, count: count });
+      Quiz.start({
+        weekIds: picked.map(function (w) { return w.id; }),
+        topicIds: ids,
+        mode: mode,
+        count: count
+      });
     });
   }
 

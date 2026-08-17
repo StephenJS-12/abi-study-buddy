@@ -212,13 +212,28 @@ var App = (function () {
 
     /* The hero carries the reward progress rather than a card further down the
        page. On a home screen the thing she is working towards should be the
-       first thing she sees, not a footnote under the tiles. */
-    var goalLine = readyNow > 0
-      ? '<b>' + readyNow + (readyNow === 1 ? ' reward is' : ' rewards are') + ' ready to claim.</b>'
-      : nextReward
-        ? (nextReward.at - points) + ' more points for ' + nextReward.emoji +
-          ' <b>' + esc(nextReward.title) + '</b>'
-        : 'Every reward unlocked. Genuinely well done.';
+       first thing she sees, not a footnote under the tiles.
+
+       Number, bar and caption all describe the SAME thing: how far she is
+       towards the next reward. They used to disagree — the bar measured the
+       gap to the next reward while the number read "85/1000", so a bar three
+       quarters full sat under a figure that was eight percent of its total. */
+    var target = nextReward
+      ? '<span class="hero-cap"> → ' + nextReward.at + '</span>'
+      : '<span class="hero-cap">/' + Store.POINT_CAP + '</span>';
+
+    var goalLine = nextReward
+      ? '<b>' + (nextReward.at - points) + '</b> more ' +
+        (nextReward.at - points === 1 ? 'point' : 'points') + ' for ' +
+        nextReward.emoji + ' <b>' + esc(nextReward.title) + '</b>'
+      : 'Every reward unlocked. Genuinely well done.';
+
+    /* Claimable rewards are their own fact, not a replacement for the goal —
+       saying only "3 ready to claim" left the bar with nothing explaining it. */
+    var readyLine = readyNow > 0
+      ? '<p class="hero-ready">🎁 ' + readyNow +
+        (readyNow === 1 ? ' reward is' : ' rewards are') + ' waiting to be claimed</p>'
+      : '';
 
     screen.innerHTML =
       '<section class="hero">' +
@@ -226,12 +241,12 @@ var App = (function () {
         '<h1 class="hero-title">What are we doing today?</h1>' +
 
         '<div class="hero-goal">' +
-          '<div class="hero-points">' + points +
-            '<span class="hero-cap">/' + Store.POINT_CAP + '</span></div>' +
+          '<div class="hero-points">' + points + target + '</div>' +
           '<div class="hero-track">' +
             '<div class="hero-track-fill" style="width:' + prog.pct + '%"></div>' +
           '</div>' +
           '<p class="hero-goal-line">' + goalLine + '</p>' +
+          readyLine +
         '</div>' +
       '</section>' +
 

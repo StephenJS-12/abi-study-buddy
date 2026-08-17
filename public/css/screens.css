@@ -730,6 +730,13 @@ ul.tickly li::before {
 
 .hero-goal-line { margin: 0; font-size: .98rem; color: var(--ink-soft); }
 
+.hero-ready {
+  margin: .5rem 0 0;
+  font-size: .93rem;
+  font-weight: 700;
+  color: var(--pink-600);
+}
+
 /* Module cards. A larger minimum than the week tiles so a module reads as the
    bigger thing it is, and a gap wide enough that the card shadows cannot run
    into each other — they had no grid at all before, so they touched. */

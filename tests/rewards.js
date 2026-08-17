@@ -139,6 +139,35 @@ check(/"claimed"/.test(store["sparkleStudy.v1"] || ""), "claims must persist to 
 check(Rewards.next(0).at === REWARDS[0].at, "next reward from 0 should be the first one");
 check(Rewards.next(Store.POINT_CAP) === null, "no next reward once capped");
 
+/* The home hero shows three figures side by side — the target ("85 → 90"), the
+   bar, and the caption ("5 more points for ..."). They come from progress() and
+   next() separately, so they must always be talking about the SAME reward.
+   They did not, once: the bar measured the gap to the next reward while the
+   number read 85/1000, leaving a three-quarters-full bar under a figure that
+   was eight percent of its total. */
+var disagreed = 0, capChecked = 0;
+for (var hp = 0; hp <= Store.POINT_CAP; hp++) {
+    var hProg = Rewards.progress(hp), hNext = Rewards.next(hp);
+    capChecked++;
+
+    if (hNext === null) {
+        if (hProg.next !== null || hProg.pct !== 100) disagreed++;
+        continue;
+    }
+    if (!hProg.next || hProg.next.at !== hNext.at) { disagreed++; continue; }
+
+    /* And the bar must actually reflect how far into the band she is, so the
+       caption's "N more" and the fill agree by eye. */
+    var span = hNext.at - hProg.prev;
+    var expected = Math.round(((hp - hProg.prev) / span) * 100);
+    if (hProg.pct !== expected) disagreed++;
+}
+n++;
+if (disagreed > 0) {
+    fails.push(disagreed + " of " + capChecked + " point totals where the hero's number, " +
+               "bar and caption would disagree with each other");
+}
+
 // ---- newly unlocked window ------------------------------------
 var crossed = Rewards.newlyUnlocked(REWARDS[0].at - 1, REWARDS[0].at);
 check(crossed.length === 1 && crossed[0].at === REWARDS[0].at,

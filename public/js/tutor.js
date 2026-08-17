@@ -24,6 +24,9 @@ var Tutor = (function () {
     return {
       topicId: context.id,
       topicTitle: context.title,
+      /* Which module she is in, so the tutor is briefed on the right subject.
+         Empty on the home screen, where she has not picked one. */
+      moduleId: context.moduleId || '',
       mode: context.mode || 'notes',
       notes: context.notes || '',
       questionText: context.questionText || '',

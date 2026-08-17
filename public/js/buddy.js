@@ -24,7 +24,7 @@ var Buddy = (function () {
   /* Openers, so she is not greeted by an empty box. Kept short — the point is
      to make starting easy, not to fill the panel with chatter. */
   var HELLOS = {
-    app: 'Hallo! Ask me anything — about the maths, or about how this place works.',
+    app: 'Hallo! Ask me anything — about your modules, or about how this place works.',
     notes: 'Reading through? Ask me about any bit that will not stick.',
     practise: 'I can talk you through how to approach this one. Just not the actual sum.',
     test: 'Test time! I can only nudge you here — where to start, what it is really asking.',

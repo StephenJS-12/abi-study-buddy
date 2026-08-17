@@ -217,6 +217,7 @@ var Quiz = (function () {
     Buddy.setContext({
       id: q._topicId,
       title: q._topicTitle,
+      moduleId: Content.moduleId(),
       mode: S.mode,
       questionText: stripTags((q.scenario || '') + ' ' + q.prompt),
       notes: S.mode === 'practise' ? notesTextFor(q._topicId) : ''

@@ -91,6 +91,7 @@ check(sent.question === "Where do I start?", "her own question is sent");
 
 // ── the payload shape is exactly what is expected, no more ─────
 var allowed = {
+  moduleId: 1,
   topicId: 1, topicTitle: 1, mode: 1, notes: 1,
   questionText: 1, question: 1, history: 1
 };

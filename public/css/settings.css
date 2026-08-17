@@ -120,3 +120,19 @@ body.reduce-motion .set-panel { animation: none; }
 @media (max-width: 30rem) {
   .set-panel { width: 100vw; }
 }
+
+/* Badges grouped by module on the combined progress screen. */
+.modbadges { margin-bottom: 2rem; }
+.modbadges-head {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  flex-wrap: wrap;
+  padding: .7rem .95rem;
+  margin-bottom: .5rem;
+  border-radius: var(--r-md, .8rem);
+  background: var(--lilac-50);
+  font-size: .95rem;
+}
+.modbadges-emoji { font-size: 1.3rem; line-height: 1; }
+.modbadges-head .chip { margin-left: auto; }

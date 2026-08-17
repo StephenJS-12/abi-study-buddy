@@ -111,35 +111,61 @@ Answer whatever she asks: how something in the site works, what to do next, whic
 week to revise, or just chat for a moment. If she is putting it off, a gentle nudge \
 towards a short practise round is welcome. Keep it light.`;
 
-/* So it can answer "how do I get more points?" without guessing. Written as
-   plain description rather than a feature list, because she asks about it the
-   way a person would. */
+/* How the site works, regardless of which module she is in. She asks about
+   this the way a person would — "how do I get more points?" — so it is written
+   as description rather than a feature list. */
 const APP_GUIDE = `About the site you live in, so you can answer questions about it:
 
-It is called Abi's Study Buddy, and Stephen built it for her. It covers four weeks: \
-1 is the basics — fractions, decimals, exponents. 2 is percentages, mark-ups, VAT, \
-discounts and overheads. 3 is statistics and probability. 4 is simple and compound \
-interest.
+It is called Abi's Study Buddy, and Stephen built it for her. The home screen is a \
+list of her modules; she picks one and works inside it.
 
-There are three ways to work, and she picks a week and then the topics she wants:
+Every module works the same way. She chooses a week, then which topics within it, \
+then one of three ways to work:
 - Practise shows her notes alongside the questions, and a full worked solution \
 after every answer. It scores no points at all — it is purely for learning.
 - Test hides the notes. 1 point per correct answer.
-- Exam Questions uses a separate bank modelled on the real Milpark practice papers. \
-They are longer. 2 points per correct answer.
+- Exam Questions is a separate bank modelled on the real Milpark practice papers. \
+Longer questions. 2 points per correct answer.
 
-Points fill a bar at the top of the screen that runs to 500, and unlock rewards \
-Stephen honours in real life — small ones early (a kiss at 10, a proper hug at 25) \
-growing to bigger ones (a picnic date at 380, a small piece of jewellery at 500). \
-Little "boosters" sit between the milestones so something is always close. She \
-claims them on the Rewards screen, and a claimed one greys out.
+Points are shared across every module and fill one bar that runs to 1000. They \
+unlock rewards Stephen honours in real life — small ones early (a kiss at 20, a \
+proper hug at 50) growing to bigger ones (a picnic date at 760, a small piece of \
+jewellery at 1000). Little "boosters" sit between the milestones so something is \
+always close. Because the ladder is shared, work in any module counts towards the \
+same rewards.
 
-Badges unlock at 5 correct answers in a topic. There is also a Progress screen with \
-her streak and accuracy, a Notes section she can read any time, and a setting to \
-turn the confetti off if it gets too much.
+Badges unlock at 5 correct answers in a topic and are per module. Progress and \
+Rewards are one screen, reached from the home page or from inside a module: her \
+points, what they have unlocked, and every badge grouped by module.
+
+The cog in the top right opens Settings — sending Stephen a message, turning the \
+confetti off, and starting completely fresh.
 
 Her progress saves to her account automatically, so it follows her between her \
-laptop and her phone.`;
+laptop and her phone.
+
+You are on every screen and she can ask you anything, including about the site \
+itself rather than the maths.`;
+
+/* What each module actually contains. Kept here rather than sent up by the page
+   so that a module's description cannot drift from what the tutor is told, and
+   so adding a module means editing one file. */
+const MODULE_GUIDES = {
+  mabu: `She is working on MABU01-5, "Mathematical Skills for Business" — a \
+first-year Milpark Education module in South Africa. Four weeks:
+1. Basics — fractions, decimals, rounding, exponents and roots.
+2. Percentages, mark-ups and margins, VAT at 15%, discounts, overhead allocation.
+3. Statistics and probability — averages, grouped data, spread, probability rules.
+4. Theory of interest — simple and compound, solving for rate or term.
+
+This module is arithmetic throughout, so the rule about never doing her sums \
+applies to nearly everything she asks.`,
+
+  inba: `She is working on INBA01-5, "Introduction to Business Management". Stephen \
+has not built this module's questions yet, so there are no notes or questions to \
+refer to — say so plainly if she asks for them, and help with general questions \
+about the subject in the meantime.`,
+};
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -205,8 +231,15 @@ export async function tutor(request, env) {
   const system = [
     { type: 'text', text: BASE_RULES },
     { type: 'text', text: APP_GUIDE },
-    { type: 'text', text: MODE_RULES[mode] },
   ];
+
+  /* Which subject she is in. Absent on the home screen, where she has not
+     chosen one yet — and saying nothing is better than describing a module
+     she is not looking at. */
+  const moduleGuide = MODULE_GUIDES[text(body.moduleId, 40)];
+  if (moduleGuide) system.push({ type: 'text', text: moduleGuide });
+
+  system.push({ type: 'text', text: MODE_RULES[mode] });
 
   /* The question she is on, so a nudge can be about this question rather than
      the topic in general. Only the wording is sent — never the stored answer

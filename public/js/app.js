@@ -115,7 +115,13 @@ var App = (function () {
        something more specific — a notes topic, a live question — say so
        during their own render, which happens inside draw(). */
     if (window.Buddy) {
-      Buddy.setContext({ id: 'app:' + name, title: 'Abi\'s Study Buddy', mode: 'app' });
+      Buddy.setContext({
+        id: 'app:' + name,
+        title: 'Abi\'s Study Buddy',
+        mode: 'app',
+        /* Blank on the picker, where she has not chosen a subject yet. */
+        moduleId: name === 'modules' ? '' : (Content.moduleId() || '')
+      });
     }
 
     draw();
@@ -129,8 +135,10 @@ var App = (function () {
       case 'notes':     return screenNotesWeeks();
       case 'notesWeek': return screenNotesTopics(route.params.weekId);
       case 'notesTopic':return screenNotesTopic(route.params.topicId);
-      case 'progress':  return screenProgress();
-      case 'rewards':   return screenRewards();
+      /* Rewards, badges and stats are one screen now. The old route is kept
+         pointing at it so any link she has open still lands somewhere sensible. */
+      case 'progress':
+      case 'rewards':   return screenProgress();
       default:          return screenHome();
     }
   }
@@ -192,6 +200,19 @@ var App = (function () {
       '<h1>✦ What are we doing today?</h1>' +
       '<p>Pick a module to work on. Points from any of them go to the same rewards.</p></div>' +
       '<div class="tilegrid">' + cards + '</div>' +
+
+      '<div class="section-title">Everything else</div>' +
+      '<div class="grid-2">' +
+        '<button class="tile acc-3" type="button" data-goto="progress">' +
+          '<span class="tile-glow"></span><span class="tile-emoji">🏆</span>' +
+          '<h3 class="tile-title">Progress &amp; rewards</h3>' +
+          '<p class="tile-desc">' +
+            (Rewards.readyCount(points) > 0
+              ? '<b>' + Rewards.readyCount(points) + ' ready to claim!</b>'
+              : 'Your points, badges and everything you have unlocked.') +
+          '</p></button>' +
+      '</div>' +
+
       '<div class="card" style="margin-top:1.6rem;background:linear-gradient(150deg,var(--lilac-50),var(--pink-50))">' +
         '<p style="margin:0">' + nudge + '</p>' +
       '</div>';
@@ -199,6 +220,7 @@ var App = (function () {
     Array.prototype.forEach.call(screen.querySelectorAll('[data-module]'), function (b) {
       b.addEventListener('click', function () { openModule(b.getAttribute('data-module')); });
     });
+    bindTiles();
   }
 
   function openModule(id) {
@@ -264,9 +286,13 @@ var App = (function () {
 
       '<div class="section-title">Everything else</div>' +
       '<div class="grid-2">' +
-        '<button class="tile acc-2" type="button" data-goto="rewards">' +
-          '<span class="tile-glow"></span><span class="tile-emoji">🎁</span>' +
-          '<h3 class="tile-title">Rewards</h3>' +
+        '<button class="tile acc-1" type="button" data-goto="notes">' +
+          '<span class="tile-glow"></span><span class="tile-emoji">📖</span>' +
+          '<h3 class="tile-title">Notes</h3>' +
+          '<p class="tile-desc">Read the explanations and worked examples, topic by topic.</p></button>' +
+        '<button class="tile acc-3" type="button" data-goto="progress">' +
+          '<span class="tile-glow"></span><span class="tile-emoji">🏆</span>' +
+          '<h3 class="tile-title">Progress &amp; rewards</h3>' +
           '<p class="tile-desc">' +
             (readyNow > 0
               ? '<b>' + readyNow + ' ready to claim!</b>'
@@ -274,14 +300,6 @@ var App = (function () {
                   ? (nextReward.at - Store.points()) + ' points to ' + nextReward.emoji + ' ' + esc(nextReward.title)
                   : 'Every reward unlocked.')) +
           '</p></button>' +
-        '<button class="tile acc-1" type="button" data-goto="notes">' +
-          '<span class="tile-glow"></span><span class="tile-emoji">📖</span>' +
-          '<h3 class="tile-title">Notes</h3>' +
-          '<p class="tile-desc">Read the explanations and worked examples, topic by topic.</p></button>' +
-        '<button class="tile acc-3" type="button" data-goto="progress">' +
-          '<span class="tile-glow"></span><span class="tile-emoji">🏆</span>' +
-          '<h3 class="tile-title">Progress &amp; badges</h3>' +
-          '<p class="tile-desc">See what you have unlocked so far.</p></button>' +
       '</div>';
 
     bindTiles();
@@ -576,7 +594,13 @@ var App = (function () {
     /* The tutor is given the notes as rendered on this page, so it is talking
        about exactly what she is looking at — and can never drift out of step
        with the content the way a separate copy would. */
-    Buddy.setContext({ id: t.id, title: t.title, mode: 'notes', notes: screen.textContent || '' });
+    Buddy.setContext({
+      id: t.id,
+      title: t.title,
+      moduleId: Content.moduleId(),
+      mode: 'notes',
+      notes: screen.textContent || ''
+    });
 
     document.getElementById('toQuiz').addEventListener('click', function () {
       Quiz.start({
@@ -590,16 +614,26 @@ var App = (function () {
     });
   }
 
-  /* ───────────────────────── rewards ───────────────────────── */
+  /* ─────────────────── progress, rewards and badges ─────────────────── */
 
-  function screenRewards() {
-    setCrumb('Home', function () { go('home'); });
+  /* One screen, because they were three views of the same thing: points earned,
+     what those points unlock, and which topics she has mastered. Splitting them
+     meant checking two places to answer "how am I doing", and the points figure
+     appeared on both.
+
+     It sits above the modules rather than inside one, since points and rewards
+     are shared across every module — the badges are simply grouped by module. */
+  function screenProgress() {
+    setCrumb('Home', function () { go('modules'); });
+
+    var st = Store.get();
     var points = Store.points();
     var next = Rewards.next(points);
     var ready = Rewards.readyCount(points);
 
+    /* ── the reward ladder ── */
     var rows = Rewards.all().map(function (rw, i) {
-      var st = Rewards.state(rw, points);
+      var state = Rewards.state(rw, points);
       var body =
         '<div class="reward-face">' + rw.emoji + '</div>' +
         '<div class="reward-body">' +
@@ -608,9 +642,9 @@ var App = (function () {
         '</div>' +
         '<div class="reward-side">';
 
-      if (st === 'claimed') {
+      if (state === 'claimed') {
         body += '<span class="chip chip-mint">Claimed ✓</span>';
-      } else if (st === 'ready') {
+      } else if (state === 'ready') {
         body += '<button class="btn btn-pink btn-sm" type="button" data-claim="' + rw.at + '">Claim it</button>';
       } else {
         body += '<span class="reward-at">' + rw.at + '</span>' +
@@ -618,32 +652,86 @@ var App = (function () {
       }
       body += '</div>';
 
-      return '<div class="reward is-' + st + ' is-' + (rw.kind || 'milestone') + '" data-reward="' + i + '">' +
+      return '<div class="reward is-' + state + ' is-' + (rw.kind || 'milestone') + '" data-reward="' + i + '">' +
              body + '</div>';
     }).join('');
 
     var nudge = next
       ? '<p>Next up at <b>' + next.at + ' points</b>: ' + next.emoji + ' ' + esc(next.title) +
         ' — <b>' + (next.at - points) + '</b> more to go.</p>'
-      : '<p>You have reached every single reward. That is 500 points. Extraordinary.</p>';
+      : '<p>You have reached every single reward. All ' + Store.POINT_CAP +
+        ' points of them. Extraordinary.</p>';
+
+    /* ── badges, grouped by module ──
+       Read straight from each module's own content rather than from whichever
+       module happens to be loaded, so this screen shows everything she has
+       earned across all of them at once. */
+    var badgeSections = Modules.all().map(function (mod) {
+      var content = Modules.contentFor(mod.id);
+      var weeks = (content.weeks || []).filter(function (w) {
+        return !w.comingSoon && (w.topics || []).length;
+      });
+      if (!weeks.length) return '';
+
+      var earnedHere = 0, totalHere = 0;
+      var weekBlocks = weeks.map(function (w) {
+        var badges = w.topics.map(function (t) {
+          var earned = Store.hasBadge(t.id);
+          var got = Store.topicCorrect(t.id);
+          totalHere++;
+          if (earned) earnedHere++;
+          return '<div class="badge' + (earned ? ' is-earned' : '') + '" title="' + esc(t.title) + '">' +
+            '<div class="badge-face">' + t.emoji + '</div>' +
+            '<div class="badge-name">' + esc(t.title) + '</div>' +
+            '<div class="badge-name" style="font-size:.65rem;opacity:.8">' +
+              (earned ? 'Unlocked!' : got + '/' + Store.BADGE_AT) + '</div>' +
+          '</div>';
+        }).join('');
+        return '<div class="section-title">Week ' + w.number + ' · ' + esc(w.title) + '</div>' +
+               '<div class="badgegrid">' + badges + '</div>';
+      }).join('');
+
+      return '<div class="modbadges">' +
+        '<div class="modbadges-head">' +
+          '<span class="modbadges-emoji">' + mod.emoji + '</span>' +
+          '<span><b>' + esc(mod.code) + '</b> · ' + esc(mod.title) + '</span>' +
+          '<span class="chip chip-pink">' + earnedHere + '/' + totalHere + '</span>' +
+        '</div>' +
+        weekBlocks +
+      '</div>';
+    }).join('');
 
     screen.innerHTML =
-      '<div class="pagehead"><span class="kicker">Rewards</span>' +
-      '<h1>🎁 What you have earned</h1>' +
+      '<div class="pagehead"><span class="kicker">Your progress</span>' +
+      '<h1>🏆 How you\'re doing</h1>' +
       '<p>Every correct answer in Test mode is 1 point, and in Exam Questions it is 2. ' +
-      'Reach a total and the reward is yours to claim whenever you want it.</p></div>' +
+      'Points from every module go to the same rewards.</p></div>' +
 
       '<div class="statstrip">' +
-        '<div class="stat"><div class="stat-num">' + points + '<span style="font-size:.6em;color:var(--muted)">/' + Store.POINT_CAP + '</span></div><div class="stat-lab">Points</div></div>' +
+        '<div class="stat"><div class="stat-num">' + points +
+          '<span style="font-size:.6em;color:var(--muted)">/' + Store.POINT_CAP + '</span></div>' +
+          '<div class="stat-lab">Points</div></div>' +
         '<div class="stat"><div class="stat-num">' + ready + '</div><div class="stat-lab">Ready to claim</div></div>' +
-        '<div class="stat"><div class="stat-num">' + Store.claimedCount() + '</div><div class="stat-lab">Claimed</div></div>' +
+        '<div class="stat"><div class="stat-num">' + Store.badgeCount() + '</div><div class="stat-lab">Badges</div></div>' +
+        '<div class="stat"><div class="stat-num">' + st.totalCorrect + '</div><div class="stat-lab">Correct answers</div></div>' +
+        '<div class="stat"><div class="stat-num">' + st.bestStreak + '</div><div class="stat-lab">Best streak</div></div>' +
+        '<div class="stat"><div class="stat-num">' + Store.accuracy() + '%</div><div class="stat-lab">Accuracy</div></div>' +
       '</div>' +
 
       '<div class="card" style="margin:1.4rem 0;background:linear-gradient(150deg,var(--lilac-50),var(--pink-50))">' +
         nudge +
       '</div>' +
 
-      '<div class="rewardlist">' + rows + '</div>';
+      '<div class="section-title">🎁 Rewards</div>' +
+      '<div class="rewardlist">' + rows + '</div>' +
+
+      '<div class="section-title" style="margin-top:2.2rem">🏅 Badges</div>' +
+      '<p style="font-size:.92rem;color:var(--ink-soft);margin:-.4rem 0 1rem">Answer ' +
+        Store.BADGE_AT + ' questions correctly in a topic to unlock its badge. Practise and ' +
+        'test both count.</p>' +
+      badgeSections +
+
+      travelCard();
 
     Array.prototype.forEach.call(screen.querySelectorAll('[data-claim]'), function (b) {
       b.addEventListener('click', function () {
@@ -651,6 +739,7 @@ var App = (function () {
         var rw = null;
         Rewards.all().forEach(function (r) { if (r.at === at) rw = r; });
         if (!rw) return;
+
         modal({
           title: rw.emoji + ' ' + rw.title,
           body: '<p>' + esc(rw.note) + '</p>' +
@@ -661,10 +750,10 @@ var App = (function () {
           onConfirm: function () {
             Store.claim(at);
 
-            /* Stephen is the one who has to honour this, so he is told what
-               was claimed and when. Fire-and-forget on purpose: the claim is
-               already recorded, and a mail provider having a bad day must not
-               make it look as though it failed. */
+            /* Stephen is the one who has to honour this, so he is told what was
+               claimed and when. Fire-and-forget on purpose: the claim is already
+               recorded, and a mail provider having a bad day must not make it
+               look as though it failed. */
             if (window.Notify) {
               Notify.send(
                 'claim',
@@ -675,56 +764,11 @@ var App = (function () {
 
             Celebrate.confetti(120);
             Celebrate.sparkles(20, window.innerWidth / 2, window.innerHeight / 2);
-            screenRewards();
+            screenProgress();
           }
         });
       });
     });
-  }
-
-  /* ───────────────────────── progress ───────────────────────── */
-
-  function screenProgress() {
-    setCrumb('Home', function () { go('home'); });
-    var st = Store.get();
-
-    var sections = Content.readyWeeks().map(function (w) {
-      var badges = w.topics.map(function (t) {
-        var earned = Store.hasBadge(t.id);
-        var got = Store.topicCorrect(t.id);
-        return '<div class="badge' + (earned ? ' is-earned' : '') + '" title="' + esc(t.title) + '">' +
-          '<div class="badge-face">' + t.emoji + '</div>' +
-          '<div class="badge-name">' + esc(t.title) + '</div>' +
-          '<div class="badge-name" style="font-size:.65rem;opacity:.8">' +
-            (earned ? 'Unlocked!' : got + '/' + Store.BADGE_AT) + '</div>' +
-          '</div>';
-      }).join('');
-      return '<div class="section-title">Week ' + w.number + ' · ' + esc(w.title) + '</div>' +
-             '<div class="badgegrid">' + badges + '</div>';
-    }).join('');
-
-    screen.innerHTML =
-      '<div class="pagehead"><span class="kicker">Progress</span>' +
-      '<h1>🏆 How you\'re doing</h1>' +
-      '<p>Answer ' + Store.BADGE_AT + ' questions correctly in a topic to unlock its badge. ' +
-      'Practise and test both count.</p></div>' +
-
-      '<div class="statstrip">' +
-        '<div class="stat"><div class="stat-num">' + Store.points() + '<span style="font-size:.6em;color:var(--muted)">/' + Store.POINT_CAP + '</span></div><div class="stat-lab">Points</div></div>' +
-        '<div class="stat"><div class="stat-num">' + Store.badgeCount() + '</div><div class="stat-lab">Badges</div></div>' +
-        '<div class="stat"><div class="stat-num">' + st.totalCorrect + '</div><div class="stat-lab">Correct answers</div></div>' +
-        '<div class="stat"><div class="stat-num">' + st.bestStreak + '</div><div class="stat-lab">Best streak</div></div>' +
-        '<div class="stat"><div class="stat-num">' + Store.accuracy() + '%</div><div class="stat-lab">Accuracy</div></div>' +
-      '</div>' +
-
-      sections +
-
-      /* The transfer codes only exist when there is no account to sync with —
-         opened from a folder rather than the website. Everything else that
-         used to live down here (celebrations, saving, starting fresh) has
-         moved into Settings, so this screen is about how she is doing rather
-         than about the machinery. */
-      travelCard();
 
     var codeOut = document.getElementById('codeOutBtn');
     var codeIn = document.getElementById('codeInBtn');
@@ -951,16 +995,12 @@ var App = (function () {
        the page changes underneath her. */
     if (window.Buddy) Buddy.mount();
 
-    /* Straight back into whatever she was studying last, so someone working
-       through one module is not asked to choose it every single time. The
-       picker is a click away on the crumb. */
+    /* The module picker IS home. A module is still loaded up front so that any
+       screen reached directly has content behind it, but she always starts by
+       choosing what she is doing today. */
     var resume = Modules.remembered();
-    if (resume) {
-      Content.use(resume);
-      go('home');
-    } else {
-      go('modules');
-    }
+    if (resume) Content.use(resume);
+    go('modules');
   }
 
   /* The brand in the top bar goes all the way out to the module picker — it is

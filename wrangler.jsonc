@@ -34,5 +34,20 @@
   // The id is an account-scoped identifier, not a credential.
   "kv_namespaces": [
     { "binding": "PROGRESS", "id": "efd8c0153a9d44859ff4d381165f3853" }
-  ]
+  ],
+
+  // Plain values, declared here for the same reason as the KV binding above:
+  // `wrangler deploy` replaces the Worker's variables with exactly what this
+  // file lists, so anything typed into the dashboard's Variables panel is
+  // erased on the next deploy. Secrets are the exception — those live apart
+  // and survive, which is why the two API keys are not here and must not be.
+  //
+  // NOTIFY_EMAIL was lost that way once already.
+  "vars": {
+    "NOTIFY_EMAIL": "stephenswart8@gmail.com"
+
+    // Optional: uncomment to change how many tutor questions a day are
+    // allowed. Defaults to 60 in src/tutor.js when unset.
+    // "TUTOR_DAILY_LIMIT": "60"
+  }
 }

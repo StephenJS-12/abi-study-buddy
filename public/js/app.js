@@ -6,6 +6,11 @@ var App = (function () {
   var route = { name: 'home', params: {} };
   var backAction = null;
 
+  /* Whether the full reward ladder is showing. Deliberately not persisted —
+     it is a view preference for the moment she is in, not something worth
+     remembering between sessions. */
+  var rewardsExpanded = false;
+
   function esc(s) {
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
@@ -150,12 +155,22 @@ var App = (function () {
   /* The first thing she sees: which subject is she doing today.
      Points and rewards are shown here rather than per module, because there is
      only one ladder — study whichever she likes, it all feeds the same bar. */
+  function greeting() {
+    var h = new Date().getHours();
+    if (h < 5) return 'Still up';
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
   function screenModules() {
     setCrumb(null);
 
     var all = Modules.all();
     var points = Store.points();
     var nextReward = Rewards.next(points);
+    var prog = Rewards.progress(points);
+    var readyNow = Rewards.readyCount(points);
 
     var cards = all.map(function (m) {
       var content = Modules.contentFor(m.id);
@@ -190,16 +205,33 @@ var App = (function () {
       '</button>';
     }).join('');
 
-    var nudge = nextReward
-      ? 'You are on <b>' + points + '</b> points. ' + (nextReward.at - points) +
-        ' more unlocks ' + nextReward.emoji + ' <b>' + esc(nextReward.title) + '</b>.'
-      : 'Every reward is unlocked. Genuinely well done.';
+    /* The hero carries the reward progress rather than a card further down the
+       page. On a home screen the thing she is working towards should be the
+       first thing she sees, not a footnote under the tiles. */
+    var goalLine = readyNow > 0
+      ? '<b>' + readyNow + (readyNow === 1 ? ' reward is' : ' rewards are') + ' ready to claim.</b>'
+      : nextReward
+        ? (nextReward.at - points) + ' more points for ' + nextReward.emoji +
+          ' <b>' + esc(nextReward.title) + '</b>'
+        : 'Every reward unlocked. Genuinely well done.';
 
     screen.innerHTML =
-      '<div class="pagehead"><span class="kicker">Your modules</span>' +
-      '<h1>✦ What are we doing today?</h1>' +
-      '<p>Pick a module to work on. Points from any of them go to the same rewards.</p></div>' +
-      '<div class="tilegrid">' + cards + '</div>' +
+      '<section class="hero">' +
+        '<p class="hero-hi">' + greeting() + ', Abi <span class="hero-star">✦</span></p>' +
+        '<h1 class="hero-title">What are we doing today?</h1>' +
+
+        '<div class="hero-goal">' +
+          '<div class="hero-points">' + points +
+            '<span class="hero-cap">/' + Store.POINT_CAP + '</span></div>' +
+          '<div class="hero-track">' +
+            '<div class="hero-track-fill" style="width:' + prog.pct + '%"></div>' +
+          '</div>' +
+          '<p class="hero-goal-line">' + goalLine + '</p>' +
+        '</div>' +
+      '</section>' +
+
+      '<div class="section-title">Your modules</div>' +
+      '<div class="modgrid">' + cards + '</div>' +
 
       '<div class="section-title">Everything else</div>' +
       '<div class="grid-2">' +
@@ -207,14 +239,10 @@ var App = (function () {
           '<span class="tile-glow"></span><span class="tile-emoji">🏆</span>' +
           '<h3 class="tile-title">Progress &amp; rewards</h3>' +
           '<p class="tile-desc">' +
-            (Rewards.readyCount(points) > 0
-              ? '<b>' + Rewards.readyCount(points) + ' ready to claim!</b>'
+            (readyNow > 0
+              ? '<b>' + readyNow + ' ready to claim!</b>'
               : 'Your points, badges and everything you have unlocked.') +
           '</p></button>' +
-      '</div>' +
-
-      '<div class="card" style="margin-top:1.6rem;background:linear-gradient(150deg,var(--lilac-50),var(--pink-50))">' +
-        '<p style="margin:0">' + nudge + '</p>' +
       '</div>';
 
     Array.prototype.forEach.call(screen.querySelectorAll('[data-module]'), function (b) {
@@ -631,8 +659,27 @@ var App = (function () {
     var next = Rewards.next(points);
     var ready = Rewards.readyCount(points);
 
-    /* ── the reward ladder ── */
-    var rows = Rewards.all().map(function (rw, i) {
+    /* ── the reward ladder ──
+       Twenty-four rewards is a long scroll, and most of them are neither
+       claimable nor close. Collapsed she sees what she can take now and the
+       few she is actually working towards; the rest are one tap away. */
+    var ladder = Rewards.all();
+    var shown = ladder;
+
+    if (!rewardsExpanded) {
+      var lockedSoFar = 0;
+      shown = ladder.filter(function (rw) {
+        var state = Rewards.state(rw, points);
+        if (state === 'ready') return true;          // claimable — always show
+        if (state === 'claimed') return false;       // already hers
+        lockedSoFar++;
+        return lockedSoFar <= 3;                     // the next few to aim at
+      });
+    }
+
+    var hiddenCount = ladder.length - shown.length;
+
+    var rows = shown.map(function (rw, i) {
       var state = Rewards.state(rw, points);
       var body =
         '<div class="reward-face">' + rw.emoji + '</div>' +
@@ -724,6 +771,14 @@ var App = (function () {
 
       '<div class="section-title">🎁 Rewards</div>' +
       '<div class="rewardlist">' + rows + '</div>' +
+      (hiddenCount > 0 || rewardsExpanded
+        ? '<button class="btn btn-ghost btn-block" type="button" id="ladderToggle" ' +
+          'style="margin-top:.8rem">' +
+            (rewardsExpanded
+              ? 'Show fewer'
+              : 'Show all ' + ladder.length + ' rewards (' + hiddenCount + ' more)') +
+          '</button>'
+        : '') +
 
       '<div class="section-title" style="margin-top:2.2rem">🏅 Badges</div>' +
       '<p style="font-size:.92rem;color:var(--ink-soft);margin:-.4rem 0 1rem">Answer ' +
@@ -769,6 +824,14 @@ var App = (function () {
         });
       });
     });
+
+    var toggle = document.getElementById('ladderToggle');
+    if (toggle) {
+      toggle.addEventListener('click', function () {
+        rewardsExpanded = !rewardsExpanded;
+        screenProgress();
+      });
+    }
 
     var codeOut = document.getElementById('codeOutBtn');
     var codeIn = document.getElementById('codeInBtn');

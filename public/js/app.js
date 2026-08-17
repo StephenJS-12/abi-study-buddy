@@ -580,6 +580,19 @@ var App = (function () {
           confirmClass: 'btn-pink',
           onConfirm: function () {
             Store.claim(at);
+
+            /* Stephen is the one who has to honour this, so he is told what
+               was claimed and when. Fire-and-forget on purpose: the claim is
+               already recorded, and a mail provider having a bad day must not
+               make it look as though it failed. */
+            if (window.Notify) {
+              Notify.send(
+                'claim',
+                rw.emoji + ' ' + rw.title + ' (at ' + rw.at + ' points)',
+                'Claimed with ' + Store.points() + ' points on the board'
+              );
+            }
+
             Celebrate.confetti(120);
             Celebrate.sparkles(20, window.innerWidth / 2, window.innerHeight / 2);
             screenRewards();
@@ -626,66 +639,17 @@ var App = (function () {
 
       sections +
 
-      '<div class="card" style="margin-top:2.5rem">' +
-        '<h3>✨ Celebrations</h3>' +
-        '<p style="font-size:.93rem;color:var(--ink-soft)">Confetti, sparkles and the little hype ' +
-        'messages when you get an answer right.</p>' +
-        '<div class="pillrow">' +
-          '<button class="pill' + (Store.motionOn() ? ' is-on' : '') + '" type="button" data-motion="on">On ✨</button>' +
-          '<button class="pill' + (Store.motionOn() ? '' : ' is-on') + '" type="button" data-motion="off">Off</button>' +
-        '</div>' +
-      '</div>' +
+      /* The transfer codes only exist when there is no account to sync with —
+         opened from a folder rather than the website. Everything else that
+         used to live down here (celebrations, saving, starting fresh) has
+         moved into Settings, so this screen is about how she is doing rather
+         than about the machinery. */
+      travelCard();
 
-      saveHealthCard() +
-      travelCard() +
-
-      '<div class="card" style="margin-top:1.2rem;border:2px solid var(--pink-200)">' +
-        '<h3>Start completely fresh</h3>' +
-        '<p style="font-size:.93rem;color:var(--ink-soft)">This permanently deletes your points, badges, streaks and ' +
-        'every answer you have recorded. It cannot be undone.</p>' +
-        '<button class="btn btn-danger" type="button" id="wipeBtn">Delete all my progress</button>' +
-      '</div>';
-
-    Array.prototype.forEach.call(screen.querySelectorAll('[data-motion]'), function (b) {
-      b.addEventListener('click', function () {
-        var on = b.getAttribute('data-motion') === 'on';
-        Store.setMotion(on);
-        applyMotion();
-        Array.prototype.forEach.call(screen.querySelectorAll('[data-motion]'), function (o) {
-          o.classList.toggle('is-on', o === b);
-        });
-        if (on) Celebrate.correct(1, b);      // instant proof it works again
-      });
-    });
-
-    /* Absent on the hosted site, where syncing replaces them entirely. */
     var codeOut = document.getElementById('codeOutBtn');
     var codeIn = document.getElementById('codeInBtn');
     if (codeOut) codeOut.addEventListener('click', showCodeOut);
     if (codeIn) codeIn.addEventListener('click', showCodeIn);
-
-    document.getElementById('wipeBtn').addEventListener('click', function () {
-      modal({
-        title: '⚠️ Delete everything?',
-        body: '<p>This will wipe your <b>' + Store.points() + ' points</b>, <b>' + Store.badgeCount() +
-              ' badges</b> and all your answer history. There is no way to get it back.</p>' +
-              '<p style="font-size:.9rem;color:var(--ink-soft)">To confirm, type ' +
-              '<b style="color:var(--pink-600)">qwerty asdf</b> below.</p>',
-        requireText: 'qwerty asdf',
-        confirmLabel: 'Delete everything',
-        confirmClass: 'btn-danger',
-        onConfirm: function () {
-          Store.wipe();
-          /* Clears the account copy too. Without this the next sync would pull
-             everything straight back down, and "delete everything" would look
-             like it had silently failed. */
-          if (window.Cloud && Cloud.enabled()) Cloud.wipe();
-          applyMotion();
-          refreshPoints();
-          go('home');
-        }
-      });
-    });
   }
 
   /* ──────────────────── is anything actually being saved? ──────────────────── */
@@ -715,66 +679,20 @@ var App = (function () {
      the only way across — the two never appear together, because there should
      only ever be one way to do a thing. */
   function travelCard() {
-    if (!(window.Cloud && Cloud.enabled())) {
-      return '<div class="card" style="margin-top:1.2rem">' +
-        '<h3>📦 Moving to another laptop</h3>' +
-        '<p style="font-size:.93rem;color:var(--ink-soft)">Your points and badges are saved in this ' +
-        'browser, on this computer — copying the site across does not bring them with it. ' +
-        'This turns everything you have earned into one line of text you can send to yourself ' +
-        'and paste in on the other side.</p>' +
-        '<div class="pillrow" style="margin-top:.9rem">' +
-          '<button class="btn btn-primary" type="button" id="codeOutBtn">Get my code</button>' +
-          '<button class="btn btn-ghost" type="button" id="codeInBtn">Paste a code in</button>' +
-        '</div>' +
-      '</div>';
-    }
-
-    var sync = Cloud.status();
-    var when = whenText(sync.savedAt);
-
-    var line = sync.problem
-      ? 'Could not reach your account just now, so this device is working on its own copy. ' +
-        'Everything you do is still being kept here and will go up as soon as you are back online.'
-      : when
-        ? 'Last saved to your account on <b>' + when + '</b>. Sign in on any other device with the ' +
-          'same password and it will all be waiting for you.'
-        : 'Your progress saves to your account automatically. Sign in on your phone or another ' +
-          'laptop with the same password and it will all be there.';
+    /* Nothing to say on the hosted site: Settings reports on syncing, and
+       progress moves between devices without her doing anything. */
+    if (window.Cloud && Cloud.enabled()) return '';
 
     return '<div class="card" style="margin-top:1.2rem">' +
-      '<h3>' + (sync.problem ? '📴 Working offline' : '☁️ Saved to your account') + '</h3>' +
-      '<p style="font-size:.93rem;color:var(--ink-soft)">' + line + '</p>' +
-    '</div>';
-  }
-
-  /* The panel on the Progress screen. Its whole job is to answer one question without
-     anyone having to open developer tools: did the last session survive being closed? */
-  function saveHealthCard() {
-    var h = Store.health();
-    var when = whenText(h.lastSaved);
-
-    var verdict, detail;
-    if (!h.ok) {
-      verdict = '⚠️ Nothing is being saved';
-      detail = browserName() + ' is refusing to store anything for this page' +
-               (h.why && h.why !== 'blocked' ? ' (' + esc(h.why) + ')' : '') +
-               '. Everything will be lost when this window closes.';
-    } else if (when) {
-      verdict = '✅ Saving is working';
-      detail = 'When this window opened it found your progress from <b>' + when + '</b>, ' +
-               'so it is surviving properly between sessions.';
-    } else {
-      verdict = '🆕 Nothing saved yet';
-      detail = 'Nothing was found when this window opened. That is normal on a brand new ' +
-               'laptop — answer a question in Test mode, then close and reopen. If it still ' +
-               'says this, saving is not sticking and Stephen needs to know.';
-    }
-
-    return '<div class="card" style="margin-top:1.2rem">' +
-      '<h3>💾 ' + verdict + '</h3>' +
-      '<p style="font-size:.93rem;color:var(--ink-soft)">' + detail + '</p>' +
-      '<p style="font-size:.82rem;color:var(--muted);margin-top:.6rem">' +
-        'Browser: ' + esc(browserName()) + '</p>' +
+      '<h3>📦 Moving to another laptop</h3>' +
+      '<p style="font-size:.93rem;color:var(--ink-soft)">Your points and badges are saved in this ' +
+      'browser, on this computer — copying the site across does not bring them with it. ' +
+      'This turns everything you have earned into one line of text you can send to yourself ' +
+      'and paste in on the other side.</p>' +
+      '<div class="pillrow" style="margin-top:.9rem">' +
+        '<button class="btn btn-primary" type="button" id="codeOutBtn">Get my code</button>' +
+        '<button class="btn btn-ghost" type="button" id="codeInBtn">Paste a code in</button>' +
+      '</div>' +
     '</div>';
   }
 
@@ -930,6 +848,9 @@ var App = (function () {
     modalBody   = document.getElementById('modalBody');
 
     backBtn.addEventListener('click', function () { if (backAction) backAction(); });
+
+    var cog = document.getElementById('settingsBtn');
+    if (cog) cog.addEventListener('click', function () { Settings.open(); });
 
     var home = document.getElementById('homeBtn');
     home.addEventListener('click', goHomeSafely);

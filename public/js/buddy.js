@@ -47,24 +47,58 @@ var Buddy = (function () {
 
   /* ── the character ─────────────────────────────────────────────── */
 
-  /* Drawn rather than an emoji so she can blink, and so she looks like she
-     belongs to this site rather than to whichever phone is showing her. */
+  /* Pip is an avocado. Drawn rather than an emoji so the parts can move
+     separately — she blinks, her leaf sways, and the stone bounces on its own
+     when she is pleased. An emoji can only ever sit there.
+
+     Everything animated carries its own class, so the CSS can move one piece
+     without disturbing the rest. */
   function face() {
     return '<svg viewBox="0 0 64 64" class="pip-face" aria-hidden="true">' +
-      '<defs><linearGradient id="pipSkin" x1="0" y1="0" x2="0" y2="1">' +
-        '<stop offset="0" stop-color="#E9E0FF"/><stop offset="1" stop-color="#FFC9E0"/>' +
-      '</linearGradient></defs>' +
-      '<path class="pip-body" fill="url(#pipSkin)" d="M32 4l6.2 12.8L52 12l-4.2 14.2L60 32' +
-        'l-12.2 5.8L52 52l-13.8-4.8L32 60l-6.2-12.8L12 52l4.2-14.2L4 32l12.2-5.8L12 12' +
-        'l13.8 4.8z"/>' +
-      '<g class="pip-eyes">' +
-        '<ellipse cx="26" cy="30" rx="3" ry="3.6" fill="#4A3457"/>' +
-        '<ellipse cx="38" cy="30" rx="3" ry="3.6" fill="#4A3457"/>' +
+      '<defs>' +
+        '<linearGradient id="pipSkin" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#5E8C3E"/><stop offset="1" stop-color="#416B2A"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="pipFlesh" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#E4F3B8"/><stop offset="1" stop-color="#C7E48C"/>' +
+        '</linearGradient>' +
+        '<linearGradient id="pipStone" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0" stop-color="#B87A4A"/><stop offset="1" stop-color="#96552F"/>' +
+        '</linearGradient>' +
+      '</defs>' +
+
+      '<g class="pip-whole">' +
+        /* Stalk and leaf, sitting above the fruit so the sway reads clearly. */
+        '<g class="pip-leaf">' +
+          '<path d="M32 11 C32 7 33 5 34 3" stroke="#6B4A2A" stroke-width="2" ' +
+            'fill="none" stroke-linecap="round"/>' +
+          '<path d="M34 6 C40 2 46 4 46 8 C46 12 39 13 34 9 Z" fill="#7FBF4F"/>' +
+        '</g>' +
+
+        /* Skin, then flesh inset from it — the dark rim is what makes it read
+           as an avocado rather than a pear. */
+        '<path class="pip-skin" fill="url(#pipSkin)" d="M32 10 C21 10 15 21 15 31 ' +
+          'C15 46 22 59 32 59 C42 59 49 46 49 31 C49 21 43 10 32 10 Z"/>' +
+        '<path fill="url(#pipFlesh)" d="M32 14 C24 14 19 23 19 31 ' +
+          'C19 44 25 55 32 55 C39 55 45 44 45 31 C45 23 40 14 32 14 Z"/>' +
+
+        '<g class="pip-stone">' +
+          '<circle cx="32" cy="37" r="11.5" fill="url(#pipStone)"/>' +
+          '<ellipse cx="28" cy="32" rx="3" ry="2" fill="#D89A6A" opacity=".45"/>' +
+
+          '<g class="pip-eyes">' +
+            '<ellipse cx="27.5" cy="35" rx="1.9" ry="2.4" fill="#3B2415"/>' +
+            '<ellipse cx="36.5" cy="35" rx="1.9" ry="2.4" fill="#3B2415"/>' +
+            '<circle cx="28.2" cy="34.2" r=".7" fill="#fff"/>' +
+            '<circle cx="37.2" cy="34.2" r=".7" fill="#fff"/>' +
+          '</g>' +
+
+          '<path class="pip-smile" d="M28.5 40.5 Q32 43.6 35.5 40.5" stroke="#3B2415" ' +
+            'stroke-width="1.7" fill="none" stroke-linecap="round"/>' +
+          '<circle cx="23.5" cy="39" r="2.1" fill="#FF9EC4" opacity=".5"/>' +
+          '<circle cx="40.5" cy="39" r="2.1" fill="#FF9EC4" opacity=".5"/>' +
+        '</g>' +
       '</g>' +
-      '<path class="pip-smile" d="M27 38 Q32 42.5 37 38" stroke="#4A3457" stroke-width="2.2" ' +
-        'fill="none" stroke-linecap="round"/>' +
-      '<circle cx="21" cy="36" r="2.6" fill="#FF9EC4" opacity=".55"/>' +
-      '<circle cx="43" cy="36" r="2.6" fill="#FF9EC4" opacity=".55"/>' +
     '</svg>';
   }
 

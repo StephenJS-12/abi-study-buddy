@@ -9,19 +9,23 @@
 <link rel="stylesheet" href="css/screens.css">
 <link rel="stylesheet" href="css/animations.css">
 <link rel="stylesheet" href="css/buddy.css">
+<link rel="stylesheet" href="css/settings.css">
 </head>
 <body>
 
 <div class="sky" aria-hidden="true"></div>
 
 <header class="topbar">
-  <button class="crumb" id="backBtn" type="button" hidden>
-    <span class="crumb-arrow">←</span><span id="backLabel">Back</span>
-  </button>
-  <div class="brand" id="homeBtn" role="button" tabindex="0">
-    <span class="brand-star">✦</span>
-    <span class="brand-name">Abi's Study Buddy</span>
+  <div class="topbar-side">
+    <button class="crumb" id="backBtn" type="button" hidden>
+      <span class="crumb-arrow">←</span><span id="backLabel">Back</span>
+    </button>
+    <div class="brand" id="homeBtn" role="button" tabindex="0">
+      <span class="brand-star">✦</span>
+      <span class="brand-name">Abi's Study Buddy</span>
+    </div>
   </div>
+
   <div class="pointsdock">
     <div class="pointsdock-label">
       <span id="pointsCount">0</span><span class="pointsdock-cap" id="pointsCap"></span>
@@ -31,6 +35,10 @@
       <div class="pbar-shine"></div>
     </div>
     <span class="pointsdock-goal" id="pointsGoal" aria-hidden="true">🎁</span>
+  </div>
+
+  <div class="topbar-side topbar-end">
+    <button class="cogbtn" id="settingsBtn" type="button" aria-label="Settings">⚙</button>
   </div>
 </header>
 
@@ -47,8 +55,10 @@
 </div>
 
 <script src="js/cloud.js"></script>
+<script src="js/notify.js"></script>
 <script src="js/tutor.js"></script>
 <script src="js/buddy.js"></script>
+<script src="js/settings.js"></script>
 <script src="js/storage.js"></script>
 <script src="js/transfer.js"></script>
 <script src="js/rewards.js"></script>

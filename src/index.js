@@ -16,6 +16,7 @@ import {
 import { login, logout } from './login.js';
 import { progress } from './progress.js';
 import { tutor } from './tutor.js';
+import { notify, inbox } from './notify.js';
 
 /* The login page, by both the name it has on disk and the name Cloudflare
    rewrites it to. The asset server normalises away the .html extension, so a
@@ -60,6 +61,8 @@ export default {
         sessionSecret: Boolean(env.SESSION_SECRET),
         progressStore: Boolean(env.PROGRESS),
         tutorKey: Boolean(env.ANTHROPIC_API_KEY),
+        emailKey: Boolean(env.RESEND_API_KEY),
+        emailTo: Boolean(env.NOTIFY_EMAIL),
         assets: Boolean(env.ASSETS),
         seen: Object.keys(env).sort(),
       });
@@ -108,6 +111,8 @@ export default {
 
     if (url.pathname === '/api/progress') return progress(request, env);
     if (url.pathname === '/api/tutor') return tutor(request, env);
+    if (url.pathname === '/api/notify') return notify(request, env);
+    if (url.pathname === '/api/inbox') return inbox(env);
 
     /* An unknown /api/ path is a bug in the app, not a page she asked for —
        say so rather than quietly serving the site's index. */

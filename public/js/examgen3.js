@@ -602,6 +602,182 @@
       rule: 'the multiplication rule' }
   ];
 
+  /* Situations to classify. Two questions to ask of any pair of events: can they
+     both happen at once (mutually exclusive or not), and does one change the
+     odds of the other (independent or dependent). Every `term` below must match
+     one in EVENT_FACTS exactly, since the wrong answers are drawn from there. */
+  var SCENARIOS = [
+    { text: 'A coin is tossed and a die is rolled.',
+      term: 'Independent events',
+      tell: 'Does the first outcome change the second? The coin cannot affect the die.',
+      why: 'Two separate objects with nothing connecting them. The die has the same six faces whatever the coin did.' },
+
+    { text: 'A card is drawn from a deck and kept, then a second card is drawn.',
+      term: 'Dependent (conditional) events',
+      tell: 'The first card is not replaced, so the second draw is from 51 cards.',
+      why: 'Keeping the card changes both how many cards remain and how many of them are the one you want.' },
+
+    { text: 'A card is drawn from a deck, recorded, put back, and a second card is drawn.',
+      term: 'Independent events',
+      tell: 'The card goes back, so the deck is identical for the second draw.',
+      why: 'Replacement restores the original situation. This is the single word that separates this from the dependent case.' },
+
+    { text: 'One card is drawn, and you consider whether it is a heart or a spade.',
+      term: 'Mutually exclusive events',
+      tell: 'Could one card be both? No card has two suits.',
+      why: 'No overlap at all, so nothing gets counted twice and P(A or B) is simply P(A) + P(B).' },
+
+    { text: 'One card is drawn, and you consider whether it is a heart or a face card.',
+      term: 'Non-mutually exclusive events',
+      tell: 'Could one card be both? The jack, queen and king of hearts are both.',
+      why: 'Three cards satisfy both descriptions, so adding the two probabilities counts them twice and the overlap must be subtracted.' },
+
+    { text: 'A die is rolled once, and you consider whether it shows an even number or shows a five.',
+      term: 'Mutually exclusive events',
+      tell: 'Could one roll be both? Five is not even, so no.',
+      why: 'The two sets of faces do not touch, so there is nothing to subtract.' },
+
+    { text: 'A die is rolled once, and you consider whether it shows an even number or a number greater than three.',
+      term: 'Non-mutually exclusive events',
+      tell: 'Could one roll be both? Four and six are even and greater than three.',
+      why: 'Two faces belong to both descriptions, so the overlap has to come off the total.' },
+
+    { text: 'Two counters are taken from a bag one after the other, and the first is not put back.',
+      term: 'Dependent (conditional) events',
+      tell: 'The bag is smaller for the second pick.',
+      why: 'Both the favourable count and the total drop by one, which is exactly what P(B given A) accounts for.' },
+
+    { text: 'A customer at a showroom buys an e-bike, or buys accessories — some customers do both.',
+      term: 'Non-mutually exclusive events',
+      tell: 'The sentence says outright that some customers do both.',
+      why: 'Anyone who bought both is in each group, so adding the groups counts them twice.' },
+
+    { text: 'Every customer signs up for exactly one package, and you consider whether a customer chose Basic or Premium.',
+      term: 'Mutually exclusive events',
+      tell: '"Exactly one" means no customer can be in both groups.',
+      why: 'That phrase is doing all the work — without it you would need to know the overlap before you could answer.' },
+
+    { text: 'Two unrelated machines each undergo their own annual safety check.',
+      term: 'Independent events',
+      tell: 'Does one machine passing change the other\'s chances? They are unrelated.',
+      why: '"Unrelated" is the examiner telling you to multiply without any conditional adjustment.' },
+
+    { text: 'Two different employees are chosen from a team for two roles, and nobody can hold both roles.',
+      term: 'Dependent (conditional) events',
+      tell: 'Once someone takes the first role, they are out of the running for the second.',
+      why: 'The pool shrinks between the two choices, which is the same structure as drawing without replacement.' },
+
+    { text: 'A card is drawn, and you consider whether it is red or whether it is a king.',
+      term: 'Non-mutually exclusive events',
+      tell: 'Could one card be both? The king of hearts and the king of diamonds are.',
+      why: 'Two cards are in both groups. Adding twenty-six and four without subtracting them counts those kings twice.' },
+
+    { text: 'Two coins are tossed at the same time.',
+      term: 'Independent events',
+      tell: 'Neither coin can influence the other.',
+      why: 'Each coin still has two equally likely faces regardless of what the other one does.' },
+
+    { text: 'Two names are drawn from a hat for a prize, and the first name is not returned.',
+      term: 'Dependent (conditional) events',
+      tell: 'The first name is gone, so the second draw has one fewer entry.',
+      why: 'Anyone already drawn cannot be drawn again, so the second probability depends on the first.' },
+
+    { text: 'A single delivery is either on time or late.',
+      term: 'Mutually exclusive events',
+      tell: 'One delivery cannot be both on time and late.',
+      why: 'These are complements as well as mutually exclusive: between them they cover every possibility, so they add to one.' },
+
+    { text: 'A counter is taken from a bag and put back, then another counter is taken.',
+      term: 'Independent events',
+      tell: 'The bag is back to its original contents before the second pick.',
+      why: 'Replacing it means the second pick faces exactly the same bag as the first.' },
+
+    { text: 'A quality inspector takes two items from a batch and does not return the first.',
+      term: 'Dependent (conditional) events',
+      tell: 'The batch is one item smaller for the second inspection.',
+      why: 'Both the number of faulty items and the batch size can change between the two picks.' },
+
+    { text: 'One employee is selected, and you consider whether they work in sales or in finance — nobody works in both.',
+      term: 'Mutually exclusive events',
+      tell: 'The sentence rules out anyone being in both departments.',
+      why: 'With no one in both groups the two probabilities simply add.' },
+
+    { text: 'One employee is selected, and you consider whether they hold a driving licence or speak French.',
+      term: 'Non-mutually exclusive events',
+      tell: 'Could one person be both? Plenty of people drive and speak French.',
+      why: 'Anyone who does both is in each group, so the overlap must be subtracted.' },
+
+    { text: 'A spinner is spun twice.',
+      term: 'Independent events',
+      tell: 'The spinner has no memory of the first spin.',
+      why: 'Every section is available again on the second spin, exactly as before.' },
+
+    { text: 'One student is picked, and you consider whether they passed or failed the exam.',
+      term: 'Mutually exclusive events',
+      tell: 'A student cannot both pass and fail the same exam.',
+      why: 'These cover every outcome between them, so they are complements as well.' },
+
+    { text: 'Two cards are dealt from the same deck to two different players.',
+      term: 'Dependent (conditional) events',
+      tell: 'The first card dealt is no longer in the deck for the second.',
+      why: 'Dealing is drawing without replacement, whatever it is called at the table.' },
+
+    { text: 'One customer is chosen, and you consider whether they paid by card or ordered online.',
+      term: 'Non-mutually exclusive events',
+      tell: 'Could one customer be both? Ordering online and paying by card go together often.',
+      why: 'The two descriptions overlap heavily, so adding them without subtracting would badly overcount.' },
+
+    { text: 'A die is rolled twice in a row.',
+      term: 'Independent events',
+      tell: 'The die is unchanged by the first roll.',
+      why: 'A run of sixes does not make the next six any less likely — the die does not keep score.' },
+
+    { text: 'Three raffle tickets are drawn one after another and none are put back.',
+      term: 'Dependent (conditional) events',
+      tell: 'Each draw leaves fewer tickets in the drum.',
+      why: 'Every draw changes the pool for the next one, so each probability is conditional on what came before.' },
+
+    { text: 'One product is inspected, and you consider whether it is faulty or passes inspection.',
+      term: 'Mutually exclusive events',
+      tell: 'A product cannot both fail and pass the same inspection.',
+      why: 'No overlap is possible, so P(A or B) is just P(A) + P(B) — and here it comes to one.' },
+
+    { text: 'One person is surveyed, and you consider whether they own a car or own a bicycle.',
+      term: 'Non-mutually exclusive events',
+      tell: 'Could one person be both? Owning a car does not stop you owning a bicycle.',
+      why: 'People who own both appear in each group, which is precisely what the subtraction removes.' },
+
+    { text: 'A machine is inspected on Monday and again on Tuesday, and how it performed on Monday has no bearing on Tuesday.',
+      term: 'Independent events',
+      tell: 'The sentence states outright that the first result does not affect the second.',
+      why: 'When the question tells you the two are unconnected, the probabilities multiply with no adjustment.' },
+
+    { text: 'Two items are taken from a shelf for inspection and neither is put back.',
+      term: 'Dependent (conditional) events',
+      tell: 'The shelf has one fewer item when the second is chosen.',
+      why: 'The second probability has to be worked out from what is left after the first was removed.' },
+
+    { text: 'One invoice is selected, and you consider whether it was paid early or paid late.',
+      term: 'Mutually exclusive events',
+      tell: 'One invoice cannot have been paid both early and late.',
+      why: 'The two groups cannot overlap, so their probabilities simply add.' },
+
+    { text: 'One invoice is selected, and you consider whether it is for more than R10 000 or was paid late.',
+      term: 'Non-mutually exclusive events',
+      tell: 'Could one invoice be both? A large invoice can certainly also be a late one.',
+      why: 'Size and timing are unrelated descriptions, so plenty of invoices satisfy both and would be counted twice.' },
+
+    { text: 'The traffic light is red when you arrive, and you are late for work that morning.',
+      term: 'Dependent (conditional) events',
+      tell: 'Being held at the light makes arriving late more likely.',
+      why: 'One genuinely affects the chances of the other, so the second probability is conditional on the first.' },
+
+    { text: 'One job applicant is chosen, and you consider whether they hold a degree or have five years of experience.',
+      term: 'Non-mutually exclusive events',
+      tell: 'Could one applicant be both? Many people have a degree and years of experience.',
+      why: 'The strongest applicants sit in both groups, so adding the two counts them twice over.' }
+  ];
+
   GEN.add('ex3-theory', [
     function () {
       var i = R.int(0, EVENT_FACTS.length - 1);
@@ -640,6 +816,216 @@
         ],
         why: 'There are four possibilities for any two events, two under each rule. Knowing which pair you are ' +
              'in tells you immediately whether to add or to multiply.'
+      };
+    },
+
+    /* Classifying a described situation, which is what the exam actually asks —
+       naming the definition is easy, spotting it in a sentence is the skill.
+       One question per scenario, so the topic stops being four facts on a loop. */
+    function () {
+      var s = R.pick(SCENARIOS);
+      var wrong = [];
+      for (var j = 0; j < EVENT_FACTS.length; j++) {
+        if (EVENT_FACTS[j].term !== s.term) wrong.push(EVENT_FACTS[j].term);
+      }
+      return {
+        type: 'mcq', marks: 3,
+        prompt: 'How would you describe these two events? ' + s.text,
+        options: R.options(s.term, R.shuffle(wrong)),
+        answer: 0,
+        solution: [
+          { lab: 'What happens', val: s.text },
+          { lab: 'The test', val: s.tell },
+          { lab: 'Answer', val: s.term, final: true }
+        ],
+        why: s.why
+      };
+    },
+
+    /* The keywords, on their own. These are what turn a wordy question into a
+       decision about which rule to reach for. */
+    function () {
+      var cue = R.pick([
+        { word: '"and"', means: 'multiply the probabilities',
+          other: ['add the probabilities', 'subtract the probabilities', 'divide the probabilities'],
+          note: '"And" asks for both things to happen, which narrows the outcomes down — so the answer gets smaller.' },
+        { word: '"or"', means: 'add the probabilities',
+          other: ['multiply the probabilities', 'subtract the probabilities', 'divide the probabilities'],
+          note: '"Or" accepts either thing, which widens the outcomes — so the answer gets larger.' },
+        { word: '"without replacement"', means: 'the events are dependent',
+          other: ['the events are independent', 'the events are mutually exclusive', 'the events cannot happen'],
+          note: 'The first item is not put back, so the second probability is calculated from a smaller pool.' },
+        { word: '"with replacement"', means: 'the events are independent',
+          other: ['the events are dependent', 'the events are mutually exclusive', 'the totals change each time'],
+          note: 'Putting it back restores the original situation, so the second draw is unaffected by the first.' }
+      ]);
+      return {
+        type: 'mcq', marks: 2,
+        prompt: 'In a probability question, ' + cue.word + ' tells you that:',
+        options: R.options(cue.means, cue.other),
+        answer: 0,
+        solution: [
+          { lab: 'Keyword', val: cue.word },
+          { lab: 'Tells you', val: cue.means },
+          { lab: 'Answer', val: cue.means, final: true }
+        ],
+        why: cue.note
+      };
+    },
+
+    /* What a probability is allowed to be. A negative or above-one answer is a
+       signal to go back and check, not a result to write down. */
+    function () {
+      var bad = R.pick([1.4, 1.05, -0.2, 2.5, -1, 3]);
+      var ok = R.shuffle([0, 0.15, 0.5, 0.78, 1]);
+      return {
+        type: 'mcq', marks: 2,
+        prompt: 'Which of these <b>cannot</b> be a probability?',
+        options: R.options(String(bad), [String(ok[0]), String(ok[1]), String(ok[2])]),
+        answer: 0,
+        solution: [
+          { lab: 'Every probability sits', val: 'between 0 and 1 inclusive' },
+          { lab: '0 means', val: 'impossible; 1 means certain' },
+          { lab: 'Answer', val: String(bad) + ' is outside that range', final: true }
+        ],
+        why: 'A probability is a share of the possible outcomes, so it can never be negative and never exceed ' +
+             'the whole. Getting ' + bad + ' means something went wrong in the working.'
+      };
+    },
+
+    /* The notation itself. A question can be entirely doable and still be lost
+       at the point where P(A | B) is read as a division. */
+    function () {
+      var sym = R.pick([
+        { shown: 'P(A &cap; B)', means: 'the probability that A and B both happen',
+          other: ['the probability that A or B happens', 'the probability of A given B', 'the probability that neither happens'],
+          note: 'The ∩ symbol is the "and" case, which is the multiplication rule.' },
+        { shown: 'P(A &cup; B)', means: 'the probability that A or B happens',
+          other: ['the probability that A and B both happen', 'the probability of A given B', 'the probability that both fail'],
+          note: 'The ∪ symbol is the "or" case, which is the addition rule.' },
+        { shown: 'P(B | A)', means: 'the probability of B given that A has already happened',
+          other: ['the probability of B divided by A', 'the probability that B and A both happen', 'the probability of B or A'],
+          note: 'The bar is not a division sign. It is the conditional probability used in the dependent multiplication rule.' },
+        { shown: 'P(E<sup>c</sup>)', means: 'the probability that E does not happen',
+          other: ['the probability that E happens twice', 'the probability of E multiplied by itself', 'the certainty of E'],
+          note: 'The c stands for complement — everything outside E. It is why P(Eᶜ) = 1 − P(E).' }
+      ]);
+      return {
+        type: 'mcq', marks: 2,
+        prompt: 'What does <b>' + sym.shown + '</b> mean?',
+        options: R.options(sym.means, sym.other),
+        answer: 0,
+        solution: [
+          { lab: 'Notation', val: sym.shown },
+          { lab: 'Read as', val: sym.means },
+          { lab: 'Answer', val: sym.means, final: true }
+        ],
+        why: sym.note
+      };
+    },
+
+    /* Picking the right formula for the situation, which is the decision every
+       one of these questions really comes down to. */
+    function () {
+      var law = R.pick([
+        { situation: 'two mutually exclusive events, asking for A or B',
+          formula: 'P(A) + P(B)',
+          other: ['P(A) + P(B) − P(A and B)', 'P(A) × P(B)', 'P(A) × P(B | A)'],
+          note: 'Nothing overlaps, so there is nothing to subtract.' },
+        { situation: 'two non-mutually exclusive events, asking for A or B',
+          formula: 'P(A) + P(B) − P(A and B)',
+          other: ['P(A) + P(B)', 'P(A) × P(B)', 'P(A) × P(B | A)'],
+          note: 'The overlap would otherwise be counted in both P(A) and P(B).' },
+        { situation: 'two independent events, asking for A and B',
+          formula: 'P(A) × P(B)',
+          other: ['P(A) × P(B | A)', 'P(A) + P(B)', 'P(A) + P(B) − P(A and B)'],
+          note: 'Independent means the second probability needs no adjustment.' },
+        { situation: 'two dependent events, asking for A and B',
+          formula: 'P(A) × P(B | A)',
+          other: ['P(A) × P(B)', 'P(A) + P(B)', 'P(A) + P(B) − P(A and B)'],
+          note: 'The second probability is worked out after the first event has already happened.' }
+      ]);
+      return {
+        type: 'mcq', marks: 3,
+        prompt: 'Which formula applies to ' + law.situation + '?',
+        options: R.options(law.formula, law.other),
+        answer: 0,
+        solution: [
+          { lab: 'Situation', val: law.situation },
+          { lab: 'Formula', val: law.formula },
+          { lab: 'Answer', val: law.formula, final: true }
+        ],
+        why: law.note
+      };
+    },
+
+    /* What the extreme values actually mean. */
+    function () {
+      var v = R.pick([
+        { val: 'P(E) = 0', means: 'the event is impossible',
+          other: ['the event is certain', 'the event is equally likely to happen or not', 'the event has not been observed yet'],
+          note: 'None of the possible outcomes satisfy it.' },
+        { val: 'P(E) = 1', means: 'the event is certain',
+          other: ['the event is impossible', 'the event happens once', 'the event is equally likely to happen or not'],
+          note: 'Every possible outcome satisfies it.' },
+        { val: 'P(E) = 0.5', means: 'the event is as likely to happen as not',
+          other: ['the event is certain', 'the event is impossible', 'the event happens every second trial'],
+          note: 'Half the outcomes satisfy it — though that does not mean it alternates.' }
+      ]);
+      return {
+        type: 'mcq', marks: 2,
+        prompt: 'If <b>' + v.val + '</b>, what does that tell you?',
+        options: R.options(v.means, v.other),
+        answer: 0,
+        solution: [
+          { lab: 'Value', val: v.val },
+          { lab: 'Meaning', val: v.means },
+          { lab: 'Answer', val: v.means, final: true }
+        ],
+        why: v.note + ' Probabilities run from 0 to 1, with everything else somewhere in between.'
+      };
+    },
+
+    /* Where the number came from — a counted symmetry, or a record of what
+       has happened before. */
+    function () {
+      var kind = R.pick([
+        { text: 'working out that a fair die shows a four one time in six, because it has six identical faces',
+          term: 'theoretical (classical) probability',
+          other: ['empirical (relative frequency) probability', 'subjective probability', 'conditional probability'],
+          note: 'It comes from the structure of the object itself, with nothing needing to be observed.' },
+        { text: 'estimating that a delivery will be late one time in eight, because forty of the last three hundred and twenty were',
+          term: 'empirical (relative frequency) probability',
+          other: ['theoretical (classical) probability', 'subjective probability', 'mutually exclusive probability'],
+          note: 'There is no symmetry to reason from, so the past record is the best estimate available.' }
+      ]);
+      return {
+        type: 'mcq', marks: 2,
+        prompt: 'What kind of probability is being used when ' + kind.text + '?',
+        options: R.options(kind.term, kind.other),
+        answer: 0,
+        solution: [
+          { lab: 'Situation', val: kind.text },
+          { lab: 'Answer', val: kind.term, final: true }
+        ],
+        why: kind.note
+      };
+    },
+
+    /* The complement, stated rather than calculated. */
+    function () {
+      return {
+        type: 'mcq', marks: 2,
+        prompt: 'For any event E, what does P(E) + P(E<sup>c</sup>) equal?',
+        options: R.options('1', ['0', '0.5', 'it depends on the event']),
+        answer: 0,
+        solution: [
+          { lab: 'E and its complement', val: 'between them cover every possible outcome' },
+          { lab: 'So together they are', val: 'certain' },
+          { lab: 'Answer', val: '1', final: true }
+        ],
+        why: 'This is why the complement rule is written P(Eᶜ) = 1 − P(E). It is often far quicker to work out ' +
+             'the thing you do not want and subtract.'
       };
     }
   ]);

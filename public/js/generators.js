@@ -7,24 +7,96 @@ var GEN = (function () {
   var R = Rand;
   var reg = {};
 
+  /* A fraction in its lowest terms. Distractors have to be built with this too,
+     not just answers: a screen showing 7/13, 30/52, 2/52 and 26/52 tells you
+     which one is correct without any probability being done, because only the
+     right answer was simplified. */
+  function sfrac(n, d) {
+    var g = R.gcd(n, d);
+    return R.frac(n / g, d / g);
+  }
+
   function add(topicId, fns) {
     reg[topicId] = (reg[topicId] || []).concat(fns);
   }
 
-  /* Produces up to n distinct questions for a topic. Distinctness is judged on the
-     rendered prompt, so two rolls that happen to land on the same numbers collapse. */
+  /* What a question actually asks, ignoring how it is worded: every number in
+     it, plus the answer it wants back.
+
+     Two questions matching on this are the same exercise however different they
+     read, which is the whole problem. "Two queens are drawn from 52" and "two
+     jacks are drawn from 52" both reduce to 52 => 1/221, and both used to land
+     in the same round because the old check compared the sentences and the
+     sentences plainly differed. So do "24 × 34" and "34 × 24", and the same
+     dataset listed in a different order, and an overhead question about the
+     electricity bill next to an identical one about the insurance bill. */
+  function fingerprint(q) {
+    var text = String(q.prompt || '') + ' ' + String(q.scenario || '');
+    text = text.replace(/<[^>]*>/g, ' ');
+
+    var nums = text.match(/\d+(?:[.,]\d+)?/g) || [], tidy = [];
+    for (var i = 0; i < nums.length; i++) tidy.push(nums[i].replace(',', ''));
+    tidy.sort();
+
+    var wants;
+    if (q.type === 'mcq') {
+      wants = String((q.options || [])[q.answer] || '').replace(/<[^>]*>/g, ' ');
+    } else if (q.type === 'steps') {
+      wants = '';
+      for (var s = 0; s < (q.steps || []).length; s++) wants += '~' + (q.steps[s].answer);
+    } else {
+      wants = String(q.answer);
+    }
+    wants = wants.replace(/\s+/g, '');
+
+    /* A question with no numbers in it is a question about the ideas — "which
+       rule applies to dependent events", "is this pair independent". There the
+       words are the maths, and fingerprinting on numbers alone would reduce
+       every one of them to its answer, leaving four possible questions in a
+       whole topic. */
+    if (!tidy.length) {
+      return 'txt:' + text.replace(/\s+/g, ' ').replace(/^ | $/g, '').toLowerCase() + '=>' + wants;
+    }
+    return tidy.join('|') + '=>' + wants;
+  }
+
+  /* Produces up to n distinct questions for a topic.
+     Distinctness is judged on the maths above, never on the wording. A generator
+     can override with an explicit `shape` where the numbers alone do not capture
+     what makes two of its questions the same. */
   function make(topicId, n) {
     var fns = reg[topicId] || [];
     if (!fns.length || n <= 0) return [];
+
+    /* Take the generators in a different order each time. Walking them in the
+       order they were written meant that once a topic had more generators than
+       the round had room for, the ones at the end effectively did not exist —
+       a round of six would be filled by the first six every single time, so
+       adding a new kind of question changed almost nothing. */
+    var order = [];
+    for (var i = 0; i < fns.length; i++) order.push(i);
+    for (i = order.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var swap = order[i]; order[i] = order[j]; order[j] = swap;
+    }
+
     var out = [], seen = {}, attempts = 0, maxAttempts = n * 12;
     while (out.length < n && attempts < maxAttempts) {
       attempts++;
       var q;
-      try { q = fns[attempts % fns.length](); } catch (e) { continue; }
+      try { q = fns[order[attempts % order.length]](); } catch (e) { continue; }
       if (!q) continue;
-      var key = (q.scenario || '') + '|' + q.prompt;
-      if (seen[key]) continue;
-      seen[key] = true;
+
+      /* Both keys, always. An explicit shape is an extra way for two questions
+         to be the same, never a licence to skip the maths check — keying on the
+         shape alone put "Calculate 10⁴" and "What is 10⁴ written out in full?"
+         in one round, because they were answering to different namespaces. */
+      var print = fingerprint(q);
+      var named = q.shape ? 's:' + q.shape : null;
+      if (seen[print] || (named && seen[named])) continue;
+      seen[print] = true;
+      if (named) seen[named] = true;
+      var key = print;
       q.id = topicId + '-g' + out.length + '-' + attempts;
       q.generated = true;
       out.push(q);
@@ -521,7 +593,7 @@ var GEN = (function () {
 
   add('w1-powers', [
     function () {
-      var base = R.int(2, 9), exp = R.int(3, 6);
+      var base = R.int(2, 12), exp = R.int(3, 7);
       var parts = [];
       for (var i = 0; i < exp; i++) parts.push(base);
       return {
@@ -539,9 +611,9 @@ var GEN = (function () {
       };
     },
     function () {
-      var base = R.int(2, 7), exp = R.int(2, 5);
+      var base = R.int(2, 12), exp = R.int(2, 6);
       var ans = Math.pow(base, exp);
-      if (ans > 5000) return null;
+      if (ans > 20000) return null;
       var chain = [], run = 1, seq = [];
       for (var i = 0; i < exp; i++) { run *= base; seq.push(run); chain.push(base); }
       return {
@@ -557,31 +629,107 @@ var GEN = (function () {
       };
     },
     function () {
-      var root = R.int(4, 20), sq = root * root;
+      var root = R.int(4, 30), sq = root * root;
       return {
         type: 'numeric', marks: 2,
-        prompt: 'Calculate √' + sq + '.',
+        prompt: 'Calculate √' + R.num(sq) + '.',
         answer: root, tol: 0.01,
         solution: [
-          { lab: 'What we need', val: 'a number that multiplied by itself gives ' + sq },
-          { lab: 'Test', val: root + ' × ' + root + ' = ' + sq },
+          { lab: 'What we need', val: 'a number that multiplied by itself gives ' + R.num(sq) },
+          { lab: 'Test', val: root + ' × ' + root + ' = ' + R.num(sq) },
           { lab: 'Answer', val: String(root), final: true }
         ],
         why: 'No number to the left of the root sign means a square root, so you need the value that appears twice.'
       };
     },
     function () {
-      var root = R.int(2, 8), cube = root * root * root;
+      var root = R.int(2, 10), cube = root * root * root;
       return {
         type: 'numeric', marks: 2,
-        prompt: 'Calculate <sup>3</sup>√' + cube + ', the cube root of ' + cube + '.',
+        prompt: 'Calculate <sup>3</sup>√' + R.num(cube) + ', the cube root of ' + R.num(cube) + '.',
         answer: root, tol: 0.01,
         solution: [
-          { lab: 'What we need', val: 'a number appearing three times that gives ' + cube },
-          { lab: 'Test', val: root + ' × ' + root + ' × ' + root + ' = ' + cube },
+          { lab: 'What we need', val: 'a number appearing three times that gives ' + R.num(cube) },
+          { lab: 'Test', val: root + ' × ' + root + ' × ' + root + ' = ' + R.num(cube) },
           { lab: 'Answer', val: String(root), final: true }
         ],
         why: 'The small 3 on the root sign tells you the value must appear three times, not two.'
+      };
+    },
+
+    /* Powers of ten. Worth their own question: they are how every large money
+       figure in the module gets read, and the pattern is easy to see. */
+    function () {
+      var n = R.int(2, 7);
+      var val = Math.pow(10, n);
+      var reverse = R.int(0, 1) === 0;
+      var zeros = '';
+      for (var z = 0; z < n; z++) zeros += '0';
+      return {
+        type: 'mcq', marks: 1,
+        shape: 'pow10|' + n + '|' + (reverse ? 'r' : 'f'),
+        prompt: reverse
+          ? 'Written as a power of 10, ' + R.num(val) + ' is:'
+          : 'What is 10<sup>' + n + '</sup> written out in full?',
+        options: reverse
+          ? R.options('10<sup>' + n + '</sup>', ['10<sup>' + (n + 1) + '</sup>',
+                                                 '10<sup>' + (n - 1) + '</sup>', n + '<sup>10</sup>'])
+          : R.options(R.num(val), [R.num(val * 10), R.num(val / 10), R.num(10 * n)]),
+        answer: 0,
+        solution: [
+          { lab: 'The exponent counts', val: 'how many 10s are multiplied together' },
+          { lab: 'Which means', val: 'a 1 followed by ' + n + ' zero' + (n === 1 ? '' : 's') },
+          { lab: 'Answer', val: reverse ? '10^' + n : R.num(val), final: true }
+        ],
+        why: '10^' + n + ' is 1' + zeros + '. Counting the zeros is the quickest check — the exponent and the ' +
+             'number of zeros always match.'
+      };
+    },
+
+    /* A fourth root, so the small number on the sign is something she has to
+       read rather than assume. */
+    function () {
+      var root = R.int(2, 5);
+      var val = root * root * root * root;
+      return {
+        type: 'numeric', marks: 2,
+        shape: 'root4|' + root,
+        prompt: 'Calculate <sup>4</sup>√' + R.num(val) + '.',
+        answer: root, tol: 0.01,
+        solution: [
+          { lab: 'The 4 on the sign means', val: 'find the value that appears four times' },
+          { lab: 'Test', val: root + ' × ' + root + ' × ' + root + ' × ' + root + ' = ' + R.num(val) },
+          { lab: 'Answer', val: String(root), final: true }
+        ],
+        why: 'Roots and powers undo each other whatever the number is. Since ' + root + '^4 = ' + R.num(val) +
+             ', the fourth root of ' + R.num(val) + ' must be ' + root + '.'
+      };
+    },
+
+    /* Comparing two powers — the order of base and exponent is not decoration,
+       and seeing it fail once fixes it. */
+    function () {
+      var a = R.int(2, 5), b = R.int(2, 5);
+      if (a === b) return null;
+      var ab = Math.pow(a, b), ba = Math.pow(b, a);
+      if (ab === ba) return null;                   // 2^4 and 4^2 are both 16
+      var bigger = ab > ba ? a + '<sup>' + b + '</sup>' : b + '<sup>' + a + '</sup>';
+      return {
+        type: 'mcq', marks: 2,
+        shape: 'compare|' + Math.min(a, b) + '|' + Math.max(a, b),
+        prompt: 'Which is larger, ' + a + '<sup>' + b + '</sup> or ' + b + '<sup>' + a + '</sup>?',
+        options: R.options(bigger, [
+          ab > ba ? b + '<sup>' + a + '</sup>' : a + '<sup>' + b + '</sup>',
+          'they are equal'
+        ]),
+        answer: 0,
+        solution: [
+          { lab: a + '^' + b, val: R.num(ab) },
+          { lab: b + '^' + a, val: R.num(ba) },
+          { lab: 'Answer', val: (ab > ba ? a + '^' + b : b + '^' + a) + ' is larger', final: true }
+        ],
+        why: 'Swapping the base and the exponent gives a completely different number — ' + R.num(ab) +
+             ' against ' + R.num(ba) + '. Which one sits raised matters.'
       };
     }
   ]);
@@ -593,6 +741,8 @@ var GEN = (function () {
       if (ans > 200000) return null;
       return {
         type: 'numeric', marks: 3,
+        /* 3² × 3⁴ and 3⁴ × 3² are the same sum written back to front. */
+        shape: 'expmul|' + base + '|' + (a + b),
         prompt: 'Simplify and calculate ' + base + '<sup>' + a + '</sup> × ' + base + '<sup>' + b + '</sup>.',
         answer: ans, tol: 0.01,
         solution: [
@@ -608,6 +758,7 @@ var GEN = (function () {
       var ans = Math.pow(base, a - b);
       return {
         type: 'numeric', marks: 3,
+        shape: 'expdiv|' + base + '|' + (a - b),
         prompt: 'Simplify and calculate ' + R.frac(base + '<sup>' + a + '</sup>', base + '<sup>' + b + '</sup>') + '.',
         answer: ans, tol: 0.01,
         solution: [
@@ -619,19 +770,142 @@ var GEN = (function () {
       };
     },
     function () {
-      var a = R.int(2, 6), b = R.int(2, 6);
+      var a = R.int(2, 8), b = R.int(2, 8);
+      var v = R.pick(['x', 'y', 'a', 'm', 'p']);
       return {
         type: 'mcq', marks: 2,
-        prompt: 'Simplify (x<sup>' + a + '</sup>)<sup>' + b + '</sup>.',
-        options: R.options('x<sup>' + (a * b) + '</sup>',
-                           ['x<sup>' + (a + b) + '</sup>', 'x<sup>' + Math.pow(a, b) + '</sup>', a + 'x<sup>' + b + '</sup>']),
+        /* (x⁴)⁵ and (x⁵)⁴ are both x²⁰, and the letter is decoration. */
+        shape: 'powpow|' + (a * b),
+        prompt: 'Simplify (' + v + '<sup>' + a + '</sup>)<sup>' + b + '</sup>.',
+        options: R.options(v + '<sup>' + (a * b) + '</sup>',
+                           [v + '<sup>' + (a + b) + '</sup>', v + '<sup>' + Math.pow(a, b) + '</sup>',
+                            a + v + '<sup>' + b + '</sup>', v + '<sup>' + Math.abs(a - b) + '</sup>']),
         answer: 0,
         solution: [
           { lab: 'Power raised to a power', val: 'multiply the exponents' },
           { lab: 'Calculate', val: a + ' × ' + b + ' = ' + (a * b) },
-          { lab: 'Answer', val: 'x^' + (a * b), final: true }
+          { lab: 'Answer', val: v + '^' + (a * b), final: true }
         ],
-        why: 'x^' + (a + b) + ' comes from adding — but adding is the rule for multiplying two powers, not raising one to another.'
+        why: v + '^' + (a + b) + ' comes from adding — but adding is the rule for multiplying two powers, not raising one to another.'
+      };
+    },
+
+    /* The two special instances. Small, but they are stated first in the notes
+       and they turn up inside longer simplifications constantly. */
+    function () {
+      var v = R.pick(['x', 'y', 'b', 'k', 'n']);
+      var base = R.int(2, 30);
+      var zero = R.int(0, 1) === 0;
+      return {
+        type: 'mcq', marks: 1,
+        shape: 'special|' + (zero ? 'zero' : 'one'),
+        prompt: zero
+          ? 'What is ' + base + '<sup>0</sup>?'
+          : 'Simplify ' + v + '<sup>1</sup>.',
+        options: zero
+          ? R.options('1', ['0', String(base), R.frac(1, base)])
+          : R.options(v, [v + '<sup>0</sup>', '1', '0']),
+        answer: 0,
+        solution: zero
+          ? [
+              { lab: 'Anything to the power of 0', val: 'is 1' },
+              { lab: 'Why', val: base + '^n ÷ ' + base + '^n = 1, and dividing subtracts the exponents to give ' + base + '^0' },
+              { lab: 'Answer', val: '1', final: true }
+            ]
+          : [
+              { lab: 'Anything to the power of 1', val: 'is itself' },
+              { lab: 'Answer', val: v, final: true }
+            ],
+        why: zero
+          ? 'It looks wrong until you see where it comes from: it is forced by the division rule, not an arbitrary decision. Note ' + base + '^0 is 1, not 0.'
+          : 'The exponent counts how many times the base appears. Once means just the base itself.'
+      };
+    },
+
+    /* A product raised to a power — every factor gets it, which is the part
+       most often dropped. */
+    function () {
+      var a = R.int(2, 5);
+      var coef = R.int(2, 6);
+      var v = R.pick(['x', 'y', 'm']), w = R.pick(['z', 'n', 'k']);
+      var useCoef = R.int(0, 1) === 0;
+      return {
+        type: 'mcq', marks: 2,
+        shape: 'product-pow|' + (useCoef ? 'coef' + coef : 'plain') + '|' + a,
+        prompt: useCoef
+          ? 'Simplify (' + coef + v + ')<sup>' + a + '</sup>.'
+          : 'Simplify (' + v + w + ')<sup>' + a + '</sup>.',
+        options: useCoef
+          ? R.options(R.num(Math.pow(coef, a)) + v + '<sup>' + a + '</sup>',
+                      [coef + v + '<sup>' + a + '</sup>', (coef * a) + v + '<sup>' + a + '</sup>',
+                       R.num(Math.pow(coef, a)) + v])
+          : R.options(v + '<sup>' + a + '</sup>' + w + '<sup>' + a + '</sup>',
+                      [v + w + '<sup>' + a + '</sup>', v + '<sup>' + a + '</sup>' + w,
+                       (v + w) + '<sup>' + (a * 2) + '</sup>']),
+        answer: 0,
+        solution: useCoef
+          ? [
+              { lab: 'Each factor gets the power', val: '(' + coef + v + ')^' + a + ' = ' + coef + '^' + a + ' × ' + v + '^' + a },
+              { lab: 'The number too', val: coef + '^' + a + ' = ' + R.num(Math.pow(coef, a)) },
+              { lab: 'Answer', val: R.num(Math.pow(coef, a)) + v + '^' + a, final: true }
+            ]
+          : [
+              { lab: 'Each factor gets the power', val: '(' + v + w + ')^' + a + ' = ' + v + '^' + a + ' × ' + w + '^' + a },
+              { lab: 'Answer', val: v + '^' + a + w + '^' + a, final: true }
+            ],
+        why: useCoef
+          ? 'The ' + coef + ' is a factor like any other, so it is raised too — ' + coef + '^' + a + ', not left as ' + coef + '.'
+          : 'Both letters are inside the bracket, so both are multiplied ' + a + ' times over.'
+      };
+    },
+
+    /* Negative exponents, in both directions. */
+    function () {
+      var base = R.int(2, 6), a = R.int(2, 4);
+      var toFraction = R.int(0, 1) === 0;
+      var val = Math.pow(base, a);
+      return {
+        type: 'mcq', marks: 2,
+        shape: 'negexp|' + (toFraction ? 'to-frac' : 'to-neg') + '|' + base + '|' + a,
+        prompt: toFraction
+          ? 'Rewrite ' + base + '<sup>−' + a + '</sup> without a negative exponent.'
+          : 'Rewrite ' + R.frac(1, base + '<sup>' + a + '</sup>') + ' using a negative exponent.',
+        options: toFraction
+          ? R.options(R.frac(1, R.num(val)), [R.frac(1, base * a), '−' + R.num(val), R.frac(-1, R.num(val))])
+          : R.options(base + '<sup>−' + a + '</sup>', ['−' + base + '<sup>' + a + '</sup>',
+                                                       base + '<sup>' + a + '</sup>', '−' + base + '<sup>−' + a + '</sup>']),
+        answer: 0,
+        solution: [
+          { lab: 'The rule', val: 'x^−a means 1 ÷ x^a' },
+          { lab: 'Here', val: base + '^' + a + ' = ' + R.num(val) },
+          { lab: 'Answer', val: toFraction ? '1/' + R.num(val) : base + '^−' + a, final: true }
+        ],
+        why: 'A negative exponent does not make the answer negative — it flips it to the bottom of a fraction. ' +
+             base + '^−' + a + ' is 1/' + R.num(val) + ', a small positive number.'
+      };
+    },
+
+    /* The watch-out the notes call out by name: the laws need the same base. */
+    function () {
+      var b1 = R.pick([2, 3, 5]), b2 = R.pick([4, 6, 7]);
+      var e1 = R.int(2, 5), e2 = R.int(2, 5);
+      return {
+        type: 'mcq', marks: 2,
+        shape: 'diffbase',
+        prompt: 'Which of these <b>cannot</b> be simplified by adding exponents?',
+        options: R.options(
+          b1 + '<sup>' + e1 + '</sup> × ' + b2 + '<sup>' + e2 + '</sup>',
+          [b1 + '<sup>' + e1 + '</sup> × ' + b1 + '<sup>' + e2 + '</sup>',
+           'x<sup>' + e1 + '</sup> × x<sup>' + e2 + '</sup>',
+           b2 + '<sup>' + e1 + '</sup> × ' + b2 + '<sup>' + e2 + '</sup>']),
+        answer: 0,
+        solution: [
+          { lab: 'The rule needs', val: 'the same base on both sides' },
+          { lab: 'Here', val: b1 + ' and ' + b2 + ' are different bases' },
+          { lab: 'Answer', val: b1 + '^' + e1 + ' × ' + b2 + '^' + e2 + ' — work each one out separately', final: true }
+        ],
+        why: 'Adding exponents is really just counting how many copies of one base are being multiplied. ' +
+             'With two different bases there is nothing to count.'
       };
     }
   ]);
@@ -1513,10 +1787,17 @@ var GEN = (function () {
       var g = R.gcd(count, 6);
       return {
         type: 'mcq', marks: 2,
+        /* Counting the faces is the whole exercise, so two rolls that land on the
+           same count are the same question wearing a different sentence. */
+        shape: 'die|' + count,
         prompt: 'When rolling a standard six-sided die, what is the probability of rolling a number <b>' +
                 (greater ? 'greater than ' : 'less than or equal to ') + threshold + '</b>?',
-        options: R.options(R.frac(count / g, 6 / g),
-                           [R.frac(6 - count, 6), R.frac(1, 6), R.frac(threshold, 6)]),
+        /* Every other face-count, simplified, offered in a random order. The old
+           trio collapsed into the answer whenever count was 3 (3/6 and 6−3/6 are
+           the same half), which left her choosing between two options. */
+        options: R.options(R.frac(count / g, 6 / g), R.shuffle([1, 2, 3, 4, 5])
+          .filter(function (k) { return k !== count; })
+          .map(function (k) { var kg = R.gcd(k, 6); return R.frac(k / kg, 6 / kg); })),
         answer: 0,
         solution: [
           { lab: 'Desired outcomes', val: count + ' of the six faces' },
@@ -1541,41 +1822,265 @@ var GEN = (function () {
         why: 'An event and its complement must add to 1, because between them they cover every possible outcome.'
       };
     },
+    /* Cards. The criterion is what varies, not the flavour word: asking for a
+       face card counts 12, an ace counts 4, a red card counts 26. Picking a
+       different suit name only ever produced 13 again, which is how two
+       identical questions ended up in the same round. */
     function () {
-      var suit = R.pick(['heart', 'spade', 'diamond', 'club']);
+      var crit = R.pick([
+        { text: 'a heart', n: 13, how: 'one suit of 13' },
+        { text: 'a spade', n: 13, how: 'one suit of 13' },
+        { text: 'a red card', n: 26, how: 'hearts and diamonds, 13 each' },
+        { text: 'a face card (jack, queen or king)', n: 12, how: '3 face ranks × 4 suits' },
+        { text: 'an ace', n: 4, how: 'one of each suit' },
+        { text: 'a black face card', n: 6, how: '3 face ranks × 2 black suits' },
+        { text: 'a ten or higher (10, J, Q, K, A)', n: 20, how: '5 ranks × 4 suits' }
+      ]);
       var isNot = R.int(0, 1) === 0;
+      var hits = isNot ? 52 - crit.n : crit.n;
+      var g = R.gcd(hits, 52);
+      var ans = R.frac(hits / g, 52 / g);
       return {
         type: 'mcq', marks: 2,
+        shape: 'card-single|' + hits,
         prompt: 'A card is drawn at random from a deck of 52. What is the probability that it is ' +
-                (isNot ? '<b>not</b> a ' : 'a ') + suit + '?',
-        options: R.options(isNot ? R.frac(3, 4) : R.frac(1, 4),
-                           [isNot ? R.frac(1, 4) : R.frac(3, 4), R.frac(1, 2), R.frac(13, 52)]),
+                (isNot ? '<b>not</b> ' : '') + crit.text + '?',
+        /* Other counts that plausibly come out of a deck, simplified. Offering
+           the complement as a fixed distractor collapsed onto the answer for a
+           red card, where the complement is also 26. */
+        options: R.options(ans, R.shuffle([4, 6, 12, 13, 20, 26, 39, 40])
+          .filter(function (k) { return k !== hits; })
+          .map(function (k) { var kg = R.gcd(k, 52); return R.frac(k / kg, 52 / kg); })),
         answer: 0,
         solution: [
-          { lab: 'P(' + suit + ')', val: '13 of the 52 cards → 13/52 = 1/4' },
-          { lab: isNot ? 'Complement rule' : 'Simplify', val: isNot ? '1 − 1/4' : '13/52' },
-          { lab: 'Answer', val: isNot ? '3/4' : '1/4', final: true }
+          { lab: 'Favourable cards', val: crit.text + ' — ' + crit.how + ' = ' + crit.n },
+          isNot
+            ? { lab: 'Complement', val: '52 − ' + crit.n + ' = ' + hits + ' cards are not ' + crit.text }
+            : { lab: 'Out of', val: '52 cards in the deck' },
+          { lab: 'Probability', val: hits + '/52' },
+          { lab: 'Answer', val: (hits / g) + '/' + (52 / g), final: true }
         ],
-        why: 'Each of the four suits holds 13 of the 52 cards, so any single suit is exactly a quarter of the deck.'
+        why: 'Everything here is counting. Work out how many of the 52 cards satisfy the description, ' +
+             'put that over 52, then simplify.'
+      };
+    },
+
+    /* A bag of counters. The totals move, so the arithmetic genuinely differs
+       every time rather than dressing up the same fraction. */
+    function () {
+      var red = R.int(3, 11), blue = R.int(3, 11), green = R.int(2, 8);
+      var total = red + blue + green;
+      var want = R.pick([
+        { lab: 'red', n: red }, { lab: 'blue', n: blue }, { lab: 'green', n: green }
+      ]);
+      var g = R.gcd(want.n, total);
+      return {
+        type: 'mcq', marks: 2,
+        scenario: 'A bag holds ' + red + ' red counters, ' + blue + ' blue counters and ' +
+                  green + ' green counters. One counter is taken out without looking.',
+        prompt: 'What is the probability that it is <b>' + want.lab + '</b>?',
+        /* Comparing the group to the rest instead of to the whole bag, the
+           complement, and the other two colours — all genuine ways to go wrong.
+           Filtered by value, so a bag that happens to be half red still fills up. */
+        options: R.options(R.frac(want.n / g, total / g), (function () {
+          var wrong = [{ n: want.n, d: total - want.n }, { n: total - want.n, d: total }];
+          [red, blue, green].forEach(function (k) { if (k !== want.n) wrong.push({ n: k, d: total }); });
+          return wrong.map(function (o) {
+            var og = R.gcd(o.n, o.d);
+            return R.frac(o.n / og, o.d / og);
+          });
+        })()),
+        answer: 0,
+        solution: [
+          { lab: 'Favourable', val: want.n + ' ' + want.lab + ' counters' },
+          { lab: 'Total', val: red + ' + ' + blue + ' + ' + green + ' = ' + total + ' counters' },
+          { lab: 'Probability', val: want.n + '/' + total },
+          { lab: 'Answer', val: (want.n / g) + '/' + (total / g), final: true }
+        ],
+        why: 'The denominator is every counter in the bag, not just the ones you are not interested in. ' +
+             'A common slip is ' + want.n + '/' + (total - want.n) + ', which compares the two groups instead.'
+      };
+    },
+
+    /* Empirical probability — estimating from what actually happened. Same
+       single idea (favourable ÷ total) but arriving from data rather than
+       from a symmetrical object. */
+    function () {
+      var total = R.pick([200, 250, 500]);
+      /* Two tenses per event: the record already happened, the prediction has
+         not. Reusing one phrase for both produced "the probability that the
+         next one were resolved on the first call". */
+      var event = R.pick([
+        { noun: 'deliveries', past: 'arrived late', next: 'arrives late' },
+        { noun: 'calls to the help desk', past: 'were resolved on the first call', next: 'is resolved on the first call' },
+        { noun: 'items coming off the line', past: 'failed inspection', next: 'fails inspection' },
+        { noun: 'website visits', past: 'ended in a purchase', next: 'ends in a purchase' }
+      ]);
+      var hits = R.int(Math.round(total * 0.06), Math.round(total * 0.34));
+      var ans = R.round(hits / total, 3);
+      return {
+        type: 'numeric', marks: 2,
+        shape: 'empirical|' + hits + '/' + total,
+        scenario: 'A business recorded ' + R.num(total) + ' ' + event.noun + ' last month. Of those, ' +
+                  R.num(hits) + ' ' + event.past + '.',
+        prompt: 'Based on this record, estimate the probability that the next one ' + event.next + '.',
+        answer: ans, tol: 0.0005,
+        note: 'Give your answer as a decimal.',
+        solution: [
+          { lab: 'Relative frequency', val: 'P(event) ≈ times it happened ÷ times observed' },
+          { lab: 'Substitute', val: R.num(hits) + ' ÷ ' + R.num(total) },
+          { lab: 'Answer', val: String(ans), final: true }
+        ],
+        why: 'There is no symmetry to reason from here, so the past record is the best estimate available. ' +
+             'The more observations behind it, the more you can trust it.'
+      };
+    },
+
+    /* Raffle — the same counting idea with a deliberately awkward simplification. */
+    function () {
+      var total = R.pick([60, 80, 120, 150, 200, 250]);
+      var bought = R.int(4, 25);
+      var g = R.gcd(bought, total);
+      return {
+        type: 'mcq', marks: 2,
+        shape: 'raffle|' + bought + '/' + total,
+        prompt: 'A raffle sells ' + R.num(total) + ' tickets in total and Abi buys ' + bought +
+                ' of them. One winning ticket is drawn at random. What is the probability that Abi wins?',
+        options: R.options(sfrac(bought, total), [
+          sfrac(1, total),
+          sfrac(bought, total - bought),     /* compared to the tickets she does not hold */
+          sfrac(1, bought)
+        ]),
+        answer: 0,
+        solution: [
+          { lab: 'Favourable', val: bought + ' tickets are hers' },
+          { lab: 'Total', val: R.num(total) + ' tickets were sold' },
+          { lab: 'Probability', val: bought + '/' + R.num(total) },
+          { lab: 'Answer', val: (bought / g) + '/' + (total / g), final: true }
+        ],
+        why: 'Each ticket is equally likely to be drawn, so holding ' + bought + ' of them means ' +
+             bought + ' of the ' + R.num(total) + ' equally likely outcomes are wins.'
       };
     }
   ]);
 
   add('w3-add', [
+    /* Cards where the two events overlap, so the subtraction is the point.
+       Naming two ranks only ever gave 4/52 + 4/52 again — the pair chosen here
+       changes both the counts and whether anything is double-counted at all. */
     function () {
-      var ranks = R.shuffle(['7', '8', '9', '10', 'jack', 'queen', 'king', 'ace']);
+      var pair = R.pick([
+        { a: 'a heart', na: 13, b: 'a face card (jack, queen or king)', nb: 12, both: 3, bothWhy: 'the jack, queen and king of hearts' },
+        { a: 'a red card', na: 26, b: 'an ace', nb: 4, both: 2, bothWhy: 'the ace of hearts and the ace of diamonds' },
+        { a: 'a spade', na: 13, b: 'a king', nb: 4, both: 1, bothWhy: 'the king of spades' },
+        { a: 'a black card', na: 26, b: 'a queen', nb: 4, both: 2, bothWhy: 'the queen of spades and the queen of clubs' },
+        { a: 'a face card (jack, queen or king)', na: 12, b: 'a red card', nb: 26, both: 6, bothWhy: 'the three face cards in each of the two red suits' },
+        { a: 'a diamond', na: 13, b: 'a ten or higher (10, J, Q, K, A)', nb: 20, both: 5, bothWhy: 'the 10, J, Q, K and A of diamonds' }
+      ]);
+      var either = pair.na + pair.nb - pair.both;
+      var g = R.gcd(either, 52);
       return {
         type: 'mcq', marks: 3,
-        prompt: 'Determine the probability of obtaining either a ' + ranks[0] + ' or a ' + ranks[1] +
-                ' when one card is picked at random from a deck of 52.',
-        options: R.options(R.frac(2, 13), [R.frac(1, 13), R.frac(4, 13), R.frac(1, 169)]),
+        shape: 'card-or|' + either,
+        prompt: 'One card is drawn at random from a deck of 52. What is the probability that it is <b>' +
+                pair.a + ' or ' + pair.b + '</b>?',
+        options: R.options(sfrac(either, 52), [
+          sfrac(pair.na + pair.nb, 52),      /* forgot to subtract the overlap */
+          sfrac(pair.both, 52),
+          sfrac(pair.na, 52)
+        ]),
         answer: 0,
         solution: [
-          { lab: 'Mutually exclusive?', val: 'yes — one card cannot be both' },
-          { lab: 'Apply P(A) + P(B)', val: '4/52 + 4/52 = 8/52' },
-          { lab: 'Answer', val: '2/13', final: true }
+          { lab: 'Mutually exclusive?', val: 'no — ' + pair.both + ' card' + (pair.both === 1 ? ' is' : 's are') + ' both (' + pair.bothWhy + ')' },
+          { lab: 'P(' + pair.a + ')', val: pair.na + '/52' },
+          { lab: 'P(' + pair.b + ')', val: pair.nb + '/52' },
+          { lab: 'Subtract the overlap', val: pair.na + ' + ' + pair.nb + ' − ' + pair.both + ' = ' + either + ' cards' },
+          { lab: 'Answer', val: (either / g) + '/' + (52 / g), final: true }
         ],
-        why: 'There are four of each rank, one per suit. Drawing one prevents drawing the other, which is what makes them mutually exclusive.'
+        why: 'Adding straight to ' + (pair.na + pair.nb) + '/52 counts ' + pair.bothWhy +
+             ' twice. That is exactly what the −P(A and B) term exists to undo.'
+      };
+    },
+
+    /* Die, two overlapping descriptions. Which two get picked changes the union
+       every time, so the counting is never the same twice. */
+    function () {
+      var sets = [
+        { text: 'even', faces: [2, 4, 6] },
+        { text: 'odd', faces: [1, 3, 5] },
+        { text: 'greater than 3', faces: [4, 5, 6] },
+        { text: 'less than 3', faces: [1, 2] },
+        { text: 'a multiple of 3', faces: [3, 6] },
+        { text: 'at least 5', faces: [5, 6] },
+        { text: 'a prime number', faces: [2, 3, 5] }
+      ];
+      var two = R.shuffle(sets).slice(0, 2);
+      var A = two[0], B = two[1];
+
+      var union = [], both = [];
+      for (var f = 1; f <= 6; f++) {
+        var inA = A.faces.indexOf(f) !== -1, inB = B.faces.indexOf(f) !== -1;
+        if (inA || inB) union.push(f);
+        if (inA && inB) both.push(f);
+      }
+      /* Certainty is not worth asking, and a union that is just one of the two
+         sets makes the addition rule invisible. */
+      if (union.length === 6 || union.length === A.faces.length || union.length === B.faces.length) return null;
+
+      var g = R.gcd(union.length, 6);
+      return {
+        type: 'mcq', marks: 3,
+        /* Keyed on how many faces qualify, not which ones: "odd or a multiple of
+           3" and "even or at least 5" both come to 4 faces, and meeting both in
+           one round is the same question twice. */
+        shape: 'die-or|' + union.length,
+        prompt: 'A standard six-sided die is rolled once. What is the probability that the result is <b>' +
+                A.text + ' or ' + B.text + '</b>?',
+        options: R.options(sfrac(union.length, 6), [
+          sfrac(A.faces.length + B.faces.length, 6),
+          sfrac(both.length || 1, 6),
+          sfrac(A.faces.length, 6)
+        ]),
+        answer: 0,
+        solution: [
+          { lab: A.text, val: 'faces ' + A.faces.join(', ') },
+          { lab: B.text, val: 'faces ' + B.faces.join(', ') },
+          { lab: 'In both', val: both.length ? 'face ' + both.join(', ') + ' — counted twice if you just add' : 'none — these cannot happen together' },
+          { lab: 'Either', val: 'faces ' + union.join(', ') + ' — that is ' + union.length + ' of 6' },
+          { lab: 'Answer', val: (union.length / g) + '/' + (6 / g), final: true }
+        ],
+        why: both.length
+          ? 'These overlap, so P(A) + P(B) alone would give ' + (A.faces.length + B.faces.length) +
+            '/6. Listing the faces out is the safest way to see it.'
+          : 'These two cannot happen at once, so here P(A or B) really is just P(A) + P(B).'
+      };
+    },
+
+    /* Mutually exclusive, given as probabilities rather than counts — the same
+       rule with nothing to subtract, so she has to notice that for herself. */
+    function () {
+      var plan = R.shuffle(['Basic', 'Standard', 'Premium', 'Business']);
+      var pa = R.round(R.int(15, 40) / 100, 2);
+      var pb = R.round(R.int(15, 40) / 100, 2);
+      var pc = R.round(1 - pa - pb, 2);
+      if (pc <= 0.05) return null;
+      var ans = R.round(pa + pb, 2);
+      return {
+        type: 'numeric', marks: 3,
+        shape: 'excl-plans|' + ans,
+        scenario: 'Every customer signs up for exactly one package. P(' + plan[0] + ') = ' + pa +
+                  ', P(' + plan[1] + ') = ' + pb + ' and P(' + plan[2] + ') = ' + pc + '.',
+        prompt: 'Calculate the probability that a randomly chosen customer is on <b>' + plan[0] +
+                ' or ' + plan[1] + '</b>.',
+        answer: ans, tol: 0.005,
+        solution: [
+          { lab: 'Mutually exclusive?', val: 'yes — each customer is on exactly one package' },
+          { lab: 'So nothing to subtract', val: 'P(A or B) = P(A) + P(B)' },
+          { lab: 'Substitute', val: pa + ' + ' + pb },
+          { lab: 'Answer', val: String(ans), final: true }
+        ],
+        why: '"Exactly one" is the phrase that rules out any overlap. Without it you would need ' +
+             'P(A and B) before you could answer at all.'
       };
     },
     function () {
@@ -1591,8 +2096,9 @@ var GEN = (function () {
         scenario: 'Of ' + total + ' customers who visited the E-Bike SA showroom on a Saturday, ' + a +
                   ' bought an e-bike, ' + b + ' bought accessories, and ' + both + ' of them bought both.',
         prompt: 'One of the ' + total + ' customers is selected at random. What is the probability that they bought an e-bike or accessories?',
-        options: R.options(R.frac(either / g, total / g),
-                           [R.frac(a + b, total), R.frac(both, total), R.frac(a, total)]),
+        /* Reduced like the answer is, so the layout gives nothing away. */
+        options: R.options(sfrac(either, total),
+                           [sfrac(a + b, total), sfrac(both, total), sfrac(a, total)]),
         answer: 0,
         solution: [
           { lab: 'Mutually exclusive?', val: 'no — ' + both + ' customers did both' },
@@ -1627,22 +2133,140 @@ var GEN = (function () {
         why: '"And" means multiply. Because these are unrelated, no conditional adjustment is needed.'
       };
     },
+    /* Two cards without replacement. Naming a different rank changed nothing —
+       four of them exist either way, so the answer was 1/221 every single time.
+       Varying the *group* changes both factors and the answer with them. */
     function () {
-      var rank = R.pick(['kings', 'queens', 'jacks', 'aces', 'tens']);
+      var crit = R.pick([
+        { text: 'both are kings', n: 4, how: '4 kings' },
+        { text: 'both are hearts', n: 13, how: '13 hearts' },
+        { text: 'both are red', n: 26, how: '26 red cards' },
+        { text: 'both are face cards (jack, queen or king)', n: 12, how: '12 face cards' },
+        { text: 'both are tens or higher (10, J, Q, K, A)', n: 20, how: '20 cards of rank 10 or above' }
+      ]);
+      var num = crit.n * (crit.n - 1);
+      var den = 52 * 51;
+      var g = R.gcd(num, den);
       return {
         type: 'mcq', marks: 3,
+        shape: 'card-2-norepl|' + crit.n,
         prompt: 'From a pack of 52 cards, two cards are drawn at random, one at a time, <b>without replacement</b>. ' +
-                'What is the probability that both are ' + rank + '?',
-        options: R.options(R.frac(1, 221), [R.frac(1, 169), R.frac(2, 13), R.frac(1, '2 652')]),
+                'What is the probability that ' + crit.text + '?',
+        /* Every distractor must be a different VALUE, not just a different
+           string — offering the unsimplified form of the answer would quietly
+           put two correct options on the screen. */
+        options: R.options(sfrac(num, den), [
+          /* the same question answered as though the card went back */
+          sfrac(crit.n * crit.n, 2704),
+          /* shrinking the rank but forgetting the deck shrinks too */
+          sfrac(num, 2704),
+          sfrac(crit.n, 52)
+        ]),
         answer: 0,
         solution: [
           { lab: 'Dependent — "without replacement"', val: 'use P(A) × P(B | A)' },
-          { lab: 'P(first)', val: '4/52' },
-          { lab: 'P(second | first)', val: '3/51 — one card of that rank and one card overall are gone' },
-          { lab: 'Multiply', val: '4/52 × 3/51 = 12/2 652' },
-          { lab: 'Answer', val: '1/221', final: true }
+          { lab: 'P(first)', val: crit.n + '/52 — ' + crit.how + ' in the deck' },
+          { lab: 'P(second | first)', val: (crit.n - 1) + '/51 — one of them and one card overall are now gone' },
+          { lab: 'Multiply', val: crit.n + '/52 × ' + (crit.n - 1) + '/51 = ' + num + '/' + R.num(den) },
+          { lab: 'Answer', val: (num / g) + '/' + (den / g), final: true }
         ],
-        why: '1/169 is the answer *with* replacement. The phrase "without replacement" is the whole question.'
+        why: 'Both numbers drop by one, not just the top one. Forgetting the 52 → 51 is the usual slip, ' +
+             'and it is the entire difference between this and the with-replacement version.'
+      };
+    },
+
+    /* The same deck, with the card put back. Deliberately the mirror image of
+       the question above, because telling the two apart is the actual skill. */
+    function () {
+      var crit = R.pick([
+        { text: 'both are hearts', n: 13, how: '13 hearts' },
+        { text: 'both are aces', n: 4, how: '4 aces' },
+        { text: 'both are black', n: 26, how: '26 black cards' },
+        { text: 'both are face cards (jack, queen or king)', n: 12, how: '12 face cards' }
+      ]);
+      var num = crit.n * crit.n;
+      var g = R.gcd(num, 2704);
+      var dep = crit.n * (crit.n - 1);
+      var dg = R.gcd(dep, 2652);
+      return {
+        type: 'mcq', marks: 3,
+        shape: 'card-2-repl|' + crit.n,
+        prompt: 'A card is drawn from a pack of 52, recorded, and <b>put back</b>. A second card is then drawn. ' +
+                'What is the probability that ' + crit.text + '?',
+        options: R.options(sfrac(num, 2704), [
+          sfrac(dep, 2652),                  /* the without-replacement answer */
+          sfrac(crit.n, 52),
+          sfrac(2 * crit.n, 52)
+        ]),
+        answer: 0,
+        solution: [
+          { lab: 'Independent — the card went back', val: 'use P(A) × P(B)' },
+          { lab: 'P(first)', val: crit.n + '/52 — ' + crit.how },
+          { lab: 'P(second)', val: crit.n + '/52 — the deck is exactly as it was' },
+          { lab: 'Multiply', val: crit.n + '/52 × ' + crit.n + '/52 = ' + num + '/' + R.num(2704) },
+          { lab: 'Answer', val: (num / g) + '/' + (2704 / g), final: true }
+        ],
+        why: '"Put back" restores the deck, so nothing is conditional and both fractions stay identical. ' +
+             'Without replacement the second one would have been ' + (crit.n - 1) + '/51 instead.'
+      };
+    },
+
+    /* A bag, without replacement. The totals move every time, so the conditional
+       step has to be worked out rather than remembered. */
+    function () {
+      var red = R.int(4, 10), blue = R.int(3, 9);
+      var total = red + blue;
+      var num = red * (red - 1);
+      var den = total * (total - 1);
+      var g = R.gcd(num, den);
+      return {
+        type: 'mcq', marks: 3,
+        shape: 'bag-2-norepl|' + red + '/' + total,
+        scenario: 'A box holds ' + red + ' red pens and ' + blue + ' blue pens. Two pens are taken out one after ' +
+                  'the other, and the first is <b>not</b> put back.',
+        prompt: 'What is the probability that <b>both pens are red</b>?',
+        options: R.options(sfrac(num, den), [
+          sfrac(red * red, total * total),   /* as though the pen went back */
+          sfrac(num, total * total),         /* off the top but not the bottom */
+          sfrac(red, total)
+        ]),
+        answer: 0,
+        solution: [
+          { lab: 'Total pens', val: red + ' + ' + blue + ' = ' + total },
+          { lab: 'P(first red)', val: red + '/' + total },
+          { lab: 'P(second red | first red)', val: (red - 1) + '/' + (total - 1) + ' — one red pen and one pen overall have gone' },
+          { lab: 'Multiply', val: red + '/' + total + ' × ' + (red - 1) + '/' + (total - 1) + ' = ' + num + '/' + den },
+          { lab: 'Answer', val: (num / g) + '/' + (den / g), final: true }
+        ],
+        why: 'After the first red pen there are ' + (red - 1) + ' red pens left in a box of ' + (total - 1) +
+             '. Both parts of the fraction change, which is what "dependent" means.'
+      };
+    },
+
+    /* Three independent events. Same rule, just applied one more time — the
+       arithmetic is longer without any new idea being needed. */
+    function () {
+      var part = R.shuffle(['the motor', 'the battery', 'the controller', 'the display', 'the brake sensor']);
+      var p1 = R.round(R.int(80, 99) / 100, 2);
+      var p2 = R.round(R.int(80, 99) / 100, 2);
+      var p3 = R.round(R.int(80, 99) / 100, 2);
+      var ans = R.round(p1 * p2 * p3, 4);
+      return {
+        type: 'numeric', marks: 3,
+        shape: 'indep-3|' + p1 + '|' + p2 + '|' + p3,
+        scenario: 'An e-bike passes its final check only if three parts all work. The parts fail independently of ' +
+                  'one another. P(' + part[0] + ' works) = ' + p1 + ', P(' + part[1] + ' works) = ' + p2 +
+                  ', P(' + part[2] + ' works) = ' + p3 + '.',
+        prompt: 'Calculate the probability that <b>all three</b> parts work.',
+        answer: ans, tol: 0.00005,
+        note: 'Give your answer as a decimal to four places.',
+        solution: [
+          { lab: 'Independent', val: 'one part failing tells you nothing about the others' },
+          { lab: 'Apply P(A) × P(B) × P(C)', val: p1 + ' × ' + p2 + ' × ' + p3 },
+          { lab: 'Answer', val: String(ans), final: true }
+        ],
+        why: 'The rule extends to as many independent events as you like — keep multiplying. Notice the answer ' +
+             'is below every individual probability: asking for more things to go right can only make it less likely.'
       };
     }
   ]);
@@ -1729,7 +2353,10 @@ var GEN = (function () {
         type: 'mcq', marks: 2,
         prompt: 'An investment has a term of ' + years + ' years with interest compounded ' + f.word +
                 '. What is <span class="math">n</span>?',
-        options: R.options(years * f.m, [years, f.m, years + f.m]),
+        /* A short term compounded half-yearly made "years", "periods per year"
+           and "years + periods" collide, leaving two options on the screen.
+           Offering more wrong-but-tempting values keeps it at four. */
+        options: R.options(years * f.m, [years, f.m, years + f.m, years * 12, years * f.m + 1, years * f.m - 1]),
         answer: 0,
         solution: [
           { lab: 'Interest periods per year', val: String(f.m) + ' (' + f.word + ')' },
@@ -1904,8 +2531,9 @@ var GEN = (function () {
       var f = R.pick(FREQ);
       return {
         type: 'mcq', marks: 2,
+        shape: 'pyr|' + f.m,
         prompt: 'Interest is compounded <b>' + f.word + '</b>. What value should be stored using the P/YR function?',
-        options: R.options(f.m, [f.m === 1 ? 12 : 1, f.m === 4 ? 12 : 4, f.m * 5]),
+        options: R.options(f.m, [f.m === 1 ? 12 : 1, f.m === 4 ? 12 : 4, f.m * 5, f.m + 1]),
         answer: 0,
         solution: [
           { lab: 'P/YR', val: 'the number of interest periods per year' },
@@ -1913,6 +2541,183 @@ var GEN = (function () {
           { lab: 'Answer', val: String(f.m), final: true }
         ],
         why: 'P/YR is periods per *year*. The total number of periods over the whole term belongs in N, not P/YR.'
+      };
+    },
+
+    /* The single most costly misconception on this calculator: dividing the rate
+       by hand when P/YR has already told the machine to do exactly that. */
+    function () {
+      var f = R.pick(FREQ.slice(1));
+      var rate = R.pick([6, 7.2, 8, 9, 10.5, 12, 15]);
+      return {
+        type: 'mcq', marks: 2,
+        shape: 'iyr|' + rate + '|' + f.m,
+        prompt: 'An investment earns <b>' + rate + '% per annum compounded ' + f.word + '</b>, and you have ' +
+                'already stored ' + f.m + ' ▼ P/YR. What value should be entered for <span class="math">I/YR</span>?',
+        options: R.options(rate, [
+          R.round(rate / f.m, 4), R.round(rate / 100, 4), R.round(rate * f.m, 2), f.m
+        ]),
+        answer: 0,
+        solution: [
+          { lab: 'I/YR wants', val: 'the nominal annual rate, exactly as the question states it' },
+          { lab: 'You already told it', val: f.m + ' periods per year, via P/YR' },
+          { lab: 'So it works out', val: rate + '% ÷ ' + f.m + ' = ' + R.round(rate / f.m, 4) + '% per period, by itself' },
+          { lab: 'Answer', val: rate, final: true }
+        ],
+        why: 'Dividing by ' + f.m + ' yourself and entering ' + R.round(rate / f.m, 4) +
+             ' makes the calculator divide a second time. The whole point of setting P/YR is that you stop doing that step.'
+      };
+    },
+
+    /* Sign convention, from both directions — investing and borrowing are
+       mirror images and she has to be able to tell which she is looking at. */
+    function () {
+      var borrow = R.int(0, 1) === 0;
+      var amount = R.step(5000, 90000, 500);
+      var act = borrow
+        ? { verb: 'You take out a loan of R' + R.num(amount) + ' from the bank.', pv: 'positive', fv: 'negative', why: 'the bank pays you now, and you pay it back later' }
+        : { verb: 'You deposit R' + R.num(amount) + ' into a fixed savings account.', pv: 'negative', fv: 'positive', why: 'you pay the money out now, and receive it back later' };
+      return {
+        type: 'mcq', marks: 2,
+        shape: 'signs|' + (borrow ? 'borrow' : 'invest'),
+        scenario: act.verb,
+        prompt: 'How should <span class="math">PV</span> and <span class="math">FV</span> be entered on the HP10bII+?',
+        options: R.options(
+          'PV ' + act.pv + ', FV ' + act.fv,
+          ['PV ' + act.fv + ', FV ' + act.pv, 'both positive', 'both negative']
+        ),
+        answer: 0,
+        solution: [
+          { lab: 'Which way does the money move?', val: act.why },
+          { lab: 'Cash out', val: 'entered as a negative' },
+          { lab: 'Cash in', val: 'entered as a positive' },
+          { lab: 'Answer', val: 'PV ' + act.pv + ', FV ' + act.fv, final: true }
+        ],
+        why: 'The calculator needs one inflow and one outflow. Entering both the same way returns an error — ' +
+             'it is being asked about money that never actually moves.'
+      };
+    },
+
+    /* What each register is for. Naming the wrong one is a silent error: the
+       calculator answers happily, just not the question that was asked. */
+    function () {
+      var regs = [
+        { key: 'N', holds: 'the total number of interest periods' },
+        { key: 'I/YR', holds: 'the nominal annual interest rate' },
+        { key: 'PV', holds: 'the amount at the start of the term' },
+        { key: 'FV', holds: 'the amount at the end of the term' },
+        { key: 'P/YR', holds: 'how many times a year interest is added' }
+      ];
+      var pickOne = R.pick(regs);
+      var others = regs.filter(function (r) { return r.key !== pickOne.key; });
+      return {
+        type: 'mcq', marks: 1,
+        shape: 'register|' + pickOne.key,
+        prompt: 'On the HP10bII+, which register holds <b>' + pickOne.holds + '</b>?',
+        options: R.options(pickOne.key, R.shuffle(others).map(function (r) { return r.key; })),
+        answer: 0,
+        solution: [
+          { lab: pickOne.key, val: pickOne.holds },
+          { lab: 'Answer', val: pickOne.key, final: true }
+        ],
+        why: 'Storing a value in the wrong register does not produce an error — it produces a confident, wrong answer.'
+      };
+    },
+
+    /* N via the xP/YR shortcut. Same idea as w4-terms but reached through the
+       keystroke the notes actually teach. */
+    function () {
+      var f = R.pick(FREQ.slice(1)), years = R.int(2, 9);
+      return {
+        type: 'mcq', marks: 2,
+        shape: 'xpyr|' + years + '|' + f.m,
+        prompt: 'A term of <b>' + years + ' years</b> is compounded ' + f.word + ', with ' + f.m +
+                ' ▼ P/YR already stored. You press ' + years + ' ▼ xP/YR. What does the calculator display ' +
+                'for <span class="math">N</span>?',
+        options: R.options(years * f.m, [years, f.m, years + f.m, years * 12, years * f.m - f.m]),
+        answer: 0,
+        solution: [
+          { lab: 'xP/YR converts', val: 'a term in years into interest periods' },
+          { lab: 'Calculate', val: years + ' years × ' + f.m + ' periods per year' },
+          { lab: 'Answer', val: 'N = ' + (years * f.m), final: true }
+        ],
+        why: 'xP/YR exists so you never enter N in years by mistake. It multiplies by whatever P/YR is holding, ' +
+             'which is why P/YR has to be set first.'
+      };
+    },
+
+    /* An actual run through the keystrokes. Longer, but no new concept —
+       just the sequence the notes give, carried out. */
+    function () {
+      var f = R.pick(FREQ);
+      var pv = R.step(2000, 50000, 500);
+      var rate = R.pick([6, 8, 9, 10, 12]);
+      var years = R.int(2, 8);
+      var fv = R.round(pv * Math.pow(1 + rate / 100 / f.m, years * f.m), 2);
+      return {
+        type: 'numeric', marks: 4,
+        shape: 'fv|' + pv + '|' + rate + '|' + years + '|' + f.m,
+        scenario: 'R' + R.num(pv) + ' is invested for ' + years + ' years at ' + rate +
+                  '% per annum compounded ' + f.word + '.',
+        prompt: 'Using the HP10bII+, calculate the <b>future value</b>.',
+        pre: 'R', answer: fv, tol: 1,
+        note: 'Remember the sign convention — the deposit is money going out.',
+        solution: [
+          { lab: '▼ C ALL', val: 'clear every register first' },
+          { lab: f.m + ' ▼ P/YR', val: f.word + ', so ' + f.m + ' period' + (f.m === 1 ? '' : 's') + ' per year' },
+          { lab: R.num(pv) + ' +/− PV', val: 'the deposit is an outflow, so it goes in negative' },
+          { lab: years + ' ▼ xP/YR', val: 'N = ' + (years * f.m) + ' interest periods' },
+          { lab: rate + ' I/YR', val: 'the nominal annual rate — the calculator handles the rest' },
+          { lab: 'FV', val: 'R' + R.money(fv), final: true }
+        ],
+        why: 'The formula check is FV = ' + R.num(pv) + '(1 + ' + rate + '%/' + f.m + ')^' + (years * f.m) +
+             '. Worth doing once: a calculator answer is only right if every key was right.'
+      };
+    },
+
+    /* Diagnosing the error message, rather than only avoiding it. */
+    function () {
+      return {
+        type: 'mcq', marks: 2,
+        shape: 'noflow',
+        prompt: 'Someone enters PV as a positive number and FV as a positive number, then presses N. ' +
+                'The calculator returns an error. Why?',
+        options: R.options('It needs at least one cash inflow and one cash outflow', [
+          'The interest rate has not been entered yet',
+          'PV must always be negative on this calculator',
+          'N must be entered before PV and FV'
+        ]),
+        answer: 0,
+        solution: [
+          { lab: 'What the machine assumes', val: 'money moves in one direction, then back the other' },
+          { lab: 'Both positive means', val: 'money arriving twice and never leaving' },
+          { lab: 'Answer', val: 'One value must be negative — it needs an inflow and an outflow', final: true }
+        ],
+        why: 'PV is not always negative: borrowing makes PV positive and FV negative. What matters is that the ' +
+             'two disagree, not which one carries the sign.'
+      };
+    },
+
+    /* The periodic rate the calculator derives internally. Knowing what it is
+       doing is what makes the "do not divide it yourself" rule stick. */
+    function () {
+      var f = R.pick(FREQ.slice(1));
+      var rate = R.pick([6, 7.2, 8, 9, 10.5, 12, 15]);
+      var per = R.round(rate / f.m, 4);
+      return {
+        type: 'numeric', marks: 2,
+        shape: 'effper|' + rate + '|' + f.m,
+        prompt: 'Interest is quoted at <b>' + rate + '% per annum compounded ' + f.word + '</b>. What is the ' +
+                'interest rate <b>per period</b> that the calculator works with internally?',
+        suf: '%', answer: per, tol: 0.0005,
+        note: 'Give your answer as a percentage.',
+        solution: [
+          { lab: 'Periods per year', val: String(f.m) + ' (' + f.word + ')' },
+          { lab: 'Divide the annual rate', val: rate + '% ÷ ' + f.m },
+          { lab: 'Answer', val: per + '%', final: true }
+        ],
+        why: 'This is the number you would use by hand in the compound interest formula. On the calculator you ' +
+             'enter ' + rate + ' and let P/YR produce this — entering ' + per + ' yourself would apply the division twice.'
       };
     }
   ]);

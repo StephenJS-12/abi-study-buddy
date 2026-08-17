@@ -75,16 +75,104 @@ var Rand = (function () {
     return a || 1;
   }
 
+  var MINUS = new RegExp('[' + String.fromCharCode(0x2212) + String.fromCharCode(0x2013) +
+                         String.fromCharCode(0x2014) + ']', 'g');
+
+  /* What an option means: the number it carries, and the wording around it.
+     Both are needed. The number alone would call "5 thousands" and "5 hundreds"
+     the same option, when the words are carrying the whole difference; the
+     wording alone would miss that 12/2 652 and 1/221 are one number written
+     twice. Two options only clash when the words match AND the number matches.
+
+     Deliberately cautious — anything ambiguous returns a null number, because
+     wrongly declaring two options equal would throw a legitimate one away. */
+  function describe(text) {
+    var s = String(text).replace(/&nbsp;/g, ' ');
+    var part = null;
+
+    var m = /<span class="frac"><span>([^<]*)<\/span><span>([^<]*)<\/span><\/span>/.exec(s);
+    if (m) {
+      var n = plain(m[1]), d = plain(m[2]);
+      s = s.replace(m[0], ' # / # ');
+      if (n === null || d === null || d === 0 || /<span class="frac">/.test(s)) {
+        return { num: null, words: words(s) };
+      }
+      part = n / d;
+    }
+
+    s = s.replace(/<[^>]*>/g, ' ').replace(MINUS, '-');
+    var prev;
+    do { prev = s; s = s.replace(/(\d)\s+(\d{3})(?!\d)/g, '$1$2'); } while (s !== prev);
+
+    var found = s.match(/-?\d+(?:\.\d+)?/g) || [];
+    var shape = words(s);
+    var out = { num: null, words: shape };
+
+    if (found.length > 1) return out;
+    if (part !== null) {
+      if (!found.length) { out.num = part; return out; }
+      var whole = parseFloat(found[0]);
+      if (isFinite(whole)) out.num = whole < 0 ? whole - part : whole + part;  // 11 3/16
+      return out;
+    }
+    if (found.length === 1) {
+      var only = parseFloat(found[0]);
+      if (isFinite(only)) out.num = only;
+    }
+    return out;
+  }
+
+  /* The option with its numbers blanked out, so "5 thousands" and "5 hundreds"
+     are recognisably different kinds of answer. */
+  function words(s) {
+    return String(s)
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/-?\d+(?:\.\d+)?/g, '#')
+      .replace(/\s+/g, ' ')
+      .replace(/^ | $/g, '')
+      .toLowerCase();
+  }
+
+  /* Kept for callers and checks that only want the number. */
+  function value(text) { return describe(text).num; }
+
+  function plain(t) {
+    var v = parseFloat(String(t).replace(/[\s,]/g, ''));
+    return isFinite(v) ? v : null;
+  }
+
+  function same(a, b) {
+    return Math.abs(a - b) <= Math.max(Math.abs(a), Math.abs(b), 1e-9) * 1e-9;
+  }
+
   /* Builds an MCQ from a correct value plus distractor values.
      Any distractor equal to the answer (or duplicated) is dropped, so
-     generators can offer more than they need and let this sort it out. */
+     generators can offer more than they need and let this sort it out.
+
+     "Equal" means equal in VALUE, not in spelling. 12/2 652 and 1/221 are
+     different strings and the same number, and putting both on screen marks
+     her wrong for choosing a correct answer. */
   function options(correct, distractors, format) {
     var fmt = format || function (v) { return String(v); };
-    var seen = {}, opts = [fmt(correct)];
+    var seen = {}, taken = [], opts = [fmt(correct)];
     seen[opts[0]] = true;
+    taken.push(describe(opts[0]));
+
     for (var i = 0; i < distractors.length && opts.length < 4; i++) {
       var t = fmt(distractors[i]);
-      if (!seen[t]) { seen[t] = true; opts.push(t); }
+      if (seen[t]) continue;
+      var d = describe(t), clash = false;
+      if (d.num !== null) {
+        for (var j = 0; j < taken.length; j++) {
+          if (taken[j].num !== null && taken[j].words === d.words && same(taken[j].num, d.num)) {
+            clash = true; break;
+          }
+        }
+      }
+      if (clash) continue;
+      seen[t] = true;
+      taken.push(d);
+      opts.push(t);
     }
     return opts;                      // correct is always index 0; quiz.js shuffles
   }
@@ -92,6 +180,7 @@ var Rand = (function () {
   return {
     int: int, pick: pick, shuffle: shuffle, step: step,
     distinct: distinct, list: list, round: round,
-    money: money, num: num, frac: frac, gcd: gcd, options: options
+    money: money, num: num, frac: frac, gcd: gcd, options: options,
+    value: value
   };
 })();

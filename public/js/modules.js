@@ -27,22 +27,26 @@ var Modules = (function () {
       accent: 1,
       blurb: 'Fractions and decimals, percentages and mark-ups, statistics, and interest.',
       status: 'ready'
+    },
+
+    {
+      id: 'inba',
+      code: 'INBA01-5',
+      title: 'Introduction to Business Management',
+      emoji: '💼',
+      accent: 2,
+      /* Placeholder wording — this describes nothing in particular on purpose,
+         because the notes have not arrived yet and a made-up syllabus would be
+         worse than a vague one. Replace it once the content is real. It is not
+         shown while the module is 'soon'. */
+      blurb: 'Waiting on its notes.',
+      status: 'soon'
     }
 
-    /* Modules waiting on their notes and past papers. Give each one a real id,
-       code and title and it appears on the home screen as "coming soon" — she
-       can see the whole year even before the questions exist.
-
-       {
-         id: 'xxxx',
-         code: 'XXXX01-5',
-         title: 'Something Else Entirely',
-         emoji: '📚',
-         accent: 2,
-         blurb: 'One line about what it covers.',
-         status: 'soon'
-       }
-    */
+    /* To add another: give it a real id, code and title and it appears on the
+       home screen as "coming soon" — she can see the whole year even before
+       the questions exist. Flip status to 'ready' once its data files are
+       written and registered with Modules.contentFor(id). */
   ];
 
   function contentFor(id) {

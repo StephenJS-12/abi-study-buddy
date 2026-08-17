@@ -3,7 +3,7 @@
 
 var Store = (function () {
   var KEY = 'sparkleStudy.v1';
-  var POINT_CAP = 500;       // the reward ladder runs to 500
+  var POINT_CAP = 1000;      // the reward ladder runs to 1000, shared across every module
   var BADGE_AT = 5;          // correct answers in a topic to unlock its badge
   /* Practise is listed explicitly at 0 so the rule is visible rather than implied by
      absence: practise mode never scores, no matter how many she gets right. */
@@ -17,6 +17,7 @@ var Store = (function () {
     topicCorrect: {},        // topicId -> count of correct answers
     badges: {},              // topicId -> ISO date earned
     lastSetup: {},           // weekId -> { topics: [], mode, count }
+    lastModule: null,        // so returning to the site resumes where she was
     lastSaved: null,         // ISO of the last successful write, for the health check
     claimed: {},             // reward threshold -> ISO date claimed
     /* Celebrations are the point of this site, so they default ON even when Windows
@@ -149,7 +150,7 @@ var Store = (function () {
     POINTS_PER: POINTS_PER,
 
     /* Awards points for a correct answer in a scoring mode. Returns how many
-       actually landed, which is less than the full amount at the 500 cap. */
+       actually landed, which is less than the full amount at the cap. */
     addPoints: function (mode) {
       var worth = POINTS_PER[mode] || 0;
       if (!worth || state.points >= POINT_CAP) return 0;
@@ -194,6 +195,12 @@ var Store = (function () {
       save();
     },
     recallSetup: function (weekId) { return state.lastSetup[weekId] || null; },
+
+    rememberModule: function (id) {
+      if (state.lastModule === id) return;
+      state.lastModule = id;
+      save();
+    },
 
     hasClaimed: function (threshold) { return !!(state.claimed && state.claimed[threshold]); },
 
@@ -249,6 +256,7 @@ var Store = (function () {
       out.claimed      = stringMap(data.claimed);
 
       if (data.lastSetup && typeof data.lastSetup === 'object') out.lastSetup = data.lastSetup;
+      if (typeof data.lastModule === 'string') out.lastModule = data.lastModule;
       if (data.settings && typeof data.settings === 'object') {
         out.settings = { motion: data.settings.motion !== false };
       }

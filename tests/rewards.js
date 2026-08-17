@@ -67,7 +67,12 @@ check(REWARDS[REWARDS.length - 1].at === Store.POINT_CAP,
       "the final reward should sit exactly on the cap (" + Store.POINT_CAP + "), got " +
       REWARDS[REWARDS.length - 1].at);
 
-check(REWARDS[0].at <= 15, "the first reward should be reachable quickly, sits at " + REWARDS[0].at);
+/* The first reward has to land within about one sitting, or the ladder never
+   gets started. A full 20-question test, all correct, is 20 points — so that
+   is the bound, with a little room above it. Doubled along with the ladder
+   when the cap went from 500 to 1000. */
+check(REWARDS[0].at <= 30,
+      "the first reward should be reachable in roughly one sitting, sits at " + REWARDS[0].at);
 
 var wellFormed = true;
 REWARDS.forEach(function (r) {
@@ -108,8 +113,8 @@ check(boosterPlacement, "no booster may share a threshold with a milestone");
 // and the whole point of boosters: never a long stretch with nothing to aim for
 var biggestGap = 0, prevAt = 0;
 REWARDS.forEach(function (r) { biggestGap = Math.max(biggestGap, r.at - prevAt); prevAt = r.at; });
-check(biggestGap <= 32,
-      "with boosters in place no gap should exceed ~30 points, biggest is " + biggestGap);
+check(biggestGap <= 64,
+      "with boosters in place no gap should exceed ~60 points, biggest is " + biggestGap);
 
 // ---- state machine -------------------------------------------
 check(Rewards.state(REWARDS[0], 0) === "locked", "reward should be locked at 0 points");

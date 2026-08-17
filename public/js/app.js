@@ -123,6 +123,7 @@ var App = (function () {
 
   function draw() {
     switch (route.name) {
+      case 'modules':   return screenModules();
       case 'home':      return screenHome();
       case 'week':      return screenWeek(route.params.weekId);
       case 'notes':     return screenNotesWeeks();
@@ -136,8 +137,87 @@ var App = (function () {
 
   /* ───────────────────────── home ───────────────────────── */
 
-  function screenHome() {
+  /* ───────────────────────── modules ───────────────────────── */
+
+  /* The first thing she sees: which subject is she doing today.
+     Points and rewards are shown here rather than per module, because there is
+     only one ladder — study whichever she likes, it all feeds the same bar. */
+  function screenModules() {
     setCrumb(null);
+
+    var all = Modules.all();
+    var points = Store.points();
+    var nextReward = Rewards.next(points);
+
+    var cards = all.map(function (m) {
+      var content = Modules.contentFor(m.id);
+      var live = m.status === 'ready' && content.weeks.length;
+
+      if (!live) {
+        return '<button class="tile acc-' + m.accent + ' is-locked" type="button" disabled>' +
+          '<span class="tile-glow"></span>' +
+          '<span class="tile-emoji">' + m.emoji + '</span>' +
+          '<span class="tile-kicker">' + esc(m.code) + '</span>' +
+          '<h3 class="tile-title">' + esc(m.title) + '</h3>' +
+          '<p class="tile-desc">Coming soon — Stephen is still building this one.</p>' +
+        '</button>';
+      }
+
+      var topics = 0, badges = 0;
+      content.weeks.forEach(function (w) {
+        (w.topics || []).forEach(function (t) {
+          topics++;
+          if (Store.hasBadge(t.id)) badges++;
+        });
+      });
+
+      return '<button class="tile acc-' + m.accent + '" type="button" data-module="' + m.id + '">' +
+        '<span class="tile-glow"></span>' +
+        '<span class="tile-emoji">' + m.emoji + '</span>' +
+        '<span class="tile-kicker">' + esc(m.code) + '</span>' +
+        '<h3 class="tile-title">' + esc(m.title) + '</h3>' +
+        '<p class="tile-desc">' + esc(m.blurb) + '</p>' +
+        '<p class="tile-desc" style="margin-top:.5rem;font-weight:700;color:var(--lilac-700)">' +
+          badges + ' of ' + topics + ' badges earned</p>' +
+      '</button>';
+    }).join('');
+
+    var nudge = nextReward
+      ? 'You are on <b>' + points + '</b> points. ' + (nextReward.at - points) +
+        ' more unlocks ' + nextReward.emoji + ' <b>' + esc(nextReward.title) + '</b>.'
+      : 'Every reward is unlocked. Genuinely well done.';
+
+    screen.innerHTML =
+      '<div class="pagehead"><span class="kicker">Your modules</span>' +
+      '<h1>✦ What are we doing today?</h1>' +
+      '<p>Pick a module to work on. Points from any of them go to the same rewards.</p></div>' +
+      '<div class="tilegrid">' + cards + '</div>' +
+      '<div class="card" style="margin-top:1.6rem;background:linear-gradient(150deg,var(--lilac-50),var(--pink-50))">' +
+        '<p style="margin:0">' + nudge + '</p>' +
+      '</div>';
+
+    Array.prototype.forEach.call(screen.querySelectorAll('[data-module]'), function (b) {
+      b.addEventListener('click', function () { openModule(b.getAttribute('data-module')); });
+    });
+  }
+
+  function openModule(id) {
+    Content.use(id);
+    Store.rememberModule(id);
+    go('home');
+  }
+
+  function screenHome() {
+    var mod = Content.module();
+
+    /* Back to the picker, unless this is the only module she has — in which
+       case there is nothing to go back to and the crumb would be a dead end. */
+    if (Modules.ready().length > 1 || Modules.all().length > 1) {
+      setCrumb('All modules', function () { go('modules'); });
+    } else {
+      setCrumb(null);
+    }
+
     var st = Store.get();
     var weeks = Content.weeks();
     var readyNow = Rewards.readyCount(Store.points());
@@ -871,9 +951,20 @@ var App = (function () {
        the page changes underneath her. */
     if (window.Buddy) Buddy.mount();
 
-    go('home');
+    /* Straight back into whatever she was studying last, so someone working
+       through one module is not asked to choose it every single time. The
+       picker is a click away on the crumb. */
+    var resume = Modules.remembered();
+    if (resume) {
+      Content.use(resume);
+      go('home');
+    } else {
+      go('modules');
+    }
   }
 
+  /* The brand in the top bar goes all the way out to the module picker — it is
+     the one thing on screen that always means "start again from the top". */
   function goHomeSafely() {
     if (Quiz.active()) {
       modal({
@@ -882,11 +973,11 @@ var App = (function () {
               'earned are safe.</p>',
         confirmLabel: 'Yes, go home',
         confirmClass: 'btn-danger',
-        onConfirm: function () { go('home'); }
+        onConfirm: function () { go('modules'); }
       });
       return;
     }
-    go('home');
+    go('modules');
   }
 
   return {

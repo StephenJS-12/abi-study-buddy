@@ -2,35 +2,47 @@
    Turns the raw week data files into lookups the rest of the app uses. */
 
 var Content = (function () {
-  var weeks = (window.WEEK_DATA || []).slice().sort(function (a, b) {
-    return a.number - b.number;
-  });
 
-  /* Exam papers are a separate bank entirely — nothing crosses between them and the
-     practise/test questions in either direction. */
-  var exams = (window.EXAM_DATA || []).slice().sort(function (a, b) {
-    return a.number - b.number;
-  });
-
+  /* Whichever module she is working on. Everything below this line is written
+     against these three variables, so switching module is one call rather than
+     a change threaded through every screen. */
+  var moduleId = null;
+  var weeks = [];
+  var exams = [];
   var topicIndex = {};   // topicId -> { topic, week }  (covers lesson AND exam topics)
 
-  weeks.forEach(function (w) {
-    (w.topics || []).forEach(function (t) {
-      topicIndex[t.id] = { topic: t, week: w };
-    });
-  });
+  function byNumber(a, b) { return a.number - b.number; }
 
-  exams.forEach(function (e) {
-    (e.topics || []).forEach(function (t) {
-      topicIndex[t.id] = { topic: t, week: e };
+  /* Points the app at one module's content. Safe to call repeatedly with the
+     same id — it simply rebuilds the same index. */
+  function use(id) {
+    var bucket = Modules.contentFor(id);
+
+    moduleId = id;
+    weeks = (bucket.weeks || []).slice().sort(byNumber);
+
+    /* Exam papers are a separate bank entirely — nothing crosses between them
+       and the practise/test questions in either direction. */
+    exams = (bucket.exams || []).slice().sort(byNumber);
+
+    topicIndex = {};
+    weeks.forEach(function (w) {
+      (w.topics || []).forEach(function (t) { topicIndex[t.id] = { topic: t, week: w }; });
     });
-  });
+    exams.forEach(function (e) {
+      (e.topics || []).forEach(function (t) { topicIndex[t.id] = { topic: t, week: e }; });
+    });
+  }
 
   function questionCount(topic) {
     return (topic.questions || []).length;
   }
 
   return {
+    use: use,
+    moduleId: function () { return moduleId; },
+    module: function () { return moduleId ? Modules.get(moduleId) : null; },
+
     weeks: function () { return weeks; },
 
     week: function (id) {

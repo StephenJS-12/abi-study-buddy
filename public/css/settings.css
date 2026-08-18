@@ -123,6 +123,10 @@ body.reduce-motion .set-panel { animation: none; }
 
 /* Badges grouped by module on the combined progress screen. */
 .modbadges { margin-bottom: 2rem; }
+
+/* The whole header is the toggle, so it has to look pressable. The default
+   disclosure triangle is removed in favour of the caret on the right, which
+   sits with the count rather than fighting the emoji on the left. */
 .modbadges-head {
   display: flex;
   align-items: center;
@@ -133,9 +137,28 @@ body.reduce-motion .set-panel { animation: none; }
   border-radius: var(--r-md, .8rem);
   background: var(--lilac-50);
   font-size: .95rem;
+  cursor: pointer;
+  list-style: none;
+  transition: background .16s;
 }
+.modbadges-head::-webkit-details-marker { display: none; }
+.modbadges-head::marker { content: ""; }
+.modbadges-head:hover { background: var(--lilac-100); }
 .modbadges-emoji { font-size: 1.3rem; line-height: 1; }
 .modbadges-head .chip { margin-left: auto; }
+
+.modbadges-caret {
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--lilac-700);
+  transition: transform .2s var(--ease-out, ease);
+}
+.modbadges[open] > .modbadges-head .modbadges-caret { transform: rotate(180deg); }
+
+/* Only the contents animate in. Animating the summary too would make the
+   header jump every time she opened a module. */
+.modbadges-body { animation: riseIn .26s var(--ease-out, ease-out); }
+body.reduce-motion .modbadges-body { animation: none; }
 
 /* On the home screen the hero shows her points in full, so the top bar's copy
    is hidden rather than repeating the same figure twice on one screen. The

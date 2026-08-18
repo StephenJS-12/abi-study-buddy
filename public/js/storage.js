@@ -4,7 +4,12 @@
 var Store = (function () {
   var KEY = 'sparkleStudy.v1';
   var POINT_CAP = 1000;      // the reward ladder runs to 1000, shared across every module
-  var BADGE_AT = 5;          // correct answers in a topic to unlock its badge
+  /* Correct answers in a topic to unlock its badge.
+     Raised from 5 to 30 so a badge means she has genuinely worked a topic
+     rather than answered a handful of its questions. Badges already earned at
+     the old threshold are untouched — recordAnswer only ever adds one that is
+     missing, so nothing she has already unlocked is taken away. */
+  var BADGE_AT = 30;
   /* Practise is listed explicitly at 0 so the rule is visible rather than implied by
      absence: practise mode never scores, no matter how many she gets right. */
   var POINTS_PER = { practise: 0, test: 1, exam: 2 };

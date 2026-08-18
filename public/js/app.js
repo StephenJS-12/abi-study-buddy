@@ -887,6 +887,7 @@ var App = (function () {
        Read straight from each module's own content rather than from whichever
        module happens to be loaded, so this screen shows everything she has
        earned across all of them at once. */
+    var lastModule = Modules.remembered();
     var badgeSections = Modules.all().map(function (mod) {
       var content = Modules.contentFor(mod.id);
       var weeks = (content.weeks || []).filter(function (w) {
@@ -912,14 +913,24 @@ var App = (function () {
                '<div class="badgegrid">' + badges + '</div>';
       }).join('');
 
-      return '<div class="modbadges">' +
-        '<div class="modbadges-head">' +
+      /* Collapsible per module. With two modules and a badge for every topic
+         this screen runs to a great many tiles, and she is usually only
+         interested in one subject at a time. The module she was last studying
+         opens by default so the page is not a wall of closed boxes.
+
+         <details> rather than a scripted toggle: it keeps its own state, works
+         from the keyboard, and needs no event binding after a re-render. */
+      var openNow = mod.id === lastModule;
+
+      return '<details class="modbadges"' + (openNow ? ' open' : '') + '>' +
+        '<summary class="modbadges-head">' +
           '<span class="modbadges-emoji">' + mod.emoji + '</span>' +
           '<span><b>' + esc(mod.code) + '</b> · ' + esc(mod.title) + '</span>' +
           '<span class="chip chip-pink">' + earnedHere + '/' + totalHere + '</span>' +
-        '</div>' +
-        weekBlocks +
-      '</div>';
+          '<span class="modbadges-caret" aria-hidden="true">⌄</span>' +
+        '</summary>' +
+        '<div class="modbadges-body">' + weekBlocks + '</div>' +
+      '</details>';
     }).join('');
 
     screen.innerHTML =

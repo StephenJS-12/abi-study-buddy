@@ -598,6 +598,26 @@ window.MODULE_CONTENT.inba.weeks.push({
           '<p>Dealing with the unknown is described as the most challenging part of emerging as a new ' +
           'entrepreneur: how long the business will last, how profitable it will be, and whether it can provide ' +
           'a steady income all remain unanswered.</p>'
+      },
+      {
+        heading: 'Becoming a young entrepreneur',
+        emoji: '🌟',
+        html:
+          '<div class="keybox"><b>Do what you love</b> · successful business owners start businesses involving ' +
+          'what they love doing. You need hands-on experience to understand your business completely.' +
+          '<br><br><b>Know what you want</b> · a thorough understanding of what you want in life, so you can ' +
+          'decide how to manage and organise your time.' +
+          '<br><br><b>Be innovative with rules</b> · think outside the box; consider ideas nobody has tried ' +
+          'before, because that is what creates new opportunities.' +
+          '<br><br><b>Manage your time</b> · running a business while studying is stressful. The separate roles ' +
+          'of student and business owner must be differentiated and prioritised in a balanced way.' +
+          '<br><br><b>Use your school, college or university resources</b> · being a student can be an ' +
+          'advantage, since students can access many resources while studying.' +
+          '<br><br><b>Mentorship and work shadowing</b> · find an entrepreneur willing to teach and advise you; ' +
+          'many will mentor for free. In work shadowing you accompany an entrepreneur for long periods, ' +
+          'observing and practising their business strategies.' +
+          '<br><br><b>Exploit online resources</b> · hundreds of online resources exist for young ' +
+          'entrepreneurs, and they are becoming more affordable to access.</div>'
       }
     ],
     questions: [
@@ -736,6 +756,65 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         why: 'The entrepreneur’s own personality was examined at step 1. By step 5 the question has changed ' +
              'from "am I suited to this" to "will this idea survive".'
+      },
+      {
+        id: 'i1p-8', type: 'multi', marks: 3,
+        prompt: 'Which of these are given as tips for becoming a young entrepreneur? <b>Select all that apply.</b>',
+        options: [
+          'Do what you love',
+          'Know what you want',
+          'Be innovative with rules',
+          'Manage your time',
+          'Borrow as much capital as possible',
+          'Avoid working with more experienced entrepreneurs'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'Do what you love', val: 'You need an interest in the goods or services involved' },
+          { lab: 'Know what you want', val: 'Understanding what you want in life shapes how you organise your time' },
+          { lab: 'Be innovative', val: 'Think outside the box' },
+          { lab: 'Manage your time', val: 'Student and business owner are separate roles to be balanced' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'The last option inverts the mentorship advice, which is to <i>seek out</i> experienced ' +
+             'entrepreneurs — many will mentor young people for free.'
+      },
+      {
+        id: 'i1p-9', type: 'mcq', marks: 3,
+        prompt: 'What is the difference between <b>mentorship</b> and <b>work shadowing</b>?',
+        options: [
+          'In work shadowing you accompany an entrepreneur for long periods, observing and practising their strategies',
+          'Mentorship is paid and work shadowing is free',
+          'Work shadowing is only available at university',
+          'Mentorship applies to students and work shadowing to graduates'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Mentorship', val: 'An entrepreneur teaches, advises and gives expert guidance' },
+          { lab: 'Work shadowing', val: 'You partner with and accompany them for long periods, observing and practising' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The two are similar, and the difference is one of immersion: mentorship is guidance given, ' +
+             'shadowing is learning by being present while the work happens.'
+      },
+      {
+        id: 'i1p-10', type: 'multi', marks: 3,
+        prompt: 'Which of these are described as advantages available to a student entrepreneur? ' +
+                '<b>Select all that apply.</b>',
+        options: [
+          'Access to the resources of their school, college or university',
+          'Online resources, which are becoming more affordable to access',
+          'Automatic funding from their institution',
+          'Exemption from business registration'
+        ],
+        answers: [0, 1],
+        solution: [
+          { lab: 'Institutional resources', val: 'Being a student can be an advantage rather than a hindrance' },
+          { lab: 'Online resources', val: 'Hundreds exist, and access is becoming more affordable' },
+          { lab: 'Answer', val: 'The first two', final: true }
+        ],
+        why: 'Neither funding nor exemption is mentioned. The advantage described is access — to facilities, ' +
+             'people and information a non-student would have to pay for.'
       }
     ]
   },
@@ -1075,6 +1154,43 @@ window.MODULE_CONTENT.inba.weeks.push({
           '<p>South Africa’s <b>King Code</b> is the guide to ethical business behaviour. Originally intended ' +
           'for JSE-listed companies, <b>King V now applies to all organisations</b>, including government ' +
           'entities and non-profits.</p>'
+      },
+      {
+        heading: 'How governance is enforced',
+        emoji: '🌍',
+        html:
+          '<p>Different countries take different approaches:</p>' +
+          '<div class="keybox"><b>USA</b> · <b>"comply or else"</b> — governance rules are legally binding ' +
+          'through legislation. A strict, rules-based system.' +
+          '<br><b>South Africa</b> · <b>"comply and explain"</b> — following the governance code in the King V ' +
+          'report.' +
+          '<br><b>UK and EU</b> · a similar approach of recommended best practices, where companies must either ' +
+          'follow them or explain publicly in their reports why they have not.</div>' +
+          '<p>The King Committee Reports have made South Africa a <b>world leader in corporate governance</b>. ' +
+          'They cover:</p>' +
+          '<div class="keybox"><b>Ethical leadership</b> · through integrity, fairness and accountability' +
+          '<br><b>Transparency</b> · through honest reporting to stakeholders' +
+          '<br><b>Sustainability</b> · by considering the impact on the Triple Bottom Line</div>' +
+          '<p><b>Governance and CSR.</b> The board of directors, as the core of the governance system, is ' +
+          'responsible for steering the company’s CSR strategy. Without good governance, CSR can be just a ' +
+          'marketing gimmick. Once the board sets the strategy, management brings it to life — strong ' +
+          'governance is the foundation of authentic CSR.</p>'
+      },
+      {
+        heading: 'Sustainable development and the SDGs',
+        emoji: '🌱',
+        html:
+          '<p><b>Sustainable development</b> is about ensuring that the progress we make today does not come at ' +
+          'the expense of tomorrow and of future generations. It also considers the needs of the world’s ' +
+          'poorest people, since a sustainable future cannot exist alongside extreme poverty and inequality.</p>' +
+          '<p>Sustainability views the world as a <b>complex network</b>, where actions in one place have ' +
+          'consequences in another — air pollution from a power plant in one country causing acid rain in a ' +
+          'neighbouring one.</p>' +
+          '<p>The <b>United Nations Sustainable Development Goals (SDGs)</b> are <b>17 goals</b>, including ' +
+          'ending poverty and ensuring quality education. They require collective effort, and business plays an ' +
+          'important role in them.</p>' +
+          '<p>Sustainable development is <b>not a single policy or a charity project</b>. It is a mindset and a ' +
+          'way of running a business that recognises the interconnected system we live in.</p>'
       }
     ],
     questions: [
@@ -1166,6 +1282,109 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         why: 'Its core message is good corporate governance — running an organisation responsibly, ' +
              'transparently and with accountability, whatever kind of organisation it is.'
+      },
+      {
+        id: 'i1g-6', type: 'match', marks: 3,
+        prompt: 'Match each country or region to its approach to enforcing governance.',
+        pairs: [
+          { left: 'United States', right: '"Comply or else" — rules are legally binding through legislation' },
+          { left: 'South Africa', right: '"Comply and explain" — following the King V governance code' },
+          { left: 'UK and EU', right: 'Recommended best practices, or explain publicly why they were not followed' }
+        ],
+        solution: [
+          { lab: 'USA', val: 'A strict, rules-based system' },
+          { lab: 'South Africa', val: 'Comply and explain, under King V' },
+          { lab: 'UK and EU', val: 'Comply or explain publicly in their reports' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The difference is whether governance is law or guidance. Legally binding rules must be obeyed; ' +
+             'a comply-and-explain code allows departure, provided the reasons are made public.'
+      },
+      {
+        id: 'i1g-7', type: 'multi', marks: 3,
+        prompt: 'What do the King Committee Reports cover? <b>Select all that apply.</b>',
+        options: [
+          'Ethical leadership through integrity, fairness and accountability',
+          'Transparency through honest reporting to stakeholders',
+          'Sustainability by considering the impact on the Triple Bottom Line',
+          'Setting minimum wages for all employees'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Ethical leadership', val: 'Integrity, fairness and accountability' },
+          { lab: 'Transparency', val: 'Honest reporting to stakeholders' },
+          { lab: 'Sustainability', val: 'Impact on the Triple Bottom Line' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'Wages are set by labour law, not by a governance code. The King Reports concern how a company is ' +
+             'directed and held to account, which is why they have made South Africa a world leader in the field.'
+      },
+      {
+        id: 'i1g-8', type: 'mcq', marks: 3,
+        prompt: 'What is the relationship between governance and CSR?',
+        options: [
+          'The board steers CSR strategy — without good governance, CSR can be just a marketing gimmick',
+          'CSR replaces the need for corporate governance',
+          'Governance and CSR are two names for the same thing',
+          'CSR is decided by employees, and governance by shareholders'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The board', val: 'As the core of the governance system, steers CSR strategy' },
+          { lab: 'Management', val: 'Brings that strategy to life' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Governance is what makes CSR authentic rather than decorative. Good intentions without ' +
+             'accountability produce announcements, not change.'
+      },
+      {
+        id: 'i1g-9', type: 'mcq', marks: 2,
+        prompt: '<b>Sustainable development</b> means:',
+        options: [
+          'Ensuring the progress we make today does not come at the expense of future generations',
+          'Growing a business as quickly as possible',
+          'Donating a fixed share of profit to charity each year',
+          'Replacing all natural resources that a business uses'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Sustainable development', val: 'Progress today that does not cost tomorrow' },
+          { lab: 'Also considers', val: 'The needs of the world’s poorest people' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'It is described as a mindset and a way of running a business, explicitly not a single policy or ' +
+             'a charity project.'
+      },
+      {
+        id: 'i1g-10', type: 'mcq', marks: 2,
+        prompt: 'How many United Nations Sustainable Development Goals are there?',
+        options: ['17', '4', '10', '25'],
+        answer: 0,
+        solution: [
+          { lab: 'The SDGs', val: '17 goals, including ending poverty and ensuring quality education' },
+          { lab: 'They require', val: 'Collective effort, in which business plays an important role' },
+          { lab: 'Answer', val: '17', final: true }
+        ],
+        why: 'They are global goals rather than business targets, but business is named as an important ' +
+             'contributor to reaching them.'
+      },
+      {
+        id: 'i1g-11', type: 'mcq', marks: 3,
+        prompt: 'Why does sustainability view the world as a <b>complex network</b>?',
+        options: [
+          'Because actions in one place have consequences in another',
+          'Because businesses trade internationally',
+          'Because governance codes differ between countries',
+          'Because supply chains involve many businesses'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The idea', val: 'Actions in one place have consequences elsewhere' },
+          { lab: 'The example', val: 'Air pollution from a power plant causing acid rain in a neighbouring country' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'This is why sustainability cannot be handled purely as an internal matter — the consequences of ' +
+             'a decision do not stop at the boundary of the business or the country.'
       }
     ]
   },

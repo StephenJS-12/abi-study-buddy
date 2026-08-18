@@ -1,9 +1,6 @@
 /* INBA01-5 — Week 3: Planning.
-   Lessons 1 to 3 — understanding planning, the planning process, and planning
-   at each management level.
-
-   Lesson 4 (planning in the functional areas, 4.1 to 4.16) is not yet here and
-   is the next piece of work.
+   All four lessons: understanding planning, the planning process, planning at
+   each management level, and planning in the functional areas.
 
    Same rules as Weeks 1 and 2: concepts only, never the analogies used to
    explain them, and nothing written that is not in Abi's notes. */
@@ -1174,6 +1171,586 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         why: 'Both halves matter. A perfectly written SMART goal that supports no strategic aim is a ' +
              'department working hard in its own direction.'
+      },
+      {
+        id: 'i3h-8', type: 'multi', marks: 3,
+        prompt: 'Which of these are elements of a <b>tactical plan</b>? <b>Select all that apply.</b>',
+        options: [
+          'Goals',
+          'Tactics',
+          'Actions',
+          'Resources',
+          'Timeline',
+          'The organisation’s vision statement'
+        ],
+        answers: [0, 1, 2, 3, 4],
+        solution: [
+          { lab: 'Goals', val: 'Specific SMART targets supporting a strategic goal' },
+          { lab: 'Tactics', val: 'The general methods used to achieve them' },
+          { lab: 'Actions', val: 'The concrete steps — who does what, in what sequence' },
+          { lab: 'Resources', val: 'Human, financial, physical and external' },
+          { lab: 'Timeline', val: 'A deadline for each action and goal' },
+          { lab: 'Answer', val: 'The first five', final: true }
+        ],
+        why: 'The vision belongs to strategic planning. A tactical plan inherits the vision rather than ' +
+             'setting it.'
+      },
+      {
+        id: 'i3h-9', type: 'match', marks: 3,
+        prompt: 'Match each element of a tactical plan to what it describes.',
+        pairs: [
+          { left: 'Tactics', right: 'The general methods used, without the minute details' },
+          { left: 'Actions', right: 'The concrete steps — who does what, and in what sequence' },
+          { left: 'Resources', right: 'The human, financial, physical and external inputs needed' }
+        ],
+        solution: [
+          { lab: 'Tactics', val: 'The approach in general terms' },
+          { lab: 'Actions', val: 'The individual tasks that move each tactic forward' },
+          { lab: 'Resources', val: 'What is needed to complete the actions' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The three narrow from approach, to task, to what the task consumes. A plan without resources is ' +
+             'described as just a wish list.'
+      },
+      {
+        id: 'i3h-10', type: 'multi', marks: 3,
+        prompt: 'Which of these are types of <b>operational plan</b>? <b>Select all that apply.</b>',
+        options: [
+          'Operational budgets',
+          'Maintenance plans',
+          'Sales and operational planning',
+          'Project plans',
+          'The corporate mission statement'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'Operational budgets', val: 'The day-to-day financial plan controlling spending' },
+          { lab: 'Maintenance plans', val: 'Schedules keeping equipment functional and preventing downtime' },
+          { lab: 'Sales and operational planning', val: 'Aligning sales forecasts with production capacity' },
+          { lab: 'Project plans', val: 'Temporary work managed through detailed operational planning' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'Sales and operational planning is the one worth remembering: without it a business ends up with ' +
+             'stock-outs or wasteful overproduction, because sales promised what production cannot make.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ PLANNING IN OPERATIONS ═══════════════════════ */
+  {
+    id: 'i3-opsplan',
+    title: 'Planning in Operations',
+    emoji: '⚙️',
+    summary: 'Planning the transformation model, six performance objectives, and the three levels in operations.',
+    notes: [
+      {
+        heading: 'Planning governs the transformation model',
+        emoji: '🔧',
+        html:
+          '<div class="keybox"><b>Inputs</b> · determining the quantity and type of materials, technology and ' +
+          'labour needed' +
+          '<br><b>Processes</b> · deciding how the transformation should occur — automation, labour intensity' +
+          '<br><b>Outputs</b> · planning production levels, quality control measures and service standards</div>' +
+          '<p>Planning reconciles supply and demand by balancing three dimensions: <b>volume</b> (the quantity ' +
+          'required), <b>timing</b> (when it must be delivered) and <b>quality</b> (conforming to customer ' +
+          'expectations).</p>'
+      },
+      {
+        heading: 'The six performance objectives',
+        emoji: '🎯',
+        html:
+          '<p>These function as planning benchmarks for all levels of management:</p>' +
+          '<div class="keybox"><b>Quality</b> · plan for doing things right the first time; establish standards ' +
+          'and procedures' +
+          '<br><b>Cost</b> · plan for cost efficiency; identify cost-control measures and optimise resource ' +
+          'allocation' +
+          '<br><b>Speed</b> · plan for quick delivery; streamline processes to reduce lead times' +
+          '<br><b>Flexibility</b> · plan for adaptability; develop contingency plans to respond to demand ' +
+          'changes' +
+          '<br><b>Reliability</b> · plan for consistency; ensure schedules, deliveries and standards are ' +
+          'predictable' +
+          '<br><b>Service</b> · plan for customer satisfaction; design service processes that exceed ' +
+          'expectations</div>' +
+          '<p>At the tactical level these become <b>six operational priorities derived from customer needs</b>: ' +
+          'higher quality, lower cost, shorter lead time, greater adaptability, lower variability, and a higher ' +
+          'level of service.</p>'
+      },
+      {
+        heading: 'Design planning, and the three levels',
+        emoji: '📐',
+        html:
+          '<div class="keybox"><b>Product and service design planning</b> · determines the specifications, ' +
+          'features and benefits that satisfy customer expectations' +
+          '<br><b>Process design planning</b> · establishes how those products and services will be created or ' +
+          'delivered within operational capabilities</div>' +
+          '<div class="keybox"><b>Strategic</b> · how operations helps achieve competitive advantage, and which ' +
+          'performance dimensions are prioritised' +
+          '<br><b>Tactical</b> · translating strategic objectives into operational goals; setting measurable ' +
+          'performance objectives; medium-term improvement plans' +
+          '<br><b>Operational</b> · daily and weekly production or service schedules; allocating people, ' +
+          'equipment and materials; workflow sequences; managing capacity, lead times and quality control</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i3i-1', type: 'match', marks: 3,
+        prompt: 'Match each part of the transformation model to what is planned for it.',
+        pairs: [
+          { left: 'Inputs', right: 'The quantity and type of materials, technology and labour needed' },
+          { left: 'Processes', right: 'How the transformation should occur — automation and labour intensity' },
+          { left: 'Outputs', right: 'Production levels, quality control measures and service standards' }
+        ],
+        solution: [
+          { lab: 'Inputs', val: 'What goes in' },
+          { lab: 'Processes', val: 'How it is converted' },
+          { lab: 'Outputs', val: 'What comes out, and to what standard' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'This is the transformation model from Week 1 with planning applied to each stage — the same ' +
+             'idea seen from the operations manager’s side.'
+      },
+      {
+        id: 'i3i-2', type: 'multi', marks: 3,
+        prompt: 'Planning reconciles supply and demand by balancing which three dimensions? ' +
+                '<b>Select all that apply.</b>',
+        options: ['Volume', 'Timing', 'Quality', 'Location'],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Volume', val: 'The quantity of products or services required' },
+          { lab: 'Timing', val: 'When they must be delivered' },
+          { lab: 'Quality', val: 'Conforming to customer expectations' },
+          { lab: 'Answer', val: 'Volume, timing and quality', final: true }
+        ],
+        why: 'All three must hold at once. The right quantity delivered late, or on time but faulty, still ' +
+             'fails to reconcile supply with demand.'
+      },
+      {
+        id: 'i3i-3', type: 'match', marks: 4,
+        prompt: 'Match each operations performance objective to its planning focus.',
+        pairs: [
+          { left: 'Quality', right: 'Doing things right the first time; establishing standards and procedures' },
+          { left: 'Speed', right: 'Quick delivery; streamlining processes to reduce lead times' },
+          { left: 'Flexibility', right: 'Adaptability; contingency plans to respond to demand changes' },
+          { left: 'Reliability', right: 'Consistency; predictable schedules, deliveries and standards' }
+        ],
+        solution: [
+          { lab: 'Quality', val: 'Right first time' },
+          { lab: 'Speed', val: 'Shorter lead times' },
+          { lab: 'Flexibility', val: 'Able to change when demand does' },
+          { lab: 'Reliability', val: 'Predictable, every time' },
+          { lab: 'Answer', val: 'All four rows as above', final: true }
+        ],
+        why: 'Speed and reliability are easily confused. Speed is how fast; reliability is how consistently — ' +
+             'a supplier can be quick and still be unpredictable.'
+      },
+      {
+        id: 'i3i-4', type: 'multi', marks: 3,
+        prompt: 'Which of these are operations performance objectives? <b>Select all that apply.</b>',
+        options: ['Quality', 'Cost', 'Speed', 'Flexibility', 'Reliability', 'Ownership'],
+        answers: [0, 1, 2, 3, 4],
+        solution: [
+          { lab: 'The six objectives', val: 'Quality, cost, speed, flexibility, reliability and service' },
+          { lab: 'Ownership', val: 'Not one of them' },
+          { lab: 'Answer', val: 'The first five', final: true }
+        ],
+        why: 'Service is the sixth and is not listed here. All six act as planning benchmarks for every level ' +
+             'of management, not only for operations staff.'
+      },
+      {
+        id: 'i3i-5', type: 'match', marks: 3,
+        prompt: 'Match each planning level within the operations function to what it decides.',
+        pairs: [
+          { left: 'Strategic', right: 'How operations helps achieve competitive advantage, and which performance dimensions to prioritise' },
+          { left: 'Tactical', right: 'Translating strategic objectives into measurable operational goals and medium-term improvements' },
+          { left: 'Operational', right: 'Daily and weekly schedules, and allocating people, equipment and materials' }
+        ],
+        solution: [
+          { lab: 'Strategic', val: 'Which dimensions of performance the business competes on' },
+          { lab: 'Tactical', val: 'Turning those into measurable objectives and improvement programmes' },
+          { lab: 'Operational', val: 'The schedules and resources that deliver them' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The same three planning levels appear inside a single function as across the whole ' +
+             'organisation, which is why the vocabulary is worth learning once and reusing.'
+      },
+      {
+        id: 'i3i-7', type: 'mcq', marks: 3,
+        prompt: 'What is the difference between <b>product and service design planning</b> and <b>process ' +
+                'design planning</b>?',
+        options: [
+          'The first determines the specifications and features that satisfy customers; the second establishes how they will be created or delivered',
+          'The first applies to products and the second only to services',
+          'The first is done by top management and the second by supervisors',
+          'They are two names for the same activity'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Product and service design planning', val: 'Specifications, features and benefits that satisfy customer expectations' },
+          { lab: 'Process design planning', val: 'How they will be created or delivered within operational capabilities' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'They are separate decisions. A product can be beautifully designed and still be impossible to ' +
+             'produce with the capabilities the business actually has.'
+      },
+      {
+        id: 'i3i-6', type: 'mcq', marks: 3,
+        prompt: 'At the <b>operational</b> level within the operations function, planning includes:',
+        options: [
+          'Daily and weekly production schedules, and allocating people, equipment and materials',
+          'Deciding which performance dimensions give competitive advantage',
+          'Translating strategic objectives into medium-term improvement programmes',
+          'Setting the organisation’s mission'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Operational level', val: 'Short-term and task-specific, focused on the transformation itself' },
+          { lab: 'Includes', val: 'Schedules, resource allocation, workflow, capacity and quality control' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The second option is strategic and the third tactical. The same three planning levels appear ' +
+             'inside the operations function as across the organisation.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ PLANNING IN FINANCE ═══════════════════════ */
+  {
+    id: 'i3-finplan',
+    title: 'Planning in Finance',
+    emoji: '💹',
+    summary: 'Ratios, budgets, current assets, and where the money comes from.',
+    notes: [
+      {
+        heading: 'Financial planning and analysis',
+        emoji: '🩺',
+        html:
+          '<p>Financial planning ensures the business’s limited funds are allocated in the most optimal way to ' +
+          'achieve its objectives while sustaining operations and growth. It involves forecasting future ' +
+          'financial needs and aligning resources with strategic goals — anticipating cash flow requirements, ' +
+          'investment opportunities and potential risks.</p>' +
+          '<p><b>Financial analysis</b> is the process of monitoring a company’s financial position, ' +
+          'identifying its strengths and weaknesses, and spotting trends.</p>' +
+          '<div class="keybox"><b>Financial ratios and what they plan for</b>' +
+          '<br><b>Liquidity ratios</b> · short-term cash flow planning; meeting immediate obligations' +
+          '<br><b>Solvency ratios</b> · long-term capital structure planning; balancing debt and equity' +
+          '<br><b>Profitability ratios</b> · efficiency improvements and cost management, to maximise return ' +
+          'on investment and return on equity</div>'
+      },
+      {
+        heading: 'Budgets',
+        emoji: '📒',
+        html:
+          '<p><b>Financial budgets</b> form the core of financial planning, integrating operational budgets ' +
+          'with the broader financial strategy:</p>' +
+          '<div class="keybox"><b>Capital expenditure budget</b> · the plan for big, long-term investments ' +
+          'such as machinery or a building' +
+          '<br><b>Financing budget</b> · how money will be obtained — a loan, issuing shares, or other sources' +
+          '<br><b>Budgeted statement of financial position</b> · projects the financial condition at the end ' +
+          'of the budget period' +
+          '<br><b>Cash budget</b> · plans cash inflows and outflows to ensure liquidity and identify future ' +
+          'surpluses or shortages</div>' +
+          '<p>The <b>cash budget</b> lets management plan <b>bridging finance</b> when shortfalls are expected, ' +
+          'and plan short-term investments when surpluses are. It walks the line between holding enough cash ' +
+          'to be safe (liquidity) and holding so much that profitable opportunities are missed ' +
+          '(profitability).</p>'
+      },
+      {
+        heading: 'Assets and financial structure',
+        emoji: '⚖️',
+        html:
+          '<p>Managing <b>current assets</b> — cash, debtors and inventory — is a constant cost-risk ' +
+          'trade-off:</p>' +
+          '<div class="keybox"><b>Over-investment</b> · idle cash, inventory gathering dust, too much tied up ' +
+          'in debtors. Low risk, but low profitability, and the idle money carries an opportunity cost.' +
+          '<br><b>Under-investment</b> · not enough cash to pay bills, insufficient inventory to meet demand, ' +
+          'or credit policies so strict they deter sales.</div>' +
+          '<p><b>Financial structure planning</b> is finding the optimal mix of funding sources, balancing ' +
+          'cost, risk and flexibility. <b>Short-term financing</b> funds current assets:</p>' +
+          '<div class="keybox"><b>Trade credit</b> · financing through delayed payment to suppliers' +
+          '<br><b>Accruals</b> · temporary financing from unpaid obligations such as wages or taxes' +
+          '<br><b>Bank overdrafts</b> · short-term borrowing for liquidity management' +
+          '<br><b>Factoring</b> · selling accounts receivable to improve cash flow</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i3j-1', type: 'match', marks: 3,
+        prompt: 'Match each type of financial ratio to what it helps plan.',
+        pairs: [
+          { left: 'Liquidity ratios', right: 'Short-term cash flow, and meeting immediate obligations' },
+          { left: 'Solvency ratios', right: 'Long-term capital structure, balancing debt and equity' },
+          { left: 'Profitability ratios', right: 'Efficiency improvements and cost management' }
+        ],
+        solution: [
+          { lab: 'Liquidity', val: 'Can we pay what is due now?' },
+          { lab: 'Solvency', val: 'Can we survive long-term with this mix of debt and equity?' },
+          { lab: 'Profitability', val: 'Are we generating a good return?' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'Liquidity and solvency are the pair most often confused. Liquidity is about the short term, ' +
+             'solvency about surviving the long one.'
+      },
+      {
+        id: 'i3j-2', type: 'match', marks: 4,
+        prompt: 'Match each financial budget to its purpose.',
+        pairs: [
+          { left: 'Capital expenditure budget', right: 'Planning big, long-term investments such as machinery' },
+          { left: 'Financing budget', right: 'Planning how money will be obtained — loans, shares or other sources' },
+          { left: 'Budgeted statement of financial position', right: 'Projecting the financial condition at the end of the period' },
+          { left: 'Cash budget', right: 'Planning cash inflows and outflows to ensure liquidity' }
+        ],
+        solution: [
+          { lab: 'Capital expenditure', val: 'What large assets to buy' },
+          { lab: 'Financing', val: 'Where the money comes from' },
+          { lab: 'Budgeted statement of financial position', val: 'What the balance sheet should look like at the end' },
+          { lab: 'Cash budget', val: 'When money moves in and out' },
+          { lab: 'Answer', val: 'All four rows as above', final: true }
+        ],
+        why: 'The cash budget is the one that catches businesses out. A profitable company can still fail if ' +
+             'the cash arrives later than the bills.'
+      },
+      {
+        id: 'i3j-3', type: 'mcq', marks: 3,
+        prompt: 'What does the <b>cash budget</b> allow management to plan for?',
+        options: [
+          'Bridging finance when shortfalls are expected, and short-term investment when surpluses are',
+          'Which machinery to purchase over the next five years',
+          'How many employees to recruit next year',
+          'The selling price of each product'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Cash budget', val: 'Identifies future cash shortages and surpluses' },
+          { lab: 'Shortfall', val: 'Plan bridging finance — a short-term loan' },
+          { lab: 'Surplus', val: 'Plan a short-term investment rather than letting cash sit idle' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'It balances liquidity against profitability — enough cash to be safe, but not so much sitting ' +
+             'idle that opportunities are missed.'
+      },
+      {
+        id: 'i3j-4', type: 'mcq', marks: 3,
+        prompt: 'What is the problem with <b>over-investment</b> in current assets?',
+        options: [
+          'Low risk but low profitability — idle money carries an opportunity cost',
+          'A lack of cash to pay bills',
+          'Insufficient inventory to meet customer demand',
+          'Credit policies so strict that sales are lost'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Over-investment', val: 'Idle cash, unsold inventory, too much tied up in debtors' },
+          { lab: 'The trade-off', val: 'Low risk, low profitability' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The other three describe under-investment. Managing current assets is a trade-off, and both ' +
+             'directions have a cost.'
+      },
+      {
+        id: 'i3j-5', type: 'multi', marks: 3,
+        prompt: 'Which of these are short-term financing instruments? <b>Select all that apply.</b>',
+        options: [
+          'Trade credit',
+          'Accruals',
+          'Bank overdrafts',
+          'Factoring',
+          'Issuing shares'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'Trade credit', val: 'Delayed payment to suppliers' },
+          { lab: 'Accruals', val: 'Temporary financing from unpaid wages or taxes' },
+          { lab: 'Bank overdrafts', val: 'Short-term borrowing for liquidity' },
+          { lab: 'Factoring', val: 'Selling accounts receivable to improve cash flow' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'Issuing shares raises long-term capital. Short-term financing funds current assets — inventory ' +
+             'and money owed by customers.'
+      },
+      {
+        id: 'i3j-6', type: 'mcq', marks: 2,
+        prompt: 'What is <b>financial analysis</b>?',
+        options: [
+          'Monitoring the financial position, identifying strengths and weaknesses, and spotting trends',
+          'Recording every transaction the business makes',
+          'Deciding the price of each product',
+          'Preparing the payroll each month'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Financial analysis', val: 'A necessary part of financial planning' },
+          { lab: 'It reveals', val: 'Whether a company is poised for growth or cannot pay its bills' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Managers, investors and lenders all use it — which is why it looks for trends rather than ' +
+             'simply reporting the current numbers.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ PLANNING IN MARKETING ═══════════════════════ */
+  {
+    id: 'i3-mktplan',
+    title: 'Planning in Marketing',
+    emoji: '📣',
+    summary: 'Segmentation, distribution intensity, promotion decisions, and service planning.',
+    notes: [
+      {
+        heading: 'Why marketing plans first',
+        emoji: '🌉',
+        html:
+          '<p>Marketing planning determines what is possible in the marketplace <b>before the rest of the ' +
+          'organisation commits its resources</b>. Before management can decide about production or financing, ' +
+          'it must first determine through research and analysis what can be achieved in the market.</p>' +
+          '<p>Market research provides the information needed for sound decisions, and a key part of planning ' +
+          'is <b>forecasting future demand and sales</b>.</p>' +
+          '<p>No company can satisfy everyone. Planning involves identifying market segments and selecting ' +
+          'target markets that align with the company’s strengths and objectives — <b>segmentation, targeting ' +
+          'and positioning (STP)</b>.</p>'
+      },
+      {
+        heading: 'Distribution intensity',
+        emoji: '🚚',
+        html:
+          '<p>Market coverage exists on a spectrum, from available everywhere to available in only a few ' +
+          'exclusive locations. The choice depends on product type, brand image and customer buying ' +
+          'behaviour.</p>' +
+          '<div class="keybox"><b>Intensive distribution</b> · saturate the market, available at every ' +
+          'possible convenient outlet, using as many intermediaries as possible. Suits <b>convenience ' +
+          'products</b>.' +
+          '<br><b>Selective distribution</b> · a limited number of intermediaries who can distribute most ' +
+          'effectively and profitably. Suits a wide range of products.' +
+          '<br><b>Exclusive distribution</b> · limit intermediaries to a single one or very few, creating an ' +
+          'image of exclusivity, prestige and high quality. Suits <b>specialty products</b> such as luxury ' +
+          'cars.</div>'
+      },
+      {
+        heading: 'Promotion and customer service',
+        emoji: '📢',
+        html:
+          '<div class="keybox"><b>Promotion planning decisions</b>' +
+          '<br><b>Communication objectives</b> · what are we trying to achieve? Should be a SMART goal' +
+          '<br><b>Promotional mix</b> · the combination of advertising, sales promotions, public relations and ' +
+          'social media' +
+          '<br><b>Message design</b> · the core story being told' +
+          '<br><b>Media selection</b> · which channels best reach the target audience' +
+          '<br><b>Budget allocation</b> · how much is spent on each promotional activity</div>' +
+          '<p>The goal is a clear, consistent message across all media and consumer touchpoints.</p>' +
+          '<p><b>Customer service</b> can be planned into each element of the marketing mix: <b>product</b> ' +
+          '(quality, ease of support, warranties and post-purchase service), <b>price</b> (a strategy ' +
+          'reflecting the value of the service, since customers will pay a premium for exceptional support), ' +
+          '<b>promotion</b> (communications highlighting service excellence) and <b>place</b> (delivery that is ' +
+          'convenient, reliable and transparent).</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i3k-1', type: 'match', marks: 3,
+        prompt: 'Match each distribution strategy to its description.',
+        pairs: [
+          { left: 'Intensive distribution', right: 'Saturating the market through as many outlets as possible' },
+          { left: 'Selective distribution', right: 'A limited number of intermediaries who distribute most effectively' },
+          { left: 'Exclusive distribution', right: 'A single or very few intermediaries, creating prestige and exclusivity' }
+        ],
+        solution: [
+          { lab: 'Intensive', val: 'Everywhere — suits convenience products' },
+          { lab: 'Selective', val: 'A chosen few — suits a wide range of products' },
+          { lab: 'Exclusive', val: 'Almost nowhere — suits specialty products such as luxury cars' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'They sit on a spectrum from everywhere to almost nowhere, and the right point on it depends on ' +
+             'the product type, the brand image and how customers actually buy.'
+      },
+      {
+        id: 'i3k-2', type: 'mcq', marks: 2,
+        prompt: 'Which distribution strategy suits <b>convenience products</b>?',
+        options: ['Intensive distribution', 'Exclusive distribution', 'Selective distribution', 'None of them'],
+        answer: 0,
+        solution: [
+          { lab: 'Convenience products', val: 'Should be available at every possible convenient outlet' },
+          { lab: 'Strategy', val: 'Intensive distribution' },
+          { lab: 'Answer', val: 'Intensive distribution', final: true }
+        ],
+        why: 'The name says what customers expect: a convenience product that is inconvenient to buy has lost ' +
+             'the only advantage it had.'
+      },
+      {
+        id: 'i3k-3', type: 'multi', marks: 3,
+        prompt: 'Which of these are promotion planning decisions? <b>Select all that apply.</b>',
+        options: [
+          'Communication objectives',
+          'Promotional mix',
+          'Message design',
+          'Media selection',
+          'Budget allocation',
+          'Choosing the company’s auditors'
+        ],
+        answers: [0, 1, 2, 3, 4],
+        solution: [
+          { lab: 'Objectives', val: 'What the communication is trying to achieve — a SMART goal' },
+          { lab: 'Promotional mix', val: 'Advertising, sales promotions, public relations, social media' },
+          { lab: 'Message design', val: 'The core story' },
+          { lab: 'Media selection', val: 'Which channels reach the audience' },
+          { lab: 'Budget allocation', val: 'How much goes to each activity' },
+          { lab: 'Answer', val: 'The first five', final: true }
+        ],
+        why: 'The aim across all five is a clear, consistent message at every point where a customer meets ' +
+             'the business.'
+      },
+      {
+        id: 'i3k-4', type: 'mcq', marks: 3,
+        prompt: 'Why must marketing planning happen <b>before</b> production and financing decisions?',
+        options: [
+          'It determines what is possible in the marketplace before the organisation commits its resources',
+          'Because the marketing department is the largest',
+          'Because marketing budgets are approved first',
+          'Because production cannot begin until adverts have run'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Marketing planning', val: 'Determines what can be achieved in the market' },
+          { lab: 'Only then', val: 'Can management decide about production or financing' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Committing resources to produce something the market will not buy is exactly the waste that ' +
+             'planning exists to prevent.'
+      },
+      {
+        id: 'i3k-5', type: 'mcq', marks: 2,
+        prompt: 'What does <b>STP</b> stand for in marketing planning?',
+        options: [
+          'Segmentation, targeting and positioning',
+          'Strategy, tactics and planning',
+          'Sales, turnover and profit',
+          'Specific, timed and planned'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'STP', val: 'Segmentation, targeting and positioning' },
+          { lab: 'Because', val: 'No company can satisfy everyone' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Consumers do not all have the same needs, so the market is divided into smaller similar groups ' +
+             'before any of them is chosen to serve.'
+      },
+      {
+        id: 'i3k-6', type: 'match', marks: 4,
+        prompt: 'Match each element of the marketing mix to how customer service is planned into it.',
+        pairs: [
+          { left: 'Product', right: 'Quality, ease of support, warranties and post-purchase service' },
+          { left: 'Price', right: 'A pricing strategy reflecting the value of the service offered' },
+          { left: 'Promotion', right: 'Communications that promise and highlight service excellence' },
+          { left: 'Place', right: 'Delivery that is convenient, reliable and transparent' }
+        ],
+        solution: [
+          { lab: 'Product', val: 'Support designed in, not added later' },
+          { lab: 'Price', val: 'Customers pay a premium for exceptional support' },
+          { lab: 'Promotion', val: 'Service excellence communicated' },
+          { lab: 'Place', val: 'A delivery process customers can rely on' },
+          { lab: 'Answer', val: 'All four rows as above', final: true }
+        ],
+        why: 'Customer service is not a separate department in this model — it is planned into all four Ps, ' +
+             'and considered across the whole customer lifecycle.'
       }
     ]
   }

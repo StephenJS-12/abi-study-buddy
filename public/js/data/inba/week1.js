@@ -1437,11 +1437,11 @@ window.MODULE_CONTENT.inba.weeks.push({
         heading: 'Three environments, three degrees of control',
         emoji: '🎛️',
         html:
-          '<div class="keybox"><b>Micro</b> · the internal world of the business — the one part management ' +
-          '<b>controls</b>. Yields <b>strengths and weaknesses</b>.' +
-          '<br><b>Market</b> · the immediate competitive arena. Cannot be controlled but <b>can be ' +
-          'influenced</b>. Also called the <b>task environment</b>.' +
-          '<br><b>Macro</b> · the wider world. Cannot be controlled or influenced. Yields <b>opportunities and ' +
+          '<div class="keybox"><b>Micro</b> · <b>internal, controllable</b>. The organisation itself — its ' +
+          'resources, culture, employees and management. Yields <b>strengths and weaknesses</b>.' +
+          '<br><b>Market</b> · <b>external, influenceable</b>. The external stakeholders: customers, ' +
+          'competitors, suppliers and intermediaries. Also called the <b>task environment</b>.' +
+          '<br><b>Macro</b> · <b>external, uncontrollable</b>. The PESTLE factors. Yields <b>opportunities and ' +
           'threats</b>.</div>' +
           '<p>The micro environment has three areas: <b>vision, mission and strategy</b>; <b>business functions ' +
           'and structure</b>; and <b>resources</b> — which are tangible, intangible, or organisational ' +
@@ -1612,6 +1612,212 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         why: 'The test is control. A business writes its own mission and chooses its own structure; it does ' +
              'neither for its competitors.'
+      },
+      {
+        id: 'i1n-9', type: 'match', marks: 3,
+        prompt: 'Match each environment to how it is described in terms of control.',
+        pairs: [
+          { left: 'Micro environment', right: 'Internal, controllable' },
+          { left: 'Market environment', right: 'External, influenceable' },
+          { left: 'Macro environment', right: 'External, uncontrollable' }
+        ],
+        solution: [
+          { lab: 'Micro', val: 'Internal and controllable — the organisation itself' },
+          { lab: 'Market', val: 'External but influenceable — the external stakeholders' },
+          { lab: 'Macro', val: 'External and uncontrollable — the PESTLE factors' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'Two of the three are external, so "external" alone does not identify an environment. What ' +
+             'separates market from macro is whether the business can influence it.'
+      },
+      {
+        id: 'i1n-10', type: 'multi', marks: 3,
+        prompt: 'Which of these make up the <b>organisation itself</b> in the micro environment? ' +
+                '<b>Select all that apply.</b>',
+        options: [
+          'Resources',
+          'Culture',
+          'Employees',
+          'Management',
+          'Suppliers',
+          'Government regulation'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'The organisation itself', val: 'Resources, culture, employees and management' },
+          { lab: 'Suppliers', val: 'Market environment — an external stakeholder' },
+          { lab: 'Regulation', val: 'Macro environment — political and legal' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'Culture is the one worth noticing. It is not a physical resource, but it is internal and ' +
+             'management can change it, which puts it squarely in the micro environment.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ SWOT AND THE FIVE FORCES ═══════════════════════ */
+  {
+    id: 'i1-swot',
+    title: 'SWOT & The Five Forces',
+    emoji: '🔍',
+    summary: 'Two frameworks for reading the environment — one internal and external, one competitive.',
+    notes: [
+      {
+        heading: 'SWOT',
+        emoji: '🧭',
+        html:
+          '<p>SWOT sorts what a business finds along two axes at once: whether something is <b>internal or ' +
+          'external</b>, and whether it is <b>positive or negative</b>.</p>' +
+          '<div class="keybox"><b>Strengths</b> · internal, positive' +
+          '<br><b>Weaknesses</b> · internal, negative' +
+          '<br><b>Opportunities</b> · external, positive' +
+          '<br><b>Threats</b> · external, negative</div>' +
+          '<p>This maps directly onto the environments. The <b>micro</b> environment is internal, so it yields ' +
+          'strengths and weaknesses. The <b>macro</b> environment is external, so it yields opportunities and ' +
+          'threats.</p>'
+      },
+      {
+        heading: 'The Five Forces of Competition',
+        emoji: '⚔️',
+        html:
+          '<p>Competition within the market environment is analysed with the Five Forces model. Each force ' +
+          'applies a different kind of pressure, and together they determine <b>overall industry ' +
+          'attractiveness and profitability</b>.</p>' +
+          '<div class="keybox"><b>Industry competitors — existing rivalry</b> · intensity of rivalry' +
+          '<br><b>Threat of new entrants</b> · ease of entry' +
+          '<br><b>Bargaining power of buyers</b> · buyer pressure' +
+          '<br><b>Bargaining power of suppliers</b> · supplier pressure' +
+          '<br><b>Threat of substitute products</b> · availability of alternatives</div>' +
+          '<p>A <b>strong</b> force makes an industry <b>less</b> attractive; a <b>weak</b> force makes it ' +
+          '<b>more</b> attractive. Understanding them helps a business find a position it can defend and be ' +
+          'profitable in.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i1s-1', type: 'match', marks: 4,
+        prompt: 'Match each element of SWOT to what it describes.',
+        pairs: [
+          { left: 'Strengths', right: 'Internal and positive' },
+          { left: 'Weaknesses', right: 'Internal and negative' },
+          { left: 'Opportunities', right: 'External and positive' },
+          { left: 'Threats', right: 'External and negative' }
+        ],
+        solution: [
+          { lab: 'Strengths', val: 'Internal capabilities that give an advantage' },
+          { lab: 'Weaknesses', val: 'Internal limitations that create a disadvantage' },
+          { lab: 'Opportunities', val: 'Favourable conditions outside the business' },
+          { lab: 'Threats', val: 'Unfavourable conditions outside the business' },
+          { lab: 'Answer', val: 'All four rows as above', final: true }
+        ],
+        why: 'Two axes crossed give four boxes. Getting a SWOT wrong almost always means putting an external ' +
+             'factor in an internal box — calling a market trend a strength, for instance.'
+      },
+      {
+        id: 'i1s-2', type: 'multi', marks: 3,
+        prompt: 'Which parts of SWOT come from <b>inside</b> the business? <b>Select all that apply.</b>',
+        options: ['Strengths', 'Weaknesses', 'Opportunities', 'Threats'],
+        answers: [0, 1],
+        solution: [
+          { lab: 'Internal', val: 'Strengths and weaknesses — from the micro environment' },
+          { lab: 'External', val: 'Opportunities and threats — from the macro environment' },
+          { lab: 'Answer', val: 'Strengths and weaknesses', final: true }
+        ],
+        why: 'This is the same internal-external split the three environments are built on, which is why the ' +
+             'two frameworks fit together so neatly.'
+      },
+      {
+        id: 'i1s-3', type: 'multi', marks: 3,
+        prompt: 'Which of these are among the <b>Five Forces of Competition</b>? <b>Select all that apply.</b>',
+        options: [
+          'Industry competitors — existing rivalry',
+          'Threat of new entrants',
+          'Bargaining power of buyers',
+          'Bargaining power of suppliers',
+          'Threat of substitute products',
+          'Availability of skilled labour'
+        ],
+        answers: [0, 1, 2, 3, 4],
+        solution: [
+          { lab: 'The five forces', val: 'Existing rivalry, new entrants, buyers, suppliers, substitutes' },
+          { lab: 'Skilled labour', val: 'Part of the labour market, not one of the five forces' },
+          { lab: 'Answer', val: 'The first five', final: true }
+        ],
+        why: 'Two of the five concern power held by other parties — buyers and suppliers — and two concern ' +
+             'competition that does not exist yet: new entrants and substitutes.'
+      },
+      {
+        id: 'i1s-4', type: 'match', marks: 4,
+        prompt: 'Match each of the Five Forces to the pressure it describes.',
+        pairs: [
+          { left: 'Industry competitors', right: 'Intensity of rivalry' },
+          { left: 'Threat of new entrants', right: 'Ease of entry' },
+          { left: 'Bargaining power of buyers', right: 'Buyer pressure' },
+          { left: 'Threat of substitute products', right: 'Availability of alternatives' }
+        ],
+        solution: [
+          { lab: 'Existing rivalry', val: 'How fiercely current competitors fight' },
+          { lab: 'New entrants', val: 'How easily a new competitor could join' },
+          { lab: 'Buyers', val: 'How much pressure customers can apply on price and terms' },
+          { lab: 'Substitutes', val: 'Whether customers have alternatives to switch to' },
+          { lab: 'Answer', val: 'All four rows as above', final: true }
+        ],
+        why: 'The fifth force, bargaining power of suppliers, applies supplier pressure — the mirror image of ' +
+             'buyer pressure, from the other end of the supply chain.'
+      },
+      {
+        id: 'i1s-5', type: 'mcq', marks: 2,
+        prompt: 'What do the Five Forces together determine?',
+        options: [
+          'Overall industry attractiveness and profitability',
+          'The market share of the largest competitor',
+          'The internal strengths of a business',
+          'The number of employees an industry needs'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'All five feed into', val: 'Overall industry attractiveness and profitability' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The model judges the <i>industry</i>, not any one company in it — which is why it helps decide ' +
+             'whether an industry is worth competing in at all.'
+      },
+      {
+        id: 'i1s-6', type: 'mcq', marks: 2,
+        prompt: 'A <b>strong</b> force in the Five Forces model means:',
+        options: [
+          'The industry is less attractive',
+          'The industry is more attractive',
+          'The business has a competitive advantage',
+          'The industry is growing quickly'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Strong force', val: 'Less attractive industry' },
+          { lab: 'Weak force', val: 'More attractive industry' },
+          { lab: 'Answer', val: 'The industry is less attractive', final: true }
+        ],
+        why: 'Each force is a pressure on profitability. The more pressure, the harder it is to make money ' +
+             'there, however well the business is run.'
+      },
+      {
+        id: 'i1s-7', type: 'mcq', marks: 3,
+        scenario: 'A new competitor can enter an industry cheaply and easily, with few barriers in the way.',
+        prompt: 'Which force is strong here, and what does it mean for the industry?',
+        options: [
+          'Threat of new entrants is strong, making the industry less attractive',
+          'Threat of new entrants is weak, making the industry more attractive',
+          'Bargaining power of buyers is strong, making the industry less attractive',
+          'Intensity of rivalry is weak, making the industry more attractive'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Ease of entry', val: 'Low barriers mean the threat of new entrants is strong' },
+          { lab: 'Effect', val: 'A strong force makes the industry less attractive' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Easy entry means today’s profits invite tomorrow’s competitors. An industry anyone can join is ' +
+             'rarely one that stays profitable for long.'
       }
     ]
   }

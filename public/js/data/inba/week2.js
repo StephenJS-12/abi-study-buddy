@@ -317,6 +317,21 @@ window.MODULE_CONTENT.inba.weeks.push({
           'middle management’s tactical ones.</div>'
       },
       {
+        heading: 'Comparing the three levels',
+        emoji: '📊',
+        html:
+          '<div class="keybox"><b>Alternative names</b>' +
+          '<br>Top management · the <b>Strategic</b> level' +
+          '<br>Middle management · the <b>Tactical</b> level' +
+          '<br>Lower management · <b>Supervisory</b>, <b>Operational</b> or <b>First-Line</b></div>' +
+          '<div class="keybox"><b>Time horizon</b>' +
+          '<br>Top · long-term · Middle · medium-term · Lower · short-term, day-to-day</div>' +
+          '<div class="keybox"><b>Who each level manages</b>' +
+          '<br><b>Top</b> · middle managers — and the whole organisation or major parts of it' +
+          '<br><b>Middle</b> · other middle managers and lower-level managers. The link between top and lower' +
+          '<br><b>Lower</b> · non-managerial, frontline employees</div>'
+      },
+      {
         heading: 'Span of control',
         emoji: '📏',
         html:
@@ -427,6 +442,57 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         why: 'Regional managers, divisional heads and project leaders also sit here, depending on the ' +
              'organisation’s structure.'
+      },
+      {
+        id: 'i2l-7', type: 'match', marks: 3,
+        prompt: 'Match each level of management to its alternative name.',
+        pairs: [
+          { left: 'Top management', right: 'The strategic level' },
+          { left: 'Middle management', right: 'The tactical level' },
+          { left: 'Lower management', right: 'Supervisory, operational or first-line' }
+        ],
+        solution: [
+          { lab: 'Top', val: 'Strategic — sets the mission and long-term direction' },
+          { lab: 'Middle', val: 'Tactical — develops tactical objectives from strategy' },
+          { lab: 'Lower', val: 'Supervisory, operational or first-line' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The alternative names match the kind of plan each level produces, which is why strategic, ' +
+             'tactical and operational planning map onto the same three levels.'
+      },
+      {
+        id: 'i2l-8', type: 'match', marks: 3,
+        prompt: 'Match each level of management to the people it manages.',
+        pairs: [
+          { left: 'Top management', right: 'Middle managers, and the organisation as a whole' },
+          { left: 'Middle management', right: 'Other middle managers and lower-level managers' },
+          { left: 'Lower management', right: 'Non-managerial, frontline employees' }
+        ],
+        solution: [
+          { lab: 'Top', val: 'Manages the whole organisation or major parts of it' },
+          { lab: 'Middle', val: 'The link between top and lower management' },
+          { lab: 'Lower', val: 'Frontline employees who hold no management position' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'Only lower management supervises people who are not themselves managers, which is exactly what ' +
+             'sets that level apart.'
+      },
+      {
+        id: 'i2l-9', type: 'match', marks: 3,
+        prompt: 'Match each level to its planning time horizon.',
+        pairs: [
+          { left: 'Top management', right: 'Long-term' },
+          { left: 'Middle management', right: 'Medium-term' },
+          { left: 'Lower management', right: 'Short-term, day-to-day' }
+        ],
+        solution: [
+          { lab: 'Top', val: 'Long-term strategy for the entire organisation' },
+          { lab: 'Middle', val: 'Medium-term plans for their department or function' },
+          { lab: 'Lower', val: 'Short-term, task-oriented execution' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'Time horizon is the fastest way to place an unfamiliar activity: anything measured in days ' +
+             'belongs at the bottom, anything in years at the top.'
       }
     ]
   },
@@ -460,7 +526,15 @@ window.MODULE_CONTENT.inba.weeks.push({
           '<br><b>Middle management</b> · a balance of all three' +
           '<br><b>Lower management</b> · high technical, medium interpersonal, lower conceptual</div>' +
           '<p>Top managers steer the whole organisation and navigate its external environment; supervisors ' +
-          'need deep technical knowledge to train staff, solve daily problems and command respect.</p>'
+          'need deep technical knowledge to train staff, solve daily problems and command respect.</p>' +
+          '<div class="keybox"><b>What each skill focuses on</b>' +
+          '<br><b>Technical</b> · the actual work — hands-on tasks and processes' +
+          '<br><b>Human</b> · the people — communication and motivation' +
+          '<br><b>Conceptual</b> · the organisation — the big picture and abstract ideas</div>' +
+          '<div class="keybox"><b>Most critical for</b>' +
+          '<br><b>Technical</b> · lower (first-line) management — high for lower, medium for middle, low for top' +
+          '<br><b>Human</b> · <b>all levels</b> — required at every level' +
+          '<br><b>Conceptual</b> · top management — low for lower, medium for middle, high for top</div>'
       }
     ],
     questions: [
@@ -560,6 +634,40 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         why: 'This is why the three skills are taught separately: being excellent at a job is not the same as ' +
              'being able to manage people doing it.'
+      },
+      {
+        id: 'i2s-7', type: 'match', marks: 3,
+        prompt: 'Match each managerial skill to what it focuses on.',
+        pairs: [
+          { left: 'Technical skills', right: 'The actual work — hands-on tasks and processes' },
+          { left: 'Human skills', right: 'The people — communication and motivation' },
+          { left: 'Conceptual skills', right: 'The organisation — the big picture and abstract ideas' }
+        ],
+        solution: [
+          { lab: 'Technical', val: 'The work itself' },
+          { lab: 'Human', val: 'The people doing it' },
+          { lab: 'Conceptual', val: 'The organisation as a whole' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The three focuses widen in scope: the task, then the people, then the whole organisation — ' +
+             'which is exactly why the mix shifts as a manager rises.'
+      },
+      {
+        id: 'i2s-8', type: 'match', marks: 3,
+        prompt: 'Match each skill to the level it is most critical for.',
+        pairs: [
+          { left: 'Technical skills', right: 'Lower (first-line) management' },
+          { left: 'Conceptual skills', right: 'Top management' },
+          { left: 'Human skills', right: 'All levels of management' }
+        ],
+        solution: [
+          { lab: 'Technical', val: 'High for lower, medium for middle, low for top' },
+          { lab: 'Conceptual', val: 'Low for lower, medium for middle, high for top' },
+          { lab: 'Human', val: 'Required at every level' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'Technical and conceptual are exact mirrors of each other across the levels. Human skills are ' +
+             'the constant, which is why they are the one skill no manager can do without.'
       }
     ]
   },
@@ -968,6 +1076,22 @@ window.MODULE_CONTENT.inba.weeks.push({
     summary: 'Break-even, the two statements, and the vocabulary of money.',
     notes: [
       {
+        heading: 'What financial management is for',
+        emoji: '🎯',
+        html:
+          '<p>The primary goal of financial management is to <b>maximise the value of the business</b> by ' +
+          'making strategic financial decisions. It answers three questions:</p>' +
+          '<div class="keybox"><b>Which long-term investments should we make?</b> · for example, buying new ' +
+          'machinery' +
+          '<br><b>How will we pay for them?</b> · using owners’ money (<b>equity</b>) or borrowing (<b>debt</b>)' +
+          '<br><b>How do we manage day-to-day financial activities?</b> · collecting payment from customers, ' +
+          'paying suppliers</div>' +
+          '<div class="keybox"><b>The financial function manages the continuous flow of funds</b>' +
+          '<br><b>1. Financing</b> · acquiring funds' +
+          '<br><b>2. Investment</b> · using funds to acquire assets' +
+          '<br><b>3. Accounting</b> · administering and reporting on financial matters</div>'
+      },
+      {
         heading: 'Core concepts',
         emoji: '🧮',
         html:
@@ -1092,6 +1216,54 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         why: 'The last option is equity, which is a different idea: profit is a flow over a period, equity is ' +
              'a balance at a moment.'
+      },
+      {
+        id: 'i2n-7', type: 'mcq', marks: 2,
+        prompt: 'What is the primary goal of financial management?',
+        options: [
+          'To maximise the value of the business through strategic financial decisions',
+          'To keep costs as low as possible',
+          'To produce the annual financial statements',
+          'To secure the largest possible loan'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Primary goal', val: 'Maximise the value of the business' },
+          { lab: 'By', val: 'Making strategic financial decisions' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Producing statements is accounting, one part of the function. The goal is broader: deciding ' +
+             'what to invest in, how to fund it, and how to run the day-to-day money.'
+      },
+      {
+        id: 'i2n-8', type: 'match', marks: 3,
+        prompt: 'Match each part of the financial function to what it does.',
+        pairs: [
+          { left: 'Financing', right: 'Acquiring funds' },
+          { left: 'Investment', right: 'Using funds to acquire assets' },
+          { left: 'Accounting', right: 'Administering and reporting on financial matters' }
+        ],
+        solution: [
+          { lab: 'Financing', val: 'Getting the money in' },
+          { lab: 'Investment', val: 'Putting the money to work' },
+          { lab: 'Accounting', val: 'Recording and reporting on it' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The three describe a continuous flow of funds: raise it, deploy it, account for it — then ' +
+             'round again.'
+      },
+      {
+        id: 'i2n-9', type: 'mcq', marks: 2,
+        prompt: 'Paying for an investment using the owners’ money rather than borrowing is known as using:',
+        options: ['Equity', 'Debt', 'Working capital', 'Revenue'],
+        answer: 0,
+        solution: [
+          { lab: 'Equity', val: 'The owners’ money and their stake in the business' },
+          { lab: 'Debt', val: 'Borrowed money that must be repaid' },
+          { lab: 'Answer', val: 'Equity', final: true }
+        ],
+        why: 'This is the same equity from the accounting equation. How an investment is funded — equity or ' +
+             'debt — is one of the three central financial questions.'
       }
     ]
   },
@@ -1117,7 +1289,17 @@ window.MODULE_CONTENT.inba.weeks.push({
           'have the skills needed for a digital world · managing change · aligning employee needs with ' +
           'organisational requirements</div>' +
           '<p>Managing people is a <b>shared responsibility</b> between HR professionals and line managers. In ' +
-          'smaller businesses, line managers often perform HR duties alongside their own roles.</p>'
+          'smaller businesses, line managers often perform HR duties alongside their own roles.</p>' +
+          '<div class="keybox"><b>The five HRM tasks</b>' +
+          '<br><b>1. HR planning</b> · using the organisation’s goals and strategy to forecast future human ' +
+          'resource needs — what kind and how many skilled people are needed, and when' +
+          '<br><b>2. Finding qualified talent</b> · recruitment, to attract a pool of qualified candidates' +
+          '<br><b>3. Developing talent</b> · equipping employees with the specific skills to do the job, going ' +
+          'beyond basic training to include technological and leadership capabilities' +
+          '<br><b>4. Retaining talent</b> · the factors influencing whether an employee stays or leaves — ' +
+          'compensation, company culture, career growth and work-life balance' +
+          '<br><b>5. Motivating talent</b> · motivation is the inner drive that pushes an employee to perform ' +
+          'well, and it does not follow automatically from being hired</div>'
       },
       {
         heading: 'Purchasing and supply',
@@ -1247,6 +1429,82 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         why: 'Quality is the one people forget. Purchasing is not only about price — what is bought sets the ' +
              'ceiling on the quality of what can be produced.'
+      },
+      {
+        id: 'i2h-7', type: 'multi', marks: 3,
+        prompt: 'Which of these are tasks of Human Resource Management? <b>Select all that apply.</b>',
+        options: [
+          'HR planning',
+          'Finding qualified talent',
+          'Developing talent',
+          'Retaining talent',
+          'Motivating talent',
+          'Setting the company’s long-term strategy'
+        ],
+        answers: [0, 1, 2, 3, 4],
+        solution: [
+          { lab: 'The five HRM tasks', val: 'Planning, finding, developing, retaining and motivating talent' },
+          { lab: 'Long-term strategy', val: 'Top management' },
+          { lab: 'Answer', val: 'The first five', final: true }
+        ],
+        why: 'The five follow the arc of an employee’s time with the business: work out who is needed, find ' +
+             'them, train them, keep them, and keep them wanting to be there.'
+      },
+      {
+        id: 'i2h-8', type: 'mcq', marks: 2,
+        prompt: 'What question does <b>HR planning</b> answer?',
+        options: [
+          'What kind and how many skilled people do we need, and when do we need them?',
+          'How much should each employee be paid?',
+          'Which employees are likely to resign this year?',
+          'How many hours should each shift last?'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'HR planning', val: 'Uses the organisation’s goals and strategy to forecast future needs' },
+          { lab: 'The question', val: 'What kind and how many skilled people, and when' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'It starts from the organisation’s goals, which is what makes it planning rather than ' +
+             'administration — the strategy determines the people needed, not the other way round.'
+      },
+      {
+        id: 'i2h-9', type: 'multi', marks: 3,
+        prompt: 'Which factors influence an employee’s decision to stay with an organisation? ' +
+                '<b>Select all that apply.</b>',
+        options: [
+          'Compensation',
+          'Company culture',
+          'Career growth opportunities',
+          'Work-life balance',
+          'The company’s share price'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'Retention', val: 'The factors influencing whether an employee stays or leaves' },
+          { lab: 'Those factors', val: 'Compensation, company culture, career growth and work-life balance' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'Finding and training good people is expensive, so retention protects an investment the business ' +
+             'has already made.'
+      },
+      {
+        id: 'i2h-10', type: 'mcq', marks: 2,
+        prompt: 'What is <b>motivation</b>, as described in the HRM tasks?',
+        options: [
+          'The inner drive that pushes an employee to perform well',
+          'The salary paid for good performance',
+          'The training given to a new employee',
+          'The process of recruiting qualified candidates'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Motivation', val: 'The inner drive to perform well' },
+          { lab: 'Note', val: 'Completing an onboarding programme does not automatically make an employee motivated' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The point being made is that motivation is not a box HR can tick on arrival — it has to be ' +
+             'maintained after the hiring and training are done.'
       }
     ]
   }

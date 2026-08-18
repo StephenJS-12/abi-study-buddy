@@ -1380,6 +1380,325 @@ window.MODULE_CONTENT.inba.weeks.push({
              '<i>what</i> people want rather than <i>how</i> they decide to act.'
       }
     ]
+  },
+
+  /* ═══════════════════════ CHARISMATIC, VISIONARY, SERVANT ═══════════════════════ */
+  {
+    id: 'i5-servant',
+    title: 'Charismatic, Visionary & Servant Leadership',
+    emoji: '🌟',
+    summary: 'Leading by presence, by vision, and by putting the team first.',
+    notes: [
+      {
+        heading: 'Charismatic and visionary',
+        emoji: '💫',
+        html:
+          '<p><b>Charismatic leaders</b> create an <b>emotional connection</b> that drives extraordinary ' +
+          'effort. They motivate individuals to go above and beyond their usual responsibilities, create an ' +
+          'atmosphere of change, and have a profound emotional impact on followers. A strong, positive ' +
+          'relationship exists between a charismatic leader and employee performance.</p>' +
+          '<div class="keybox"><b>Traits of a charismatic leader</b>' +
+          '<br>Self-confidence, with belief in themselves and their mission' +
+          '<br>A clear and exciting picture of the future' +
+          '<br>Strong communication skills, articulating a vision that resonates with followers' +
+          '<br>Often seen as unique, original and counter-cultural' +
+          '<br>Able to read the needs of followers and the opportunities in the market</div>' +
+          '<p><b>Visionary leadership goes beyond charisma.</b> While visionary leaders are often charismatic, ' +
+          'a visionary leader creates and communicates a vision that is <b>realistic, credible and ' +
+          'inspirational</b>, so that people genuinely want to be part of it. Transformational leaders are ' +
+          'often visionary leaders.</p>'
+      },
+      {
+        heading: 'Stewardship and servant leadership',
+        emoji: '🌱',
+        html:
+          '<p><b>Stewardship</b> describes how leaders empower others to make decisions and gain control over ' +
+          'their work. Stewards <b>lead with their team, not over them</b>, and sincerely care about their ' +
+          'subordinates’ development and success. This creates a team-oriented environment built on trust, ' +
+          'where decision-making is <b>decentralised</b> and power is shared, because what matters is the ' +
+          'team’s collective capability.</p>' +
+          '<p><b>Servant leadership takes stewardship a step further.</b> These leaders do not seek the ' +
+          'spotlight and devote themselves entirely to a greater cause. It is about working <b>selflessly</b> ' +
+          'with others to achieve shared goals that improve <b>collective rather than individual welfare</b>.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i5k-1', type: 'mcq', marks: 3,
+        prompt: 'What distinguishes <b>visionary</b> leadership from charismatic leadership?',
+        options: [
+          'A visionary leader creates and communicates a vision that is realistic, credible and inspirational',
+          'A visionary leader has a more magnetic personality',
+          'A visionary leader avoids emotional connection with followers',
+          'They are two names for the same thing'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Charismatic', val: 'Creates an emotional connection driving extraordinary effort' },
+          { lab: 'Visionary', val: 'Goes beyond charisma — a realistic, credible and inspirational vision' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Visionary leaders are often charismatic, but charisma alone is personality. The vision has to be ' +
+             'credible enough that people genuinely want to be part of it.'
+      },
+      {
+        id: 'i5k-2', type: 'multi', marks: 3,
+        prompt: 'Which of these are traits of a <b>charismatic</b> leader? <b>Select all that apply.</b>',
+        options: [
+          'Self-confidence and belief in their mission',
+          'A clear and exciting picture of the future',
+          'Strong communication skills that make a vision resonate',
+          'Able to read followers’ needs and market opportunities',
+          'A preference for working alone'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'The traits', val: 'Self-confidence, a picture of the future, communication skills, reading needs and opportunities' },
+          { lab: 'Also', val: 'Often seen as unique, original and counter-cultural' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'Every trait listed is outward-facing. Charisma is defined by its effect on other people, so a ' +
+             'preference for solitude contradicts it.'
+      },
+      {
+        id: 'i5k-3', type: 'mcq', marks: 2,
+        prompt: 'What is <b>stewardship</b> in leadership?',
+        options: [
+          'Empowering others to make decisions and gain control over their work',
+          'Directing subordinates closely to ensure quality',
+          'Managing the organisation’s financial assets',
+          'Taking personal credit for team achievements'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Stewardship', val: 'Leaders empower others to decide and to control their own work' },
+          { lab: 'Stewards', val: 'Lead <i>with</i> their team, not over them' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The "with, not over" phrasing is the whole idea. Decision-making is decentralised and power is ' +
+             'shared, because the team’s collective capability is what matters.'
+      },
+      {
+        id: 'i5k-4', type: 'mcq', marks: 3,
+        prompt: 'How does <b>servant leadership</b> go beyond stewardship?',
+        options: [
+          'Servant leaders do not seek the spotlight and devote themselves entirely to a greater cause',
+          'Servant leaders retain all decision-making authority',
+          'Servant leaders focus on individual rather than collective welfare',
+          'Servant leaders avoid delegating any responsibility'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Stewardship', val: 'Empowering the team and sharing power' },
+          { lab: 'Servant leadership', val: 'A step further — selfless service to a greater cause' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The third option inverts it exactly: servant leadership is about shared goals improving ' +
+             '<i>collective</i> rather than individual welfare.'
+      },
+      {
+        id: 'i5k-5', type: 'multi', marks: 3,
+        prompt: 'Which of these describe a <b>stewardship</b> environment? <b>Select all that apply.</b>',
+        options: [
+          'Decision-making is decentralised',
+          'Power is shared among the team',
+          'The leader cares about subordinates’ development and success',
+          'The leader keeps authority concentrated at the top'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Decentralised', val: 'Decisions move to the team' },
+          { lab: 'Shared power', val: 'Collective capability is the point' },
+          { lab: 'Development', val: 'Sincere care for subordinates’ growth' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'The last option is the opposite arrangement. Concentrating authority at the top is precisely ' +
+             'what leading "over" a team rather than "with" it looks like.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ MOTIVATION IN PRACTICE ═══════════════════════ */
+  {
+    id: 'i5-practice',
+    title: 'Motivation in Practice',
+    emoji: '🛠️',
+    summary: 'Strategies leaders actually use, how to spot morale, and what money can and cannot do.',
+    notes: [
+      {
+        heading: 'Strategies for building a motivated team',
+        emoji: '📋',
+        html:
+          '<div class="keybox"><b>Job design</b> · redesigning jobs to be satisfying and challenging — job ' +
+          'rotation, job enlargement (horizontal loading) and job enrichment (vertical loading)' +
+          '<br><b>Employee involvement</b> · participative management, and quality circles — small groups who ' +
+          'take responsibility for solving quality problems and generate their own solutions' +
+          '<br><b>Career management</b> · helping employees identify and follow a path to their aspirations' +
+          '<br><b>Management-by-Objectives (MBO)</b> · a direct application of goal-setting theory' +
+          '<br><b>Training and education</b> · learning opportunities motivate because they support growth' +
+          '<br><b>Employee-recognition programmes</b> · formally acknowledging above-average performance' +
+          '<br><b>Empowerment programmes</b> · letting employees set their own goals, decide and solve problems' +
+          '<br><b>Reward systems</b> · linking performance to rewards, tied to expectancy theory' +
+          '<br><b>Intrapreneurial incentives</b> · financial and institutional support for employees to develop ' +
+          'their own ideas and innovations' +
+          '<br><b>Employee engagement</b> · the ultimate goal — a bond formed when the employee’s need to ' +
+          'contribute meets the organisation’s goals</div>' +
+          '<p><b>MBO</b> cascades organisational goals down to individual objectives. Managers and employees ' +
+          '<b>jointly set goals</b>, determine how to measure them, and agree on timelines, with regular ' +
+          'feedback provided.</p>'
+      },
+      {
+        heading: 'Monitoring motivation, and money',
+        emoji: '📈',
+        html:
+          '<p>You cannot manage what you do not measure. Indicators of morale in the workplace:</p>' +
+          '<div class="keybox"><b>High morale</b> · high commitment to team and organisation · high ' +
+          'productivity · good customer service · good work attendance · low employee turnover · ' +
+          '<b>constructive</b> conflict' +
+          '<br><br><b>Low morale</b> · low commitment · low productivity · poor customer service · high sick ' +
+          'leave and absenteeism · high employee turnover · <b>destructive</b> conflict</div>' +
+          '<p><b>Money as a motivator.</b> Under equity theory, money is the <b>yardstick for comparison</b> — ' +
+          'salary and bonuses are how we compare our input-outcome ratio with others. Under expectancy theory, ' +
+          'money motivates only if all three conditions hold: effort leads to performance, performance leads to ' +
+          'the reward, and the employee genuinely values the money.</p>' +
+          '<div class="keybox">Money is often a <b>threshold factor</b>. Once a fair and competitive wage is ' +
+          'met, its power to generate sustained motivation diminishes, and purpose and growth become more ' +
+          'powerful drivers. Money can <b>prevent dissatisfaction</b> and <b>reward performance</b>, but it ' +
+          'cannot create lasting job satisfaction or engagement on its own.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i5l-1', type: 'mcq', marks: 3,
+        prompt: '<b>Management-by-Objectives (MBO)</b> is a direct application of which theory?',
+        options: [
+          'Goal-setting theory',
+          'Equity theory',
+          'Herzberg’s two-factor theory',
+          'Maslow’s hierarchy of needs'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'MBO', val: 'Cascades organisational goals down to individual objectives' },
+          { lab: 'Managers and employees', val: 'Jointly set goals, agree measures and timelines, with regular feedback' },
+          { lab: 'Answer', val: 'Goal-setting theory', final: true }
+        ],
+        why: 'Every element of MBO maps onto goal-setting theory: specific goals, joint agreement to secure ' +
+             'commitment, and feedback so people know whether they are on track.'
+      },
+      {
+        id: 'i5l-2', type: 'multi', marks: 3,
+        prompt: 'Which of these are indicators of <b>high morale</b>? <b>Select all that apply.</b>',
+        options: [
+          'High levels of productivity',
+          'Good work attendance',
+          'Low employee turnover',
+          'Constructive conflict between individuals and departments',
+          'High levels of absenteeism'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'High morale', val: 'High productivity, good attendance, low turnover, constructive conflict' },
+          { lab: 'Absenteeism', val: 'An indicator of low morale' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'Conflict is the interesting one. Its presence is not a bad sign — what distinguishes high from ' +
+             'low morale is whether that conflict is constructive or destructive.'
+      },
+      {
+        id: 'i5l-3', type: 'match', marks: 4,
+        prompt: 'Match each motivation strategy to what it involves.',
+        pairs: [
+          { left: 'Employee involvement', right: 'Participative management and quality circles solving their own problems' },
+          { left: 'Empowerment programmes', right: 'Letting employees set their own goals, decide and solve problems' },
+          { left: 'Intrapreneurial incentives', right: 'Support for employees to develop their own ideas and innovations' },
+          { left: 'Employee-recognition programmes', right: 'Formally acknowledging above-average performance' }
+        ],
+        solution: [
+          { lab: 'Involvement', val: 'Using employees’ full capacity through their input' },
+          { lab: 'Empowerment', val: 'Real ownership over outcomes' },
+          { lab: 'Intrapreneurial', val: 'Acting like entrepreneurs inside the company' },
+          { lab: 'Recognition', val: 'Bonuses, shares, profit-sharing, certificates, rewards' },
+          { lab: 'Answer', val: 'All four rows as above', final: true }
+        ],
+        why: 'Involvement and empowerment sit on a scale: involvement asks for input on decisions, ' +
+             'empowerment hands the decision over.'
+      },
+      {
+        id: 'i5l-4', type: 'mcq', marks: 3,
+        prompt: 'Why is money described as a <b>threshold factor</b>?',
+        options: [
+          'Once a fair and competitive wage is met, its power to sustain motivation diminishes',
+          'It must reach a legal minimum before it motivates anyone',
+          'Only senior employees are motivated by it',
+          'It motivates equally regardless of the amount'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Below the threshold', val: 'Pay is a genuine problem' },
+          { lab: 'Above it', val: 'Purpose and growth become more powerful drivers' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'It echoes Herzberg: money behaves like a hygiene factor. Fixing it removes dissatisfaction ' +
+             'without creating satisfaction.'
+      },
+      {
+        id: 'i5l-5', type: 'multi', marks: 3,
+        prompt: 'According to expectancy theory, money motivates only if which conditions are met? ' +
+                '<b>Select all that apply.</b>',
+        options: [
+          'The employee believes effort leads to performance',
+          'The employee believes performance leads to the monetary reward',
+          'The employee genuinely values the money',
+          'The amount exceeds what competitors pay'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Expectancy', val: 'Effort leads to performance' },
+          { lab: 'Instrumentality', val: 'Performance leads to the reward' },
+          { lab: 'Valence', val: 'The money is genuinely valued' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'All three must hold at once. A generous bonus nobody believes will actually be paid motivates ' +
+             'no better than no bonus at all.'
+      },
+      {
+        id: 'i5l-6', type: 'mcq', marks: 3,
+        prompt: 'What can money do, and not do, as a motivator?',
+        options: [
+          'It can prevent dissatisfaction and reward performance, but cannot create lasting satisfaction alone',
+          'It can create lasting job satisfaction on its own',
+          'It has no effect on motivation whatsoever',
+          'It only matters to employees with a high need for achievement'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Money can', val: 'Prevent dissatisfaction and reward performance' },
+          { lab: 'Money cannot', val: 'Create lasting job satisfaction or engagement on its own' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Effective leaders use it as one tool — applied fairly and transparently, alongside meaningful ' +
+             'work, recognition and growth opportunities.'
+      },
+      {
+        id: 'i5l-7', type: 'mcq', marks: 2,
+        prompt: 'What are <b>quality circles</b>?',
+        options: [
+          'Small groups of employees who take responsibility for solving quality problems and generate their own solutions',
+          'Regular inspections carried out by management',
+          'A ranking of employees by output quality',
+          'Meetings where managers set quality targets'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Quality circles', val: 'Small employee groups solving quality problems themselves' },
+          { lab: 'Part of', val: 'Employee involvement — using the full capacity of employees' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The motivating part is that the group generates its own solutions. Being told the answer would ' +
+             'defeat the purpose.'
+      }
+    ]
   }
 
   ]

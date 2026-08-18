@@ -1,9 +1,8 @@
 /* INBA01-5 — Week 2: Management fundamentals.
-   Concept, functions, levels, skills, roles and functional areas.
+   Concept, functions, levels, skills, roles and the functional areas.
 
-   Built from Abi's own Week 2 notes. As with Week 1, nothing here is filled in
-   from outside those notes, and every reflection prompt and drag-and-drop
-   practice activity is left out — good for learning, impossible to mark. */
+   Same two rules as Week 1: questions test concepts rather than the analogies
+   used to explain them, and nothing is filled in from outside Abi's notes. */
 
 window.MODULE_CONTENT = window.MODULE_CONTENT || {};
 window.MODULE_CONTENT.inba = window.MODULE_CONTENT.inba || { weeks: [], exams: [] };
@@ -14,7 +13,7 @@ window.MODULE_CONTENT.inba.weeks.push({
   title: 'Management Fundamentals',
   emoji: '🧭',
   accent: 3,
-  blurb: 'What managers actually do, at every level, and the ten hats they wear doing it.',
+  blurb: 'What managers do, at every level, the ten hats they wear, and the departments they run.',
   topics: [
 
   /* ═══════════════════════ WHAT MANAGEMENT IS ═══════════════════════ */
@@ -22,39 +21,56 @@ window.MODULE_CONTENT.inba.weeks.push({
     id: 'i2-management',
     title: 'What Management Is',
     emoji: '🎯',
-    summary: 'Doing things right against doing the right things — and why an organisation needs either.',
+    summary: 'The definition, doing things right against doing the right things, and why it matters.',
     notes: [
       {
-        heading: 'Efficiency and effectiveness',
-        emoji: '⚖️',
+        heading: 'Definitions',
+        emoji: '📖',
         html:
-          '<div class="keybox"><b>Efficiency</b> is <b>doing things right</b>. Getting the most output from the ' +
-          'least input — not wasting time, money or effort.' +
-          '<br><br><b>Effectiveness</b> is <b>doing the right things</b>. Performing the activities that will ' +
-          'actually help reach the organisation’s most important goals.</div>' +
-          '<p>The difference matters. You can be incredibly efficient and still be efficiently doing the wrong ' +
-          'thing — your notes use a factory brilliantly producing VCRs. Efficient, and completely ineffective.</p>' +
-          '<p><b>Effectiveness is the key to success; efficiency is what makes that success sustainable.</b></p>'
+          '<div class="keybox"><b>Management</b> is the process of <b>planning, organising, leading and ' +
+          'controlling</b> in employing the <b>human, financial and physical resources</b> of an organisation ' +
+          'to reach its goals and objectives (Stoner, Freeman &amp; Gilbert, 2001; Erasmus et al., 2016).' +
+          '<br><br>Robbins &amp; Coulter (2007) put it as "coordinating and overseeing the work activities of ' +
+          'others so that their activities are completed efficiently and effectively".' +
+          '<br><br><b>A manager</b> is "a person who coordinates and integrates all the work activities of ' +
+          'employees in an organisation with the purpose of achieving its vision and goals" (Lazenby, 2016).</div>'
       },
       {
-        heading: 'Why management matters',
-        emoji: '🎼',
+        heading: 'Efficiency, effectiveness, and importance',
+        emoji: '⚖️',
         html:
-          '<p>An organisation without management is a sports team without a coach, or an orchestra without a ' +
-          'conductor. Your notes give four reasons it is essential:</p>' +
-          '<div class="keybox"><b>1. It gives direction</b> · management is the business’s GPS, channelling ' +
-          'people, money and equipment towards goals' +
-          '<br><b>2. It keeps operations balanced</b> · between the company’s goals, the employees’ goals, the ' +
-          'owners’ interests and the available resources' +
-          '<br><b>3. It connects the organisation to the outside world</b> · adapting to change, and sometimes ' +
-          'creating it' +
-          '<br><b>4. It drives productivity</b> · the greatest possible output from the least input</div>'
+          '<div class="keybox"><b>Efficiency</b> is <b>doing things right</b> — the most output from the least ' +
+          'input, wasting no time, money or effort.' +
+          '<br><b>Effectiveness</b> is <b>doing the right things</b> — performing the activities that reach the ' +
+          'organisation’s most important goals.</div>' +
+          '<p>A business can be efficient and ineffective at once: excellent at producing something nobody ' +
+          'wants. <b>Effectiveness is the key to success; efficiency is what makes that success ' +
+          'sustainable.</b></p>' +
+          '<div class="keybox"><b>Why management is essential</b>' +
+          '<br><b>It gives direction</b> · channelling people, money and equipment towards goals' +
+          '<br><b>It keeps operations balanced</b> · between company goals, employee goals, owners’ interests ' +
+          'and available resources' +
+          '<br><b>It connects the organisation to the outside world</b> · adapting to change, sometimes creating it' +
+          '<br><b>It drives productivity</b> · the greatest output from the least input</div>'
       }
     ],
     questions: [
       {
-        id: 'i2m-1', type: 'mcq', marks: 2,
-        prompt: 'Your notes define <b>efficiency</b> as:',
+        id: 'i2m-1', type: 'multi', marks: 3,
+        prompt: 'Management is defined as employing which resources of an organisation to reach its goals? ' +
+                '<b>Select all that apply.</b>',
+        options: ['Human', 'Financial', 'Physical', 'Political'],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'The definition', val: 'Planning, organising, leading and controlling in employing the human, financial and physical resources' },
+          { lab: 'Answer', val: 'Human, financial and physical', final: true }
+        ],
+        why: 'The three resource types echo the four scarce resources from Week 1, grouped for management ' +
+             'purposes into the people, the money and the things.'
+      },
+      {
+        id: 'i2m-2', type: 'mcq', marks: 2,
+        prompt: '<b>Efficiency</b> is:',
         options: [
           'Doing things right — the most output from the least input',
           'Doing the right things — the activities that reach the goals',
@@ -65,33 +81,34 @@ window.MODULE_CONTENT.inba.weeks.push({
         solution: [
           { lab: 'Efficiency', val: 'Doing things right' },
           { lab: 'In practice', val: 'Maximum results from minimal resources' },
-          { lab: 'Answer', val: 'Doing things right — the most output from the least input', final: true }
+          { lab: 'Answer', val: 'The first option', final: true }
         ],
-        why: 'The second option is effectiveness. The two get swapped constantly, and the phrasing is the ' +
-             'giveaway: efficiency is about the <i>method</i>, effectiveness is about the <i>choice</i>.'
+        why: 'The second option is effectiveness. Efficiency concerns the <i>method</i>; effectiveness ' +
+             'concerns the <i>choice</i> of what to do at all.'
       },
       {
-        id: 'i2m-2', type: 'mcq', marks: 3,
-        scenario: 'A factory brilliantly and efficiently produces VCRs.',
-        prompt: 'How do your notes describe this factory?',
+        id: 'i2m-3', type: 'mcq', marks: 3,
+        scenario: 'A factory produces a product with almost no waste, on time and under budget. There is no ' +
+                  'longer any demand for that product.',
+        prompt: 'How would this factory be described?',
         options: [
-          'Efficient but completely ineffective',
+          'Efficient but ineffective',
           'Effective but inefficient',
           'Both efficient and effective',
           'Neither efficient nor effective'
         ],
         answer: 0,
         solution: [
-          { lab: 'Efficient', val: 'It wastes nothing making what it makes' },
-          { lab: 'Ineffective', val: 'Nobody wants VCRs — it is the wrong goal' },
-          { lab: 'Answer', val: 'Efficient but completely ineffective', final: true }
+          { lab: 'Efficient', val: 'It wastes nothing producing what it produces' },
+          { lab: 'Ineffective', val: 'The activity does not serve any goal worth reaching' },
+          { lab: 'Answer', val: 'Efficient but ineffective', final: true }
         ],
-        why: 'This is the whole point of separating the two words. Being excellent at the wrong activity is ' +
-             'still failure, and no amount of extra efficiency fixes it.'
+        why: 'This is why the two words are separated. Excellence at the wrong activity is still failure, and ' +
+             'more efficiency only reaches the wrong destination faster.'
       },
       {
-        id: 'i2m-3', type: 'mcq', marks: 2,
-        prompt: 'According to your notes, which statement is correct?',
+        id: 'i2m-4', type: 'mcq', marks: 2,
+        prompt: 'Which statement is correct?',
         options: [
           'Effectiveness is the key to success; efficiency is what makes that success sustainable',
           'Efficiency is the key to success; effectiveness makes it sustainable',
@@ -100,16 +117,16 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         answer: 0,
         solution: [
-          { lab: 'Effectiveness', val: 'The key to an organisation’s success' },
-          { lab: 'Efficiency', val: 'What makes that success sustainable' },
+          { lab: 'Effectiveness', val: 'The key to success' },
+          { lab: 'Efficiency', val: 'What makes success sustainable' },
           { lab: 'Answer', val: 'The first option', final: true }
         ],
-        why: 'The order matters. Pick the right goal first, then pursue it without waste — doing it the other ' +
-             'way round gets you a very economical journey to the wrong place.'
+        why: 'The order matters: choose the right goal first, then pursue it without waste. Reversed, you get ' +
+             'a very economical journey to the wrong place.'
       },
       {
-        id: 'i2m-4', type: 'multi', marks: 3,
-        prompt: 'Which of these does your notes give as reasons management is important? <b>Select all that apply.</b>',
+        id: 'i2m-5', type: 'multi', marks: 3,
+        prompt: 'Which of these are reasons management is essential to an organisation? <b>Select all that apply.</b>',
         options: [
           'It gives direction',
           'It keeps operations balanced',
@@ -120,35 +137,32 @@ window.MODULE_CONTENT.inba.weeks.push({
         answers: [0, 1, 2, 3],
         solution: [
           { lab: 'Direction', val: 'Channelling resources towards goals' },
-          { lab: 'Balance', val: 'Between company goals, employee goals, owners and resources' },
+          { lab: 'Balance', val: 'Between competing internal interests' },
           { lab: 'Connection', val: 'Keeping the business in tune with its environment' },
           { lab: 'Productivity', val: 'Greatest output from the least input' },
           { lab: 'Answer', val: 'The first four', final: true }
         ],
-        why: 'The last one is the opposite of what your notes describe — Patrice Motsepe is used as an example ' +
-             'of a manager who empowered staff through training so they could operate independently.'
+        why: 'The last option is the opposite of good management. Empowering staff so they can operate ' +
+             'independently is given as an example of management done well.'
       },
       {
-        id: 'i2m-5', type: 'multi', marks: 3,
-        prompt: 'Your notes say management must balance competing interests inside a business. Which are listed? ' +
-                '<b>Select all that apply.</b>',
+        id: 'i2m-6', type: 'multi', marks: 3,
+        prompt: 'Which competing interests must management balance <b>inside</b> a business? <b>Select all that apply.</b>',
         options: [
           'The company’s goals, such as profit and growth',
           'The employees’ goals, such as fair pay and job satisfaction',
           'The owners’ interests, such as a return on investment',
           'The available resources',
-          'The competitors’ pricing decisions'
+          'Competitors’ pricing decisions'
         ],
         answers: [0, 1, 2, 3],
         solution: [
-          { lab: 'Company goals', val: 'Profit, growth' },
-          { lab: 'Employee goals', val: 'Fair pay, job satisfaction' },
-          { lab: 'Owners', val: 'A return on investment' },
-          { lab: 'Resources', val: 'People, money, physical assets' },
+          { lab: 'Company, employees, owners, resources', val: 'All internal to the business' },
+          { lab: 'Competitor pricing', val: 'Market environment — responded to, not balanced' },
           { lab: 'Answer', val: 'The first four', final: true }
         ],
-        why: 'All four sit <i>inside</i> the business — the micro environment from Week 1. A competitor’s ' +
-             'pricing belongs to the market environment, which management does not balance but responds to.'
+        why: 'All four sit inside the micro environment from Week 1, which is precisely the part management ' +
+             'controls and therefore can balance.'
       }
     ]
   },
@@ -158,7 +172,7 @@ window.MODULE_CONTENT.inba.weeks.push({
     id: 'i2-functions',
     title: 'The Four Functions',
     emoji: '🔁',
-    summary: 'Plan, organise, lead, control — in that order, and round again.',
+    summary: 'Plan, organise, lead, control — in order, and round again.',
     notes: [
       {
         heading: 'The four, defined',
@@ -169,19 +183,20 @@ window.MODULE_CONTENT.inba.weeks.push({
           '<br><b>Organising</b> · determining what needs to be done, how it will be done, and who is to do it' +
           '<br><b>Leading</b> · motivating, leading, and other actions involved in dealing with people' +
           '<br><b>Controlling</b> · monitoring activities to ensure they are accomplished as planned</div>' +
-          '<p><i>Source: Robbins &amp; Coulter (2007:9), as given in your notes.</i></p>'
+          '<p><i>Robbins &amp; Coulter (2007:9)</i></p>' +
+          '<p>Leading is also defined as "influencing employees to work toward achieving the objectives" ' +
+          '(Lussier, 2000), and controlling as "evaluating how well an organisation is achieving its goals and ' +
+          'taking action to maintain or improve performance" (Jones, George &amp; Hill, 2000).</p>'
       },
       {
-        heading: 'Why the order is not optional',
+        heading: 'Why the order holds',
         emoji: '➡️',
         html:
-          '<p>The four are linked in a logical sequence forming a continuous cycle, and they need to be done in ' +
-          'order:</p>' +
-          '<p>You cannot <b>organise</b> a team if you have not first <b>planned</b> what the goal is. You cannot ' +
-          '<b>lead</b> people to do work that has not been organised and assigned. You cannot <b>control</b> and ' +
-          'check results if you have not led the team to do the work in the first place.</p>' +
-          '<p>That said, managers often perform several at once — planning next quarter’s budget while leading a ' +
-          'meeting to resolve a conflict and checking a timeline that has slipped.</p>'
+          '<p>The four are linked in a logical sequence forming a continuous cycle. You cannot <b>organise</b> ' +
+          'a team before <b>planning</b> the goal; you cannot <b>lead</b> people to do work that has not been ' +
+          'organised and assigned; you cannot <b>control</b> results that do not yet exist.</p>' +
+          '<p>Managers nonetheless perform several at once — planning a budget while leading a meeting and ' +
+          'checking a slipped timeline.</p>'
       }
     ],
     questions: [
@@ -201,35 +216,35 @@ window.MODULE_CONTENT.inba.weeks.push({
           { lab: 'Controlling', val: 'Checking it happened as planned' },
           { lab: 'Answer', val: 'All four rows as above', final: true }
         ],
-        why: 'Planning and organising are the pair most often confused. Planning decides the goal; organising ' +
+        why: 'Planning and organising are the pair most often confused: planning decides the goal, organising ' +
              'decides who will do what to reach it.'
       },
       {
         id: 'i2f-2', type: 'mcq', marks: 2,
-        prompt: 'Which function do your notes describe as the starting point of the cycle?',
+        prompt: 'Which function is the starting point of the management cycle?',
         options: ['Planning', 'Organising', 'Leading', 'Controlling'],
         answer: 0,
         solution: [
-          { lab: 'Planning', val: 'Like setting the GPS — it marks the starting point of the process' },
-          { lab: 'Why', val: 'You cannot organise a team before you know the goal' },
+          { lab: 'Planning', val: 'The preparation phase for achieving goals' },
+          { lab: 'Why first', val: 'There is nothing to organise around until a goal exists' },
           { lab: 'Answer', val: 'Planning', final: true }
         ],
-        why: 'Your notes call planning the preparation phase for achieving the organisation’s goals. Everything ' +
-             'else in the cycle depends on it having happened.'
+        why: 'Every other function depends on planning having happened, which is why it heads the sequence ' +
+             'rather than appearing anywhere in it.'
       },
       {
         id: 'i2f-3', type: 'mcq', marks: 2,
-        scenario: 'The head of a department compares this month’s sales figures against the quarterly target.',
+        scenario: 'A department head compares this month’s sales figures against the quarterly target.',
         prompt: 'Which function is this?',
         options: ['Controlling', 'Planning', 'Organising', 'Leading'],
         answer: 0,
         solution: [
-          { lab: 'What is happening', val: 'Progress is being checked against the plan' },
-          { lab: 'Function', val: 'Controlling — monitoring activities to ensure they go as planned' },
+          { lab: 'What is happening', val: 'Progress is measured against the plan' },
+          { lab: 'Function', val: 'Controlling' },
           { lab: 'Answer', val: 'Controlling', final: true }
         ],
-        why: 'Setting the target would have been planning. Comparing actual results against it afterwards is ' +
-             'the control function doing its job.'
+        why: 'Setting the target was planning. Comparing actual results against it afterwards is control ' +
+             'doing its job.'
       },
       {
         id: 'i2f-4', type: 'mcq', marks: 2,
@@ -238,35 +253,16 @@ window.MODULE_CONTENT.inba.weeks.push({
         options: ['Organising', 'Controlling', 'Planning', 'Leading'],
         answer: 0,
         solution: [
-          { lab: 'What is happening', val: 'People are being allocated to tasks and times' },
+          { lab: 'What is happening', val: 'People are allocated to tasks and times' },
           { lab: 'Function', val: 'Organising — who is to do it, and how' },
           { lab: 'Answer', val: 'Organising', final: true }
         ],
-        why: 'A roster is the classic organising task: the goal already exists, and this decides who covers ' +
-             'what to meet it.'
+        why: 'The goal already exists; this decides who covers what to meet it. That is organising rather ' +
+             'than planning.'
       },
       {
-        id: 'i2f-5', type: 'mcq', marks: 3,
-        prompt: 'Why do your notes say the four functions must be done in order?',
-        options: [
-          'You cannot organise a team before planning the goal, or control results before the work has been led',
-          'Because the textbook lists them alphabetically',
-          'Because each function is handled by a different level of management',
-          'Because a manager can only perform one function at a time'
-        ],
-        answer: 0,
-        solution: [
-          { lab: 'Planning first', val: 'There is nothing to organise around without a goal' },
-          { lab: 'Then organising', val: 'Work must be assigned before anyone can be led to do it' },
-          { lab: 'Then leading, then controlling', val: 'You cannot check results that do not exist yet' },
-          { lab: 'Answer', val: 'The first option', final: true }
-        ],
-        why: 'The last option is explicitly contradicted: your notes say managers often perform several ' +
-             'functions simultaneously, even though the logical order still holds.'
-      },
-      {
-        id: 'i2f-6', type: 'mcq', marks: 2,
-        scenario: 'A team leader hosts a virtual coffee meeting to check in on her remote team’s morale.',
+        id: 'i2f-5', type: 'mcq', marks: 2,
+        scenario: 'A team leader holds a meeting to check in on a remote team’s morale.',
         prompt: 'Which function is this?',
         options: ['Leading', 'Controlling', 'Organising', 'Planning'],
         answer: 0,
@@ -275,81 +271,96 @@ window.MODULE_CONTENT.inba.weeks.push({
           { lab: 'Function', val: 'Leading — dealing with people' },
           { lab: 'Answer', val: 'Leading', final: true }
         ],
-        why: 'Your notes single this out as a modern difficulty: managers now have to lead hybrid and remote ' +
-             'teams and make them feel connected despite the distance.'
+        why: 'Leading has become harder with hybrid and remote teams, where a manager must create connection ' +
+             'without physical presence.'
+      },
+      {
+        id: 'i2f-6', type: 'mcq', marks: 3,
+        prompt: 'Why must the four functions follow a logical order?',
+        options: [
+          'You cannot organise before planning a goal, nor control results before the work has been led',
+          'Because each function is handled by a different level of management',
+          'Because a manager can only perform one function at a time',
+          'Because the functions are listed alphabetically'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The dependency', val: 'Each function needs the previous one to have happened' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The third option is explicitly untrue — managers routinely perform several functions at once, ' +
+             'even though the logical dependency between them still holds.'
       }
     ]
   },
 
-  /* ═══════════════════════ LEVELS OF MANAGEMENT ═══════════════════════ */
+  /* ═══════════════════════ LEVELS ═══════════════════════ */
   {
     id: 'i2-levels',
     title: 'Levels of Management',
     emoji: '🪜',
-    summary: 'The strategists, the translators and the implementers.',
+    summary: 'Three levels, three planning horizons, and what sets the bottom one apart.',
     notes: [
       {
-        heading: 'Three levels',
+        heading: 'The three levels',
         emoji: '🏢',
         html:
-          '<div class="keybox"><b>Top management</b> — the strategists, the "why". Board of Directors, CEO, ' +
-          'Managing Director; in government, the Minister and Director-General. Sets mission, vision and overall ' +
-          'goals; develops long-term strategy; approves major policy and large budgets; represents the company ' +
-          'publicly. Also known as the <b>strategic</b> level.' +
-          '<br><br><b>Middle management</b> — the translators, the "how". Marketing, HR and operations managers, ' +
-          'regional managers, divisional heads, project leaders. Translates top-level strategy into actionable ' +
-          'plans; medium-term planning; develops <b>tactical</b> objectives.' +
-          '<br><br><b>Lower management</b> — the implementers, the "do". Also called supervisory or line ' +
-          'management: team leaders, supervisors, foremen. Short-term and task-oriented; creates ' +
-          '<b>operational</b> plans from middle management’s tactical plans.</div>'
+          '<div class="keybox"><b>Top management</b> — the strategists. Board of Directors, CEO, Managing ' +
+          'Director; in government the Minister and Director-General. Sets mission, vision and overall goals; ' +
+          'develops long-term strategy; approves major policy and large budgets; represents the company ' +
+          'publicly. Known as the <b>strategic</b> level.' +
+          '<br><br><b>Middle management</b> — the translators. Marketing, HR and operations managers; regional ' +
+          'managers, divisional heads, project leaders. Translates strategy into actionable plans, does ' +
+          'medium-term planning, and develops <b>tactical</b> objectives.' +
+          '<br><br><b>Lower management</b> — the implementers. Also called supervisory or line management: team ' +
+          'leaders, supervisors, foremen. Short-term and task-oriented, creating <b>operational</b> plans from ' +
+          'middle management’s tactical ones.</div>'
       },
       {
         heading: 'Span of control',
         emoji: '📏',
         html:
-          '<p>The number of management levels is largely determined by the organisation’s size and the ' +
+          '<p>The number of management levels is determined largely by the organisation’s size and the ' +
           '<b>span of control</b> — the number of people one manager can effectively oversee.</p>' +
-          '<p>A one-person shoe repair shop combines all management functions in the owner. A national retail ' +
-          'chain needs multiple complex layers to coordinate thousands of employees.</p>' +
-          '<p>One thing sets lower management apart: unlike the other two levels, they do <b>not</b> supervise ' +
-          'other managers. They supervise operational employees.</p>'
+          '<p>Lower management differs from the other two levels in one important way: they do <b>not</b> ' +
+          'supervise other managers. They supervise <b>operational employees</b>, who hold no management ' +
+          'position and report directly to them.</p>'
       }
     ],
     questions: [
       {
         id: 'i2l-1', type: 'match', marks: 3,
-        prompt: 'Match each level of management to how your notes describe it.',
+        prompt: 'Match each level of management to its role.',
         pairs: [
-          { left: 'Top management', right: 'The strategists — the "why"' },
-          { left: 'Middle management', right: 'The translators — the "how"' },
-          { left: 'Lower management', right: 'The implementers — the "do"' }
+          { left: 'Top management', right: 'Sets the mission, vision and long-term strategy' },
+          { left: 'Middle management', right: 'Translates strategy into actionable plans for a department' },
+          { left: 'Lower management', right: 'Oversees day-to-day activities and allocates daily tasks' }
         ],
         solution: [
-          { lab: 'Top', val: 'Sets the mission, vision and long-term strategy' },
-          { lab: 'Middle', val: 'Turns that strategy into plans a department can act on' },
+          { lab: 'Top', val: 'The strategic level' },
+          { lab: 'Middle', val: 'Turns strategy into departmental objectives' },
           { lab: 'Lower', val: 'Gets the daily work done' },
           { lab: 'Answer', val: 'All three rows as above', final: true }
         ],
-        why: 'The sports team comparison in your notes: head coach, assistant coaches, position coaches. All ' +
-             'management, completely different jobs.'
+        why: 'Each level acts on a different time horizon, and that is usually the fastest way to tell which ' +
+             'level a described activity belongs to.'
       },
       {
         id: 'i2l-2', type: 'mcq', marks: 2,
         prompt: 'What is the <b>span of control</b>?',
         options: [
           'The number of people one manager can effectively oversee',
-          'The number of levels of management in an organisation',
-          'The size of the budget a manager may approve',
+          'The number of management levels in an organisation',
+          'The size of budget a manager may approve',
           'The geographic area a business operates in'
         ],
         answer: 0,
         solution: [
           { lab: 'Span of control', val: 'How many people one manager can effectively oversee' },
-          { lab: 'Why it matters', val: 'Along with size, it determines how many levels an organisation needs' },
           { lab: 'Answer', val: 'The first option', final: true }
         ],
-        why: 'The second option is the consequence, not the definition. A narrow span of control forces more ' +
-             'levels, because each manager can only handle so many people.'
+        why: 'The number of levels is a consequence of it, not the definition: a narrow span forces more ' +
+             'layers, because each manager can only handle so many people.'
       },
       {
         id: 'i2l-3', type: 'match', marks: 3,
@@ -360,19 +371,19 @@ window.MODULE_CONTENT.inba.weeks.push({
           { left: 'Lower management', right: 'Operational plans, short-term' }
         ],
         solution: [
-          { lab: 'Top', val: 'Strategic — the mission and long-term direction' },
-          { lab: 'Middle', val: 'Tactical — turning strategy into department objectives' },
-          { lab: 'Lower', val: 'Operational — the daily and weekly detail' },
+          { lab: 'Top', val: 'Strategic' },
+          { lab: 'Middle', val: 'Tactical' },
+          { lab: 'Lower', val: 'Operational' },
           { lab: 'Answer', val: 'All three rows as above', final: true }
         ],
-        why: 'Strategic, tactical and operational is the same ladder viewed from the planning side. Week 3 of ' +
-             'your module goes into each in detail.'
+        why: 'Strategic, tactical and operational is the same ladder seen from the planning side, and Week 3 ' +
+             'of the module examines each in detail.'
       },
       {
         id: 'i2l-4', type: 'mcq', marks: 3,
-        prompt: 'What makes lower management different from the other two levels?',
+        prompt: 'What distinguishes lower management from the other two levels?',
         options: [
-          'They do not supervise other managers — they supervise operational employees',
+          'They supervise operational employees rather than other managers',
           'They do not perform any of the four management functions',
           'They report directly to the board of directors',
           'They set the organisation’s mission and vision'
@@ -383,67 +394,63 @@ window.MODULE_CONTENT.inba.weeks.push({
           { lab: 'Lower', val: 'Supervises operational employees, who hold no management position' },
           { lab: 'Answer', val: 'The first option', final: true }
         ],
-        why: 'They still plan, organise, lead and control — just over a shorter horizon and with a team that ' +
-             'does the work rather than manages it.'
+        why: 'They still plan, organise, lead and control — over a shorter horizon, and with a team that does ' +
+             'the work rather than manages it.'
       },
       {
         id: 'i2l-5', type: 'multi', marks: 3,
         prompt: 'Which of these are responsibilities of <b>top management</b>? <b>Select all that apply.</b>',
         options: [
-          'Setting the company’s mission, vision and overall goals',
+          'Setting the mission, vision and overall goals',
           'Developing long-term strategies',
           'Approving large budgets and major policy decisions',
           'Allocating daily tasks to frontline employees',
-          'Handling the weekly staff roster'
+          'Drawing up the weekly staff roster'
         ],
         answers: [0, 1, 2],
         solution: [
-          { lab: 'Mission and vision', val: 'Top management sets them' },
-          { lab: 'Long-term strategy', val: 'The strategic level' },
-          { lab: 'Major policy and budgets', val: 'Ultimate authority for the organisation' },
-          { lab: 'The last two', val: 'Lower management — day-to-day and task-oriented' },
+          { lab: 'Mission, strategy, major policy', val: 'Top management' },
+          { lab: 'Daily tasks and rosters', val: 'Lower management' },
           { lab: 'Answer', val: 'The first three', final: true }
         ],
-        why: 'The time horizon is the quickest test. Anything measured in days belongs to lower management; ' +
-             'anything measured in years belongs to the top.'
+        why: 'The time horizon is the quickest test: anything measured in days belongs at the bottom, ' +
+             'anything measured in years at the top.'
       },
       {
         id: 'i2l-6', type: 'mcq', marks: 2,
-        prompt: 'A marketing manager or a human resource manager sits at which level?',
-        options: ['Middle management', 'Top management', 'Lower management', 'They are not managers'],
+        prompt: 'A marketing manager or human resource manager belongs to which level?',
+        options: ['Middle management', 'Top management', 'Lower management', 'Neither — they are not managers'],
         answer: 0,
         solution: [
-          { lab: 'Middle management', val: 'Responsible for specific departments or functions' },
-          { lab: 'Their job', val: 'Translating top-level strategy into plans for their department' },
+          { lab: 'Middle management', val: 'Responsible for a specific department or function' },
           { lab: 'Answer', val: 'Middle management', final: true }
         ],
-        why: 'Your notes also place regional managers, divisional heads and project leaders here, depending on ' +
-             'the organogram.'
+        why: 'Regional managers, divisional heads and project leaders also sit here, depending on the ' +
+             'organisation’s structure.'
       }
     ]
   },
 
-  /* ═══════════════════════ MANAGERIAL SKILLS ═══════════════════════ */
+  /* ═══════════════════════ SKILLS ═══════════════════════ */
   {
     id: 'i2-skills',
     title: 'Managerial Skills',
     emoji: '🧰',
-    summary: 'Conceptual, human and technical — and how the mix changes as you climb.',
+    summary: 'Conceptual, human and technical — and how the mix inverts as you climb.',
     notes: [
       {
         heading: 'Three skills',
         emoji: '🎓',
         html:
-          '<div class="keybox"><b>Technical skills</b> · the ability to use the procedures, techniques and ' +
-          'knowledge of a specialised field. Directly related to the job.' +
-          '<br><br><b>Human skills</b> · the ability to work with, understand and motivate other people, as ' +
-          'individuals or in groups. <b>Necessary at all levels of management.</b>' +
-          '<br><br><b>Conceptual skills</b> · the ability to coordinate and integrate all of an organisation’s ' +
-          'interests and activities — "the ability to think and to conceptualise about abstract and complex ' +
-          'situations" (Robbins &amp; Coulter, 2007:13).</div>' +
-          '<p>Your notes open with the trap: promote your best software developer to lead the team, and a ' +
-          'technical genius may struggle to explain goals or resolve conflicts. The skills that made someone ' +
-          'excellent in a role are not the skills they need to manage it.</p>'
+          '<div class="keybox"><b>Technical skills</b> · using the procedures, techniques and knowledge of a ' +
+          'specialised field. Directly related to the job.' +
+          '<br><br><b>Human skills</b> · working with, understanding and motivating other people, individually ' +
+          'or in groups. <b>Necessary at all levels.</b>' +
+          '<br><br><b>Conceptual skills</b> · coordinating and integrating all of an organisation’s interests ' +
+          'and activities — "the ability to think and to conceptualise about abstract and complex situations" ' +
+          '(Robbins &amp; Coulter, 2007).</div>' +
+          '<p>The skills that make someone excellent in a specialist role are not the skills needed to manage ' +
+          'that role.</p>'
       },
       {
         heading: 'The mix by level',
@@ -452,8 +459,8 @@ window.MODULE_CONTENT.inba.weeks.push({
           '<div class="keybox"><b>Top management</b> · high conceptual, medium interpersonal, low technical' +
           '<br><b>Middle management</b> · a balance of all three' +
           '<br><b>Lower management</b> · high technical, medium interpersonal, lower conceptual</div>' +
-          '<p>The CEO is not writing code or balancing a departmental budget. The supervisor needs deep ' +
-          'technical knowledge to train staff, solve daily problems and command respect.</p>'
+          '<p>Top managers steer the whole organisation and navigate its external environment; supervisors ' +
+          'need deep technical knowledge to train staff, solve daily problems and command respect.</p>'
       }
     ],
     questions: [
@@ -463,7 +470,7 @@ window.MODULE_CONTENT.inba.weeks.push({
         pairs: [
           { left: 'Technical skills', right: 'Using the procedures, techniques and knowledge of a specialised field' },
           { left: 'Human skills', right: 'Working with, understanding and motivating other people' },
-          { left: 'Conceptual skills', right: 'Thinking about abstract and complex situations, integrating the whole organisation' }
+          { left: 'Conceptual skills', right: 'Thinking about abstract and complex situations and integrating the whole organisation' }
         ],
         solution: [
           { lab: 'Technical', val: 'Job-specific know-how' },
@@ -471,12 +478,12 @@ window.MODULE_CONTENT.inba.weeks.push({
           { lab: 'Conceptual', val: 'The organisation as a whole and how it fits its environment' },
           { lab: 'Answer', val: 'All three rows as above', final: true }
         ],
-        why: 'Conceptual is the hardest to pin down. It is about seeing the whole picture at once — which is ' +
-             'why your notes attach it to the level responsible for the whole organisation.'
+        why: 'Conceptual skill is about seeing the whole picture at once, which is why it attaches to the ' +
+             'level responsible for the whole organisation.'
       },
       {
         id: 'i2s-2', type: 'mcq', marks: 3,
-        prompt: 'Which skill mix do your notes give for <b>top management</b>?',
+        prompt: 'Which skill mix belongs to <b>top management</b>?',
         options: [
           'High conceptual, medium interpersonal, low technical',
           'High technical, medium interpersonal, lower conceptual',
@@ -486,25 +493,25 @@ window.MODULE_CONTENT.inba.weeks.push({
         answer: 0,
         solution: [
           { lab: 'Conceptual', val: 'High — setting long-term vision and strategy' },
-          { lab: 'Interpersonal', val: 'Medium — leading executives, inspiring the workforce, negotiating' },
-          { lab: 'Technical', val: 'Low — the CEO is not writing code' },
-          { lab: 'Answer', val: 'High conceptual, medium interpersonal, low technical', final: true }
+          { lab: 'Interpersonal', val: 'Medium — leading executives and negotiating' },
+          { lab: 'Technical', val: 'Low — not involved in day-to-day technical detail' },
+          { lab: 'Answer', val: 'The first option', final: true }
         ],
-        why: 'The second option is lower management, exactly inverted. The mix flips as you climb, which is ' +
-             'why promoting a brilliant technician can go so badly.'
+        why: 'The second option is lower management, exactly inverted — which is why promoting a brilliant ' +
+             'technician straight to the top so often goes badly.'
       },
       {
         id: 'i2s-3', type: 'mcq', marks: 2,
-        prompt: 'Which skill do your notes say is necessary at <b>all</b> levels of management?',
+        prompt: 'Which skill is necessary at <b>all</b> levels of management?',
         options: ['Human skills', 'Technical skills', 'Conceptual skills', 'None — each level needs only one'],
         answer: 0,
         solution: [
-          { lab: 'Human skills', val: 'Necessary at all levels — every manager works with people' },
-          { lab: 'Examples given', val: 'First-line dealing with technical staff; top dealing with lower managers' },
+          { lab: 'Human skills', val: 'Every manager works with people' },
+          { lab: 'Examples', val: 'Supervisors dealing with technical staff; top managers dealing with other managers' },
           { lab: 'Answer', val: 'Human skills', final: true }
         ],
-        why: 'Technical and conceptual rise and fall as you move up the ladder. Human skills never stop ' +
-             'mattering, because every level is managing people.'
+        why: 'Technical and conceptual rise and fall as you move up. Human skills never stop mattering, ' +
+             'because every level is managing people.'
       },
       {
         id: 'i2s-4', type: 'mcq', marks: 2,
@@ -513,80 +520,79 @@ window.MODULE_CONTENT.inba.weeks.push({
           'High technical, medium interpersonal, lower conceptual',
           'High conceptual, medium interpersonal, low technical',
           'A balance of all three',
-          'High conceptual, high technical, no interpersonal'
+          'High conceptual and technical, no interpersonal'
         ],
         answer: 0,
         solution: [
           { lab: 'Technical', val: 'High — needed to train staff and solve daily problems' },
           { lab: 'Interpersonal', val: 'Medium — they spend all day with their team' },
-          { lab: 'Conceptual', val: 'Lower — just enough to see how the team fits the department' },
+          { lab: 'Conceptual', val: 'Lower — enough to see how the team fits the department' },
           { lab: 'Answer', val: 'The first option', final: true }
         ],
-        why: 'Deep technical knowledge is also how a supervisor commands respect, according to your notes — ' +
-             'it is not only about doing the work.'
+        why: 'Deep technical knowledge is also how a supervisor earns their team’s respect, not only how they ' +
+             'get the work done.'
       },
       {
         id: 'i2s-5', type: 'mcq', marks: 2,
-        prompt: 'Which level needs <b>a balance of all three</b> skills?',
+        prompt: 'Which level requires <b>a balance of all three</b> skills?',
         options: ['Middle management', 'Top management', 'Lower management', 'No level does'],
         answer: 0,
         solution: [
-          { lab: 'Conceptual', val: 'To understand the bigger strategy' },
-          { lab: 'Technical', val: 'Enough to ask the right questions in their function' },
+          { lab: 'Conceptual', val: 'To understand the wider strategy' },
+          { lab: 'Technical', val: 'Enough to make informed decisions in their function' },
           { lab: 'Interpersonal', val: 'To communicate up and down the ladder' },
           { lab: 'Answer', val: 'Middle management', final: true }
         ],
-        why: 'It follows from the job. A middle manager is translating between two levels, so they need enough ' +
-             'of the language spoken at each.'
+        why: 'It follows from the job: a middle manager translates between two levels and needs enough of the ' +
+             'language spoken at each.'
       },
       {
         id: 'i2s-6', type: 'mcq', marks: 3,
-        scenario: 'A brilliant software developer is promoted to lead the team. They struggle to explain the ' +
-                  'project goals and cannot resolve conflicts between colleagues.',
+        scenario: 'A highly skilled specialist is promoted to lead their team. They cannot explain the ' +
+                  'project goals clearly and cannot resolve conflicts between colleagues.',
         prompt: 'Which skill are they lacking?',
         options: ['Human skills', 'Technical skills', 'Conceptual skills', 'Financial skills'],
         answer: 0,
         solution: [
-          { lab: 'They have', val: 'Technical skills in abundance — they are a genius at the work' },
-          { lab: 'They lack', val: 'The ability to work with, understand and motivate other people' },
+          { lab: 'They have', val: 'Technical skills in abundance' },
+          { lab: 'They lack', val: 'The ability to work with, understand and motivate people' },
           { lab: 'Answer', val: 'Human skills', final: true }
         ],
-        why: 'This is your notes’ opening example, and the reason the three skills are taught separately. ' +
-             'Being excellent at a job is not the same as being able to manage people doing it.'
+        why: 'This is why the three skills are taught separately: being excellent at a job is not the same as ' +
+             'being able to manage people doing it.'
       }
     ]
   },
 
-  /* ═══════════════════════ MANAGERIAL ROLES ═══════════════════════ */
+  /* ═══════════════════════ ROLES ═══════════════════════ */
   {
     id: 'i2-roles',
     title: 'The Ten Managerial Roles',
     emoji: '🎭',
-    summary: 'Mintzberg’s ten hats, in three groups.',
+    summary: 'Mintzberg’s ten roles, grouped into three categories.',
     notes: [
       {
         heading: 'Three categories, ten roles',
         emoji: '🎩',
         html:
-          '<p><b>Henry Mintzberg</b> identified ten roles every manager plays, divided into three categories:</p>' +
+          '<p><b>Henry Mintzberg</b> identified ten roles every manager plays, in three categories:</p>' +
           '<div class="keybox"><b>Interpersonal</b> · Figurehead · Leader · Liaison' +
           '<br><b>Informational</b> · Monitor · Disseminator · Spokesperson' +
           '<br><b>Decisional</b> · Entrepreneur · Disturbance handler · Resource allocator · Negotiator</div>'
       },
       {
-        heading: 'What each one does',
+        heading: 'What each role does',
         emoji: '📖',
         html:
-          '<div class="keybox"><b>Figurehead</b> · symbolic head; routine duties of a legal or social nature — ' +
-          'greeting visitors, signing legal documents' +
-          '<br><b>Leader</b> · responsible for motivating subordinates, staffing and training' +
-          '<br><b>Liaison</b> · maintains a self-developed network of outside contacts' +
-          '<br><b>Monitor</b> · seeks and receives a wide variety of internal and external information' +
+          '<div class="keybox"><b>Figurehead</b> · symbolic head; routine duties of a legal or social nature' +
+          '<br><b>Leader</b> · motivation of subordinates; staffing and training' +
+          '<br><b>Liaison</b> · maintains a network of outside contacts. Can consume up to half a manager’s time' +
+          '<br><b>Monitor</b> · seeks and receives wide-ranging internal and external information' +
           '<br><b>Disseminator</b> · transmits information to members of the organisation' +
           '<br><b>Spokesperson</b> · transmits information to <i>outsiders</i> about plans, policies and results' +
           '<br><b>Entrepreneur</b> · searches for opportunities and initiates improvement projects' +
           '<br><b>Disturbance handler</b> · corrective action when facing important, unexpected disturbances' +
-          '<br><b>Resource allocator</b> · allocates resources of all kinds; approves significant decisions' +
+          '<br><b>Resource allocator</b> · allocates resources of all kinds and approves significant decisions' +
           '<br><b>Negotiator</b> · represents the organisation at major negotiations</div>'
       }
     ],
@@ -597,29 +603,28 @@ window.MODULE_CONTENT.inba.weeks.push({
         options: ['Henry Mintzberg', 'Robbins and Coulter', 'John Elkington', 'Christo Wiese'],
         answer: 0,
         solution: [
-          { lab: 'Mintzberg', val: 'Identified ten roles every manager plays' },
-          { lab: 'Grouped into', val: 'Interpersonal, informational and decision-making' },
+          { lab: 'Mintzberg', val: 'Identified ten roles in three categories' },
           { lab: 'Answer', val: 'Henry Mintzberg', final: true }
         ],
-        why: 'Robbins and Coulter appear all through your notes for definitions of the four functions, but the ' +
-             'ten roles are Mintzberg’s.'
+        why: 'Robbins and Coulter are cited throughout the module for the four functions, but the ten roles ' +
+             'are Mintzberg’s.'
       },
       {
         id: 'i2r-2', type: 'match', marks: 3,
         prompt: 'Match each interpersonal role to what the manager is doing.',
         pairs: [
-          { left: 'Figurehead', right: 'Giving a speech at a company event and signing legal documents' },
-          { left: 'Leader', right: 'Conducting a performance review and helping an employee set career goals' },
-          { left: 'Liaison', right: 'Having lunch with a key client to maintain the relationship' }
+          { left: 'Figurehead', right: 'Performing symbolic duties such as signing legal documents and hosting visitors' },
+          { left: 'Leader', right: 'Hiring, training, motivating and evaluating employee performance' },
+          { left: 'Liaison', right: 'Building and maintaining a network of contacts outside the immediate team' }
         ],
         solution: [
           { lab: 'Figurehead', val: 'The symbolic, public face of the unit' },
-          { lab: 'Leader', val: 'Hiring, training, motivating and evaluating' },
-          { lab: 'Liaison', val: 'Building a network inside and outside the organisation' },
+          { lab: 'Leader', val: 'Responsible for the people in the team' },
+          { lab: 'Liaison', val: 'Networks inside and outside the organisation' },
           { lab: 'Answer', val: 'All three rows as above', final: true }
         ],
-        why: 'Your notes say the liaison role can consume up to half a manager’s time — far more than the ' +
-             'ceremonial figurehead duties people picture when they think of a manager.'
+        why: 'The liaison role can take up to half a manager’s time — far more than the ceremonial figurehead ' +
+             'duties most people picture.'
       },
       {
         id: 'i2r-3', type: 'multi', marks: 3,
@@ -627,14 +632,13 @@ window.MODULE_CONTENT.inba.weeks.push({
         options: ['Monitor', 'Disseminator', 'Spokesperson', 'Negotiator', 'Figurehead'],
         answers: [0, 1, 2],
         solution: [
-          { lab: 'Monitor', val: 'Seeks and receives information' },
-          { lab: 'Disseminator', val: 'Passes it to people inside the organisation' },
-          { lab: 'Spokesperson', val: 'Passes it to people outside' },
-          { lab: 'Negotiator and Figurehead', val: 'Decisional and interpersonal respectively' },
-          { lab: 'Answer', val: 'Monitor, Disseminator and Spokesperson', final: true }
+          { lab: 'Monitor', val: 'Takes information in' },
+          { lab: 'Disseminator', val: 'Spreads it inside the organisation' },
+          { lab: 'Spokesperson', val: 'Communicates it outside' },
+          { lab: 'Answer', val: 'The first three', final: true }
         ],
-        why: 'The three form a neat chain: take information in, spread it inside, then speak for the ' +
-             'organisation outside.'
+        why: 'The three form a chain: gather, distribute internally, then speak for the organisation ' +
+             'externally.'
       },
       {
         id: 'i2r-4', type: 'mcq', marks: 3,
@@ -643,16 +647,16 @@ window.MODULE_CONTENT.inba.weeks.push({
           'The disseminator passes information to members of the organisation; the spokesperson passes it to outsiders',
           'The disseminator speaks to the media; the spokesperson speaks to staff',
           'The disseminator gathers information; the spokesperson analyses it',
-          'There is no difference — they are two names for one role'
+          'There is no difference between them'
         ],
         answer: 0,
         solution: [
-          { lab: 'Disseminator', val: 'Transmits information to members of the organisation' },
-          { lab: 'Spokesperson', val: 'Transmits information to outsiders — plans, policies, actions, results' },
+          { lab: 'Disseminator', val: 'Information to members of the organisation' },
+          { lab: 'Spokesperson', val: 'Information to outsiders — plans, policies, actions, results' },
           { lab: 'Answer', val: 'The first option', final: true }
         ],
-        why: 'The direction of travel is the whole distinction. Gathering the information in the first place ' +
-             'is the Monitor, which is a third separate role.'
+        why: 'The direction of travel is the whole distinction. Gathering information in the first place is ' +
+             'the Monitor, a third and separate role.'
       },
       {
         id: 'i2r-5', type: 'match', marks: 4,
@@ -664,31 +668,17 @@ window.MODULE_CONTENT.inba.weeks.push({
           { left: 'Negotiator', right: 'Represents the organisation at major negotiations' }
         ],
         solution: [
-          { lab: 'Entrepreneur', val: 'Initiates change, deliberately' },
-          { lab: 'Disturbance handler', val: 'Responds to change that was forced on them' },
+          { lab: 'Entrepreneur', val: 'Initiates change deliberately' },
+          { lab: 'Disturbance handler', val: 'Responds to change forced upon them' },
           { lab: 'Resource allocator', val: 'Decides where money, people and time go' },
           { lab: 'Negotiator', val: 'Speaks for the organisation in major negotiations' },
           { lab: 'Answer', val: 'All four rows as above', final: true }
         ],
-        why: 'Entrepreneur and disturbance handler are the pair worth separating: both involve change, but one ' +
-             'is chosen and the other is not.'
+        why: 'Entrepreneur and disturbance handler both involve change, but one is chosen and the other is ' +
+             'not — that is the distinction worth holding on to.'
       },
       {
-        id: 'i2r-6', type: 'mcq', marks: 2,
-        scenario: 'A manager participates in union contract negotiations on behalf of the company.',
-        prompt: 'Which role is this?',
-        options: ['Negotiator', 'Liaison', 'Spokesperson', 'Disturbance handler'],
-        answer: 0,
-        solution: [
-          { lab: 'The activity', val: 'Representing the organisation at a major negotiation' },
-          { lab: 'Role', val: 'Negotiator — a decision-making role' },
-          { lab: 'Answer', val: 'Negotiator', final: true }
-        ],
-        why: 'Your notes give union contract negotiations as the identifiable activity for this exact role. ' +
-             'A liaison builds the network; a negotiator strikes the deal.'
-      },
-      {
-        id: 'i2r-7', type: 'multi', marks: 3,
+        id: 'i2r-6', type: 'multi', marks: 3,
         prompt: 'Which of these are <b>decision-making</b> roles? <b>Select all that apply.</b>',
         options: [
           'Entrepreneur',
@@ -705,8 +695,22 @@ window.MODULE_CONTENT.inba.weeks.push({
           { lab: 'Liaison', val: 'Interpersonal' },
           { lab: 'Answer', val: 'The first four', final: true }
         ],
-        why: 'Decisional is the largest of the three groups with four roles, against three each for ' +
-             'interpersonal and informational. Ten in total.'
+        why: 'Decisional is the largest group with four roles, against three each for interpersonal and ' +
+             'informational — ten in total.'
+      },
+      {
+        id: 'i2r-7', type: 'mcq', marks: 2,
+        scenario: 'A manager takes corrective action after a key supplier unexpectedly fails to deliver.',
+        prompt: 'Which role is this?',
+        options: ['Disturbance handler', 'Entrepreneur', 'Resource allocator', 'Monitor'],
+        answer: 0,
+        solution: [
+          { lab: 'The situation', val: 'An important, unexpected disturbance' },
+          { lab: 'Role', val: 'Disturbance handler' },
+          { lab: 'Answer', val: 'Disturbance handler', final: true }
+        ],
+        why: 'The entrepreneur role also brings about change, but it is change the manager chose to start. ' +
+             'This one was forced on them.'
       }
     ]
   },
@@ -714,64 +718,61 @@ window.MODULE_CONTENT.inba.weeks.push({
   /* ═══════════════════════ FUNCTIONAL AREAS ═══════════════════════ */
   {
     id: 'i2-areas',
-    title: 'Functional Areas',
+    title: 'Functional Areas & Operations',
     emoji: '🏭',
-    summary: 'The five main departments a business runs on, and the three that arrived later.',
+    summary: 'The five main departments, three later additions, and operations in detail.',
     notes: [
       {
-        heading: 'The five main functional areas',
+        heading: 'The functional areas',
         emoji: '🗂️',
         html:
-          '<div class="keybox"><b>Operations</b> · utilising resources to manufacture products or render services' +
-          '<br><b>Human resources</b> · the people side of the business' +
-          '<br><b>Marketing</b> · converting what the business makes into what customers want' +
-          '<br><b>Finance</b> · where the money comes from and where it goes' +
-          '<br><b>Logistics — purchasing and supply</b> · the supply chain</div>' +
-          '<p>Your notes are explicit that there are several other roles and functions, but that these five are ' +
-          'the scope of this module.</p>'
+          '<div class="keybox"><b>The five main functional areas</b> · Operations · Human resources · ' +
+          'Marketing · Finance · Logistics (purchasing and supply)</div>' +
+          '<div class="keybox"><b>Three additional functions</b> (Strydom, 2008)' +
+          '<br><b>IT manager</b> · manages the technology life cycle — new systems, networks and hardware, ' +
+          'data security and access' +
+          '<br><b>PR manager</b> · guardian of the company’s image, internally and externally' +
+          '<br><b>Administrative manager</b> · a generalist supporting the whole organisation rather than ' +
+          'specialising in one function</div>'
       },
       {
-        heading: 'Operations, and three later additions',
+        heading: 'Operations',
         emoji: '⚙️',
         html:
-          '<div class="keybox"><b>Operations function</b> · the function aimed at utilising resources to ' +
-          'manufacture products or render services' +
+          '<div class="keybox"><b>Operations function</b> · aimed at utilising resources to manufacture ' +
+          'products or render services' +
           '<br><b>Operations managers</b> · the personnel directly responsible for managing that function' +
           '<br><b>Operations management</b> · the activities, decisions and responsibilities involved in ' +
           'executing it — planning, organising, scheduling and controlling</div>' +
-          '<p>Strydom (2008) identifies three <b>additional</b> functions as businesses evolve:</p>' +
-          '<div class="keybox"><b>IT manager</b> · manages the technology life cycle — new systems, networks and ' +
-          'hardware, data security and access' +
-          '<br><b>PR manager</b> · guardian of the company’s image, internally and externally' +
-          '<br><b>Administrative manager</b> · a generalist who supports the whole organisation rather than ' +
-          'specialising in one function</div>'
+          '<p>Effective operations can be a source of competitive advantage through <b>cost reduction</b> ' +
+          '(less waste), <b>revenue increase</b> (quality and service excellence), <b>capital efficiency</b> ' +
+          '(less investment for the same output) and as a <b>driver of innovation</b>.</p>'
       }
     ],
     questions: [
       {
         id: 'i2a-1', type: 'multi', marks: 3,
-        prompt: 'Which of these are among the <b>five main functional areas</b> covered by this module? ' +
-                '<b>Select all that apply.</b>',
+        prompt: 'Which of these are among the <b>five main functional areas</b>? <b>Select all that apply.</b>',
         options: [
           'Operations',
           'Human resources',
           'Marketing',
           'Finance',
-          'Public relations',
-          'Information technology'
+          'Logistics — purchasing and supply',
+          'Public relations'
         ],
-        answers: [0, 1, 2, 3],
+        answers: [0, 1, 2, 3, 4],
         solution: [
-          { lab: 'The five main areas', val: 'Operations, human resources, marketing, finance, and logistics' },
-          { lab: 'PR and IT', val: 'Listed separately as additional functions (Strydom, 2008)' },
-          { lab: 'Answer', val: 'The first four', final: true }
+          { lab: 'The five', val: 'Operations, human resources, marketing, finance, logistics' },
+          { lab: 'Public relations', val: 'One of three additional functions' },
+          { lab: 'Answer', val: 'The first five', final: true }
         ],
-        why: 'Logistics — purchasing and supply — is the fifth main area and is not offered here. PR and IT are ' +
-             'real functions but your notes group them as later additions.'
+        why: 'PR, IT and administration are real functions but are grouped separately as later additions ' +
+             'rather than as part of the core five.'
       },
       {
         id: 'i2a-2', type: 'match', marks: 3,
-        prompt: 'Your notes distinguish three related operations terms. Match each to its meaning.',
+        prompt: 'Match each operations term to its meaning.',
         pairs: [
           { left: 'Operations function', right: 'Utilising resources to manufacture products or render services' },
           { left: 'Operations managers', right: 'The personnel directly responsible for managing that function' },
@@ -779,29 +780,29 @@ window.MODULE_CONTENT.inba.weeks.push({
         ],
         solution: [
           { lab: 'The function', val: 'What the business does' },
-          { lab: 'The managers', val: 'Who is responsible for it' },
+          { lab: 'The managers', val: 'Who is responsible' },
           { lab: 'The management', val: 'Planning, organising, scheduling and controlling it' },
           { lab: 'Answer', val: 'All three rows as above', final: true }
         ],
-        why: 'The three words look almost identical, which is exactly why your notes define them separately — ' +
-             'the function, the people, and the activity are three different things.'
+        why: 'The three terms look nearly identical, which is exactly why they are defined separately: the ' +
+             'function, the people and the activity are three different things.'
       },
       {
         id: 'i2a-3', type: 'match', marks: 3,
-        prompt: 'Match each of the three additional functions to what it does.',
+        prompt: 'Match each additional function to what it does.',
         pairs: [
           { left: 'IT manager', right: 'Manages the technology life cycle, networks and data security' },
           { left: 'PR manager', right: 'Guardian of the company’s image, internally and externally' },
           { left: 'Administrative manager', right: 'A generalist supporting the whole organisation across departments' }
         ],
         solution: [
-          { lab: 'IT', val: 'New systems, hardware, and controlling data access' },
+          { lab: 'IT', val: 'Systems, hardware, and controlling data access' },
           { lab: 'PR', val: 'A favourable perception among employees, public, media and investors' },
           { lab: 'Administrative', val: 'Office management, record-keeping, logistical support' },
           { lab: 'Answer', val: 'All three rows as above', final: true }
         ],
-        why: 'The administrative manager is the odd one out on purpose — your notes describe them as a ' +
-             'generalist who does <i>not</i> specialise in one function.'
+        why: 'The administrative manager is deliberately the odd one out — a generalist who does <i>not</i> ' +
+             'specialise in one function.'
       },
       {
         id: 'i2a-4', type: 'mcq', marks: 2,
@@ -810,16 +811,15 @@ window.MODULE_CONTENT.inba.weeks.push({
         answer: 0,
         solution: [
           { lab: 'Every business', val: 'Is a system that transforms inputs into outputs' },
-          { lab: 'The function concerned with it', val: 'Operations — creating products and providing services' },
+          { lab: 'The function concerned', val: 'Operations' },
           { lab: 'Answer', val: 'Operations', final: true }
         ],
-        why: 'This is the transformation idea from Week 1 reappearing. E-Bike SA buys raw materials, and ' +
-             'operations is the department that assembles them into working e-bikes.'
+        why: 'This is the transformation concept from Week 1 reappearing as a department: operations is where ' +
+             'production actually happens.'
       },
       {
         id: 'i2a-5', type: 'multi', marks: 3,
-        prompt: 'Your notes say effective operations can be a source of competitive advantage. Which of these are ' +
-                'given as ways? <b>Select all that apply.</b>',
+        prompt: 'How can effective operations be a source of competitive advantage? <b>Select all that apply.</b>',
         options: [
           'Cost reduction through less waste',
           'Revenue increase through quality and service excellence',
@@ -830,31 +830,423 @@ window.MODULE_CONTENT.inba.weeks.push({
         answers: [0, 1, 2, 3],
         solution: [
           { lab: 'Cost reduction', val: 'Less rework and scrap lowers production costs' },
-          { lab: 'Revenue increase', val: 'Quality can command higher prices or more sales' },
+          { lab: 'Revenue increase', val: 'Quality can command higher prices' },
           { lab: 'Capital efficiency', val: 'Better use of facilities and equipment' },
-          { lab: 'Innovation', val: 'Operational skill and knowledge feed new products' },
+          { lab: 'Innovation', val: 'Operational skill feeds new product development' },
           { lab: 'Answer', val: 'The first four', final: true }
         ],
-        why: 'Your notes put it as Profit = Revenue − Costs, and point out that operations is one of the few ' +
-             'functions that can push on both sides of that equation.'
+        why: 'Since profit is revenue minus costs, operations is one of the few functions able to push on ' +
+             'both sides of that equation at once.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ MARKETING ═══════════════════════ */
+  {
+    id: 'i2-marketing',
+    title: 'Marketing',
+    emoji: '📣',
+    summary: 'The definition, the four Ps, and what a target market is.',
+    notes: [
+      {
+        heading: 'What marketing is',
+        emoji: '🌉',
+        html:
+          '<p><b>Marketing</b> is "the management tasks and decisions directed at successfully meeting ' +
+          'opportunities and threats in a dynamic environment by effectively developing and transferring a ' +
+          'need-satisfying market offering to consumers" (Erasmus et al., 2023).</p>' +
+          '<p>It is more than advertising or sales. It is a management process using market research to develop ' +
+          'a <b>market offering</b>. Modern marketing focuses on <b>long-term relationships</b> with customers ' +
+          '— attracting, retaining and enhancing relationships with profitable customers — and persuades ' +
+          'rather than compels.</p>'
       },
       {
-        id: 'i2a-6', type: 'mcq', marks: 2,
-        prompt: 'According to your notes, who is the <b>administrative manager</b>?',
+        heading: 'The marketing mix',
+        emoji: '4️⃣',
+        html:
+          '<div class="keybox"><b>The four Ps</b>' +
+          '<br><b>Product</b> · the good or service itself, with its need-satisfying attributes' +
+          '<br><b>Price</b> · the amount charged, reflecting the product’s value' +
+          '<br><b>Place</b> · the locations and methods used to make the product available (distribution)' +
+          '<br><b>Promotion</b> · the communication methods used to inform and persuade consumers</div>' +
+          '<p>The mix creates a market offering tailored to a <b>target market</b> — a group of consumers ' +
+          'sharing common characteristics and needs.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i2k-1', type: 'multi', marks: 3,
+        prompt: 'Which of these make up the <b>marketing mix</b>? <b>Select all that apply.</b>',
+        options: ['Product', 'Price', 'Place', 'Promotion', 'Profit', 'Production'],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'The four Ps', val: 'Product, Price, Place, Promotion' },
+          { lab: 'Profit and production', val: 'Both begin with P but belong elsewhere' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'The two wrong options begin with P deliberately — the letter is a memory aid, not the concept.'
+      },
+      {
+        id: 'i2k-2', type: 'match', marks: 4,
+        prompt: 'Match each element of the marketing mix to its meaning.',
+        pairs: [
+          { left: 'Product', right: 'The good or service itself, with its need-satisfying attributes' },
+          { left: 'Price', right: 'The amount charged, reflecting the value offered' },
+          { left: 'Place', right: 'The locations and methods used to make it available' },
+          { left: 'Promotion', right: 'The communication used to inform and persuade consumers' }
+        ],
+        solution: [
+          { lab: 'Product', val: 'What is offered' },
+          { lab: 'Price', val: 'What is charged' },
+          { lab: 'Place', val: 'How it reaches the customer — distribution' },
+          { lab: 'Promotion', val: 'How the customer is told about it' },
+          { lab: 'Answer', val: 'All four rows as above', final: true }
+        ],
+        why: '"Place" is the one that catches people out — it means distribution, not the shop’s address.'
+      },
+      {
+        id: 'i2k-3', type: 'mcq', marks: 2,
+        prompt: 'What is a <b>target market</b>?',
         options: [
-          'A generalist who supports the entire organisation rather than specialising in one function',
-          'The manager responsible for data security and networks',
-          'The manager who protects the company’s public image',
-          'The most senior manager in the organisation'
+          'A group of consumers sharing common characteristics and needs',
+          'The sales figure a business aims to achieve',
+          'The geographic region a business trades in',
+          'The competitor a business aims to overtake'
         ],
         answer: 0,
         solution: [
-          { lab: 'Not a specialist', val: 'They do not specialise in one function' },
-          { lab: 'Their job', val: 'Organising and facilitating the activities of the specialised managers' },
+          { lab: 'Target market', val: 'Consumers sharing common characteristics and needs' },
           { lab: 'Answer', val: 'The first option', final: true }
         ],
-        why: 'The other two options describe the IT and PR managers, which are the other two additional ' +
-             'functions Strydom identifies alongside this one.'
+        why: 'The marketing mix is built for a specific target market, which is why identifying it comes ' +
+             'before deciding on product, price, place and promotion.'
+      },
+      {
+        id: 'i2k-4', type: 'mcq', marks: 3,
+        prompt: 'Which statement best reflects modern marketing?',
+        options: [
+          'It focuses on building long-term relationships with profitable customers',
+          'It is another word for advertising',
+          'It compels customers to buy through aggressive selling',
+          'It is concerned only with setting the right price'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The focus', val: 'Attracting, retaining and enhancing relationships with profitable customers' },
+          { lab: 'The method', val: 'Persuading rather than compelling' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Advertising is only one part of promotion, which is itself only one of the four Ps. Treating ' +
+             'marketing as advertising misses most of what it is.'
+      },
+      {
+        id: 'i2k-5', type: 'mcq', marks: 2,
+        prompt: 'Marketing is described as the bridge between a business and:',
+        options: [
+          'Its environment — connecting the company with its customers',
+          'Its suppliers',
+          'Its shareholders',
+          'Its regulators'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The bridge', val: 'Between the business and its environment' },
+          { lab: 'Its job', val: 'Ensuring the business’s resources meet market demands' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Marketing manages the transfer of products and services to the market, which is why it faces ' +
+             'outward more than any other function.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ FINANCE ═══════════════════════ */
+  {
+    id: 'i2-finance',
+    title: 'Finance',
+    emoji: '💰',
+    summary: 'Break-even, the two statements, and the vocabulary of money.',
+    notes: [
+      {
+        heading: 'Core concepts',
+        emoji: '🧮',
+        html:
+          '<div class="keybox"><b>Assets</b> · what the business owns — cash, inventory' +
+          '<br><b>Liabilities</b> · what the business owes — loans, money owed to suppliers' +
+          '<br><b>Equity</b> · the owners’ stake in the business' +
+          '<br><b>Fixed costs</b> · remain constant regardless of production levels — rent, salaries' +
+          '<br><b>Variable costs</b> · change with production volume — raw materials' +
+          '<br><b>Profit</b> · the favourable difference between income and costs</div>' +
+          '<p>The <b>break-even point</b> is the level of sales where total revenue equals total costs, ' +
+          'resulting in neither profit nor loss.</p>'
+      },
+      {
+        heading: 'The financial statements',
+        emoji: '📄',
+        html:
+          '<div class="keybox"><b>Statement of financial position</b> (balance sheet) · a snapshot of the ' +
+          'company’s financial health at a point in time, showing <b>Assets = Liabilities + Equity</b>' +
+          '<br><br><b>Statement of financial performance</b> · summarises the profit or loss for a particular ' +
+          'period and how it has been distributed</div>' +
+          '<p><b>Accounting</b> is the administering and reporting of financial matters.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i2n-1', type: 'mcq', marks: 2,
+        prompt: 'What is the <b>break-even point</b>?',
+        options: [
+          'The level of sales where total revenue equals total costs',
+          'The point at which a business becomes profitable for the year',
+          'The moment all loans have been repaid',
+          'The maximum a business can produce'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Break-even', val: 'Total revenue equals total costs' },
+          { lab: 'Result', val: 'Neither profit nor loss' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'It is the dividing line rather than a goal — below it the business loses money, above it the ' +
+             'business makes money.'
+      },
+      {
+        id: 'i2n-2', type: 'match', marks: 3,
+        prompt: 'Match each financial term to its meaning.',
+        pairs: [
+          { left: 'Assets', right: 'What the business owns, such as cash and inventory' },
+          { left: 'Liabilities', right: 'What the business owes, such as loans and money owed to suppliers' },
+          { left: 'Equity', right: 'The owners’ stake in the business' }
+        ],
+        solution: [
+          { lab: 'Assets', val: 'Owned' },
+          { lab: 'Liabilities', val: 'Owed' },
+          { lab: 'Equity', val: 'The owners’ share' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The three are linked by the accounting equation: Assets = Liabilities + Equity. Knowing two of ' +
+             'them always gives you the third.'
+      },
+      {
+        id: 'i2n-3', type: 'multi', marks: 3,
+        prompt: 'Which of these are <b>fixed costs</b>? <b>Select all that apply.</b>',
+        options: ['Rent', 'Salaries', 'Raw materials', 'Packaging used per unit sold'],
+        answers: [0, 1],
+        solution: [
+          { lab: 'Fixed costs', val: 'Remain constant regardless of production levels — rent and salaries' },
+          { lab: 'Variable costs', val: 'Change with production volume — raw materials and per-unit packaging' },
+          { lab: 'Answer', val: 'Rent and salaries', final: true }
+        ],
+        why: 'The test is whether the cost changes when output changes. Rent is owed whether the factory ' +
+             'produces one unit or a thousand.'
+      },
+      {
+        id: 'i2n-4', type: 'mcq', marks: 3,
+        prompt: 'What does the <b>statement of financial position</b> (balance sheet) show?',
+        options: [
+          'A snapshot of the company’s financial health at a point in time',
+          'Profit or loss over a period of time',
+          'The forecast revenue for the next three years',
+          'The market value of the company’s shares'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Statement of financial position', val: 'A snapshot at a point in time — Assets = Liabilities + Equity' },
+          { lab: 'Statement of financial performance', val: 'Profit or loss over a period' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'A snapshot against a period is the whole distinction between the two statements — one is a ' +
+             'photograph, the other a summary of what happened over time.'
+      },
+      {
+        id: 'i2n-5', type: 'mcq', marks: 2,
+        prompt: 'Which equation does the statement of financial position show?',
+        options: [
+          'Assets = Liabilities + Equity',
+          'Profit = Assets − Liabilities',
+          'Equity = Revenue − Costs',
+          'Assets = Revenue + Profit'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The accounting equation', val: 'Assets = Liabilities + Equity' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Everything the business owns was funded either by someone it owes, or by its owners. That is ' +
+             'why the two sides always balance.'
+      },
+      {
+        id: 'i2n-6', type: 'mcq', marks: 2,
+        prompt: '<b>Profit</b> is defined as:',
+        options: [
+          'The favourable difference between income and costs',
+          'All money received from customers',
+          'The value of the assets a business owns',
+          'The owners’ stake in the business'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Profit', val: 'The favourable difference between income and costs' },
+          { lab: 'If costs exceed income', val: 'There is a loss instead' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The last option is equity, which is a different idea: profit is a flow over a period, equity is ' +
+             'a balance at a moment.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ HR AND LOGISTICS ═══════════════════════ */
+  {
+    id: 'i2-hrlog',
+    title: 'Human Resources & Logistics',
+    emoji: '🧑‍🤝‍🧑',
+    summary: 'Getting the right people, and getting the right materials.',
+    notes: [
+      {
+        heading: 'Human resource management',
+        emoji: '👥',
+        html:
+          '<p><b>Human Resource Management (HRM)</b> is the organisational function dedicated to managing ' +
+          'people. Its responsibility is to ensure <b>the right people are in the right jobs, at the right ' +
+          'time</b>.</p>' +
+          '<p>Traditionally administrative, HR today works with a <b>profit centre mindset</b> — accountable ' +
+          'for its actions and required to show how investment in people drives profit and effectiveness.</p>' +
+          '<div class="keybox"><b>HR contributes by</b> · providing well-trained and motivated staff · ' +
+          'ensuring the business operates within labour law · increasing job satisfaction · ensuring employees ' +
+          'have the skills needed for a digital world · managing change · aligning employee needs with ' +
+          'organisational requirements</div>' +
+          '<p>Managing people is a <b>shared responsibility</b> between HR professionals and line managers. In ' +
+          'smaller businesses, line managers often perform HR duties alongside their own roles.</p>'
+      },
+      {
+        heading: 'Purchasing and supply',
+        emoji: '🚚',
+        html:
+          '<p>A <b>supply chain</b> is "a network of businesses linked together through the buying and selling ' +
+          'of materials" (Erasmus et al., 2023). If one link breaks, it can disrupt the entire chain, halting ' +
+          'production and sales — which is why supplier relationships matter.</p>' +
+          '<div class="keybox"><b>Purchasing managers are responsible for</b> · comparing prices · sourcing ' +
+          'everything from stationery to strategic raw materials · keeping up with new technologies and ' +
+          'substitute materials · ensuring quality · understanding market trends and supplier availability</div>' +
+          '<p>The goal of purchasing and supply is to acquire the <b>right materials, in the right quantity, at ' +
+          'the right quality, at the right time, and for the right price</b>.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i2h-1', type: 'mcq', marks: 2,
+        prompt: 'What is the responsibility of Human Resource Management?',
+        options: [
+          'Ensuring the right people are in the right jobs, at the right time',
+          'Managing the company’s cash flow',
+          'Transforming inputs into finished products',
+          'Setting the organisation’s long-term strategy'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'HRM', val: 'The organisational function dedicated to managing people' },
+          { lab: 'Its responsibility', val: 'The right people, in the right jobs, at the right time' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Getting this right is described as a source of competitive advantage, and finding, developing ' +
+             'and keeping the right people as one of management’s hardest challenges.'
+      },
+      {
+        id: 'i2h-2', type: 'multi', marks: 3,
+        prompt: 'How does HR contribute to organisational effectiveness? <b>Select all that apply.</b>',
+        options: [
+          'Providing well-trained and motivated staff',
+          'Ensuring the business operates within labour law',
+          'Increasing employee job satisfaction',
+          'Managing change for the benefit of individuals and the organisation',
+          'Setting the selling price of the product'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'Trained staff', val: 'Well-trained and motivated people' },
+          { lab: 'Compliance', val: 'Operating within labour law' },
+          { lab: 'Satisfaction', val: 'Increasing job satisfaction' },
+          { lab: 'Change', val: 'Managing it for both the individual and the organisation' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'Pricing belongs to marketing. Everything HR contributes runs through people, whether that is ' +
+             'their skills, their satisfaction or their legal protection.'
+      },
+      {
+        id: 'i2h-3', type: 'mcq', marks: 2,
+        prompt: 'Who is responsible for managing people in an organisation?',
+        options: [
+          'It is shared between HR professionals and line managers',
+          'The HR department alone',
+          'Line managers alone',
+          'Top management alone'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Large organisations', val: 'A dedicated HR department coordinates the function' },
+          { lab: 'Smaller businesses', val: 'Line managers often perform HR duties alongside their own roles' },
+          { lab: 'Answer', val: 'It is shared', final: true }
+        ],
+        why: 'Even where an HR department exists, the line manager is the one who recruits into their team ' +
+             'and manages performance day to day.'
+      },
+      {
+        id: 'i2h-4', type: 'mcq', marks: 2,
+        prompt: 'A <b>supply chain</b> is defined as:',
+        options: [
+          'A network of businesses linked together through the buying and selling of materials',
+          'The route a delivery vehicle takes between depots',
+          'The list of a company’s approved suppliers',
+          'The sequence of steps that transforms inputs into outputs'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Supply chain', val: 'A network of businesses linked by buying and selling materials' },
+          { lab: 'Why it matters', val: 'One broken link can halt production and sales' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The last option describes the transformation process, which happens inside one business. A ' +
+             'supply chain spans many.'
+      },
+      {
+        id: 'i2h-5', type: 'multi', marks: 3,
+        prompt: 'What is the goal of purchasing and supply? To acquire materials that are right in which ways? ' +
+                '<b>Select all that apply.</b>',
+        options: [
+          'The right quantity',
+          'The right quality',
+          'The right time',
+          'The right price',
+          'The right colour'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'The goal', val: 'The right materials, in the right quantity, at the right quality, at the right time, for the right price' },
+          { lab: 'Answer', val: 'Quantity, quality, time and price', final: true }
+        ],
+        why: 'All four must hold at once. Materials that are cheap but late, or prompt but poor, still fail ' +
+             'the purchasing function’s test.'
+      },
+      {
+        id: 'i2h-6', type: 'multi', marks: 3,
+        prompt: 'Which of these are responsibilities of a <b>purchasing manager</b>? <b>Select all that apply.</b>',
+        options: [
+          'Comparing prices',
+          'Ensuring the quality of materials bought',
+          'Keeping up with new technologies and substitute materials',
+          'Recruiting and training factory staff'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Prices', val: 'Comparing them across suppliers' },
+          { lab: 'Quality', val: 'Materials bought directly affect the final product' },
+          { lab: 'New technologies', val: 'Substitutes can improve productivity' },
+          { lab: 'Recruitment', val: 'Human resources' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'Quality is the one people forget. Purchasing is not only about price — what is bought sets the ' +
+             'ceiling on the quality of what can be produced.'
       }
     ]
   }

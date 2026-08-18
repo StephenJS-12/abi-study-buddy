@@ -44,6 +44,21 @@ var GEN = (function () {
     } else if (q.type === 'steps') {
       wants = '';
       for (var s = 0; s < (q.steps || []).length; s++) wants += '~' + (q.steps[s].answer);
+    } else if (q.type === 'multi') {
+      var chosen = [];
+      for (var a = 0; a < (q.answers || []).length; a++) {
+        chosen.push(String((q.options || [])[q.answers[a]] || '').replace(/<[^>]*>/g, ' '));
+      }
+      wants = chosen.sort().join('~');
+    } else if (q.type === 'match') {
+      /* Sorted, so the same set of pairings written in a different order is
+         recognised as the same question. The pairs get shuffled on screen
+         anyway, which would otherwise make every ordering look distinct. */
+      var links = [];
+      for (var p = 0; p < (q.pairs || []).length; p++) {
+        links.push(String(q.pairs[p].left) + '>' + String(q.pairs[p].right));
+      }
+      wants = links.sort().join('~').replace(/<[^>]*>/g, ' ');
     } else {
       wants = String(q.answer);
     }

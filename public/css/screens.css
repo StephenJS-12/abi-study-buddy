@@ -816,3 +816,90 @@ button.bigbox:hover {
   color: var(--lilac-700);
 }
 .picklist-week:first-child { margin-top: 0; }
+
+/* ── multiple select ──────────────────────────────────────────────
+   Same option buttons as a single choice, but they toggle and nothing is
+   submitted until Check. The tick on the right is what tells her a tap
+   registered — without it, tapping an option and seeing only a colour shift
+   reads as "did that work?". */
+.multinote {
+  font-size: .92rem;
+  color: var(--ink-soft);
+  margin-bottom: .7rem;
+}
+.opt-pick { position: relative; padding-right: 2.6rem; }
+.opt-tick {
+  position: absolute;
+  right: .8rem; top: 50%;
+  width: 1.25rem; height: 1.25rem;
+  margin-top: -.625rem;
+  border: 2px solid var(--lilac-200, var(--lilac-100));
+  border-radius: .4rem;
+  background: #fff;
+}
+.opt-pick.is-picked { border-color: var(--lilac-400); background: var(--lilac-50); }
+.opt-pick.is-picked .opt-tick {
+  border-color: var(--lilac-400);
+  background: var(--lilac-400);
+}
+.opt-pick.is-picked .opt-tick::after {
+  content: '✓';
+  position: absolute;
+  inset: 0;
+  color: #fff;
+  font-size: .85rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+/* Correct, and she found it. */
+.opt-pick.is-right .opt-tick { border-color: var(--mint-600); background: var(--mint-600); }
+/* Correct, and she missed it — the one that actually teaches something. */
+.opt-pick.is-missed {
+  border-color: var(--mint-600);
+  background: var(--mint-50);
+  border-style: dashed;
+}
+.opt-pick.is-missed .opt-tick { border-color: var(--mint-600); background: transparent; }
+.opt-pick.is-missed .opt-tick::after { content: '?'; color: var(--mint-600); }
+
+/* ── match the column ─────────────────────────────────────────────
+   Dropdowns rather than dragging. This has to work with a thumb on a phone,
+   where a drag target needing precision is miserable. */
+.matchlist { display: grid; gap: .6rem; }
+.matchrow {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: .7rem;
+  align-items: center;
+  padding: .7rem .85rem;
+  border: 2px solid var(--lilac-100);
+  border-radius: .9rem;
+  background: #fff;
+}
+.matchrow-left { font-weight: 700; font-size: .95rem; }
+.matchrow-pick select {
+  width: 100%;
+  font: inherit;
+  font-size: .92rem;
+  padding: .5rem .6rem;
+  border: 2px solid var(--lilac-100);
+  border-radius: .6rem;
+  background: #fff;
+  color: inherit;
+}
+.matchrow-pick select:focus { outline: none; border-color: var(--lilac-400); }
+.matchrow-mark { min-width: 1.5rem; text-align: right; font-size: .85rem; }
+.matchrow.is-right { border-color: var(--mint-600); background: var(--mint-50); }
+.matchrow.is-wrong { border-color: #F0669F; background: var(--pink-50); }
+.mrk { font-weight: 800; }
+.mrk-ok { color: var(--mint-600); }
+.mrk-no { color: var(--pink-600); }
+.mrk-fix { display: block; font-size: .78rem; color: var(--ink-soft); font-weight: 700; }
+
+/* On a phone the three columns become two lines — a dropdown squeezed into a
+   third of a small screen is unusable. */
+@media (max-width: 34rem) {
+  .matchrow { grid-template-columns: 1fr auto; }
+  .matchrow-pick { grid-column: 1 / -1; }
+}

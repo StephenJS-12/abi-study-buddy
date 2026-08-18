@@ -313,6 +313,43 @@ for (var topicId in reg) {
                     }
                 }
 
+            } else if (q.type === "multi") {
+                if (!q.options || q.options.length < 4) { problems.push(tag + ": multi needs 4+ options"); break; }
+                if (!q.answers || q.answers.length < 2) { problems.push(tag + ": multi needs 2+ correct options"); break; }
+                if (q.answers.length >= q.options.length) { problems.push(tag + ": multi marks every option correct"); break; }
+                var badIdx = false, lastIdx = -1, dupIdx = false, seenIdx = {};
+                for (var mi = 0; mi < q.answers.length; mi++) {
+                    var ix = q.answers[mi];
+                    if (typeof ix !== "number" || ix < 0 || ix >= q.options.length || ix !== Math.floor(ix)) badIdx = true;
+                    if (seenIdx[ix]) dupIdx = true;
+                    seenIdx[ix] = 1;
+                    if (ix <= lastIdx) badIdx = true;      // must be sorted ascending
+                    lastIdx = ix;
+                }
+                if (badIdx) { problems.push(tag + ": multi answers out of range or unsorted"); break; }
+                if (dupIdx) { problems.push(tag + ": multi lists the same answer twice"); break; }
+                var mdup = {}, mrepeat = false;
+                for (var mo = 0; mo < q.options.length; mo++) {
+                    if (mdup[q.options[mo]]) mrepeat = true;
+                    mdup[q.options[mo]] = 1;
+                }
+                if (mrepeat) { problems.push(tag + ": duplicate option text -> " + q.options.join(" | ")); break; }
+
+            } else if (q.type === "match") {
+                if (!q.pairs || q.pairs.length < 3) { problems.push(tag + ": match needs 3+ pairs"); break; }
+                var lDup = {}, rDup = {}, pairBad = "";
+                for (var pi = 0; pi < q.pairs.length; pi++) {
+                    var P = q.pairs[pi];
+                    if (!P || !P.left || !P.right) { pairBad = "pair " + pi + " incomplete"; break; }
+                    if (lDup[P.left]) pairBad = "duplicate left-hand item '" + P.left + "'";
+                    // Two identical right-hand values make the dropdown unanswerable:
+                    // she picks a label that reads exactly like the correct one and is
+                    // still marked wrong.
+                    if (rDup[P.right]) pairBad = "duplicate right-hand value '" + P.right + "'";
+                    lDup[P.left] = 1; rDup[P.right] = 1;
+                }
+                if (pairBad) { problems.push(tag + ": " + pairBad); break; }
+
             } else if (q.type === "numeric") {
                 if (typeof q.answer !== "number" || !isFinite(q.answer)) {
                     problems.push(tag + ": answer not a finite number (" + q.answer + ")"); break;

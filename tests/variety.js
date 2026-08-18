@@ -57,6 +57,18 @@ function mathsOf(q) {
     } else if (q.type === "steps") {
         want = "";
         for (var s = 0; s < (q.steps || []).length; s++) want += "~" + q.steps[s].answer;
+    } else if (q.type === "multi") {
+        var picked = [];
+        for (var a = 0; a < (q.answers || []).length; a++) picked.push(strip((q.options || [])[q.answers[a]]));
+        want = picked.sort().join("~");
+    } else if (q.type === "match") {
+        // Sorted: the same pairings in a different order are the same question,
+        // and the rows are shuffled on screen regardless.
+        var links = [];
+        for (var p = 0; p < (q.pairs || []).length; p++) {
+            links.push(strip(q.pairs[p].left) + ">" + strip(q.pairs[p].right));
+        }
+        want = links.sort().join("~");
     } else {
         want = String(q.answer);
     }

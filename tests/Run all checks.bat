@@ -16,60 +16,63 @@ echo   ABI'S STUDY BUDDY - VERIFICATION
 echo ==========================================================
 echo.
 
-echo [1/17] JavaScript syntax
+echo [1/18] JavaScript syntax
 for /r "..\public\js" %%F in (*.js) do call :collect "%%F"
 cscript //Nologo //E:JScript run.js check.js %FILES%
 if errorlevel 1 set FAIL=1
 echo.
 
-echo [2/17] Question structure
+echo [2/18] Question structure
 call :check validate.js
 
-echo [3/17] Hand-written answers, recomputed independently
+echo [3/18] Hand-written answers, recomputed independently
 call :check maths.js
 
-echo [4/17] Questions must not reuse their own notes values
+echo [4/18] Questions must not reuse their own notes values
 call :check overlap.js
 
-echo [5/17] Generators and answer parsing
+echo [5/18] Generators and answer parsing
 call :check gens.js
 call :check parser.js
 
-echo [6/17] Celebrations fire
+echo [6/18] Celebrations fire
 call :check motion.js
 
-echo [7/17] Reward ladder and points
+echo [7/18] Reward ladder and points
 call :check rewards.js
 
-echo [8/17] Exam methods vs the published Milpark answers
+echo [8/18] Exam methods vs the published Milpark answers
 call :check papers.js
 
-echo [9/17] Points scoring and the header bar
+echo [9/18] Points scoring and the header bar
 call :check points.js
 
-echo [10/17] Moving progress to another computer
+echo [10/18] Moving progress to another computer
 call :check transfer.js
 
-echo [11/17] A browser that will not save is detected
+echo [11/18] A browser that will not save is detected
 call :check storage.js
 
-echo [12/17] Which copy of her progress wins when devices disagree
+echo [12/18] Which copy of her progress wins when devices disagree
 call :check sync.js
 
-echo [13/17] The answer never reaches the study helper
+echo [13/18] The answer never reaches the study helper
 call :check tutor.js
 
-echo [14/17] Modules do not tread on each other
+echo [14/18] Modules do not tread on each other
 call :check modules.js
 
-echo [15/17] Greetings are usable and never repeat
+echo [15/18] Greetings are usable and never repeat
 call :check copy.js
 
-echo [16/17] Probability answers, against an enumerated deck
+echo [16/18] Probability answers, against an enumerated deck
 call :check probability.js
 
-echo [17/17] No round asks the same question twice
+echo [17/18] No round asks the same question twice
 call :check variety.js
+
+echo [18/18] Every question type survives a shuffle
+call :check questiontypes.js
 
 echo ==========================================================
 if "%FAIL%"=="0" (

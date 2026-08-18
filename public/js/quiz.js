@@ -52,6 +52,14 @@ var Quiz = (function () {
   function correctText(q) {
     if (q.type === 'mcq') return q.options[q.answer];
     if (q.type === 'numeric') return (q.pre || '') + q.answer + (q.suf ? ' ' + q.suf : '');
+    if (q.type === 'multi') {
+      return (q.answers || []).map(function (i) { return q.options[i]; }).join('<br>');
+    }
+    if (q.type === 'match') {
+      return (q.pairs || []).map(function (p) {
+        return p.left + ' → <b>' + p.right + '</b>';
+      }).join('<br>');
+    }
     if (q.type === 'steps') {
       return q.steps.map(function (st) {
         return (st.pre || '') + st.answer + (st.suf ? ' ' + st.suf : '');
@@ -70,6 +78,14 @@ var Quiz = (function () {
       }).join(' → ');
     }
     if (r.q.type === 'numeric') return (r.q.pre || '') + g + (r.q.suf ? ' ' + r.q.suf : '');
+    /* Both of the new types answer with a list, and both are marked all or
+       nothing, so the review has to show the whole thing rather than a count. */
+    if (r.q.type === 'multi' && g.join) return g.length ? g.join('<br>') : '<i>nothing selected</i>';
+    if (r.q.type === 'match' && g.join) {
+      return g.map(function (v, i) {
+        return r.q.pairs[i].left + ' → <b>' + (v || '—') + '</b>';
+      }).join('<br>');
+    }
     return String(g);
   }
 
@@ -101,15 +117,42 @@ var Quiz = (function () {
   /* Multiple-choice options are shuffled per sitting, so the right answer is never
      in the same place twice and she cannot pattern-match on position. */
   function shuffleOptions(q) {
-    if (q.type !== 'mcq' || !q.options) return q;
-    var order = shuffle(q.options.map(function (_, i) { return i; }));
-    var opts = [], newAnswer = 0;
-    for (var i = 0; i < order.length; i++) {
-      opts.push(q.options[order[i]]);
-      if (order[i] === q.answer) newAnswer = i;
+    if (q.type === 'mcq' && q.options) {
+      var order = shuffle(q.options.map(function (_, i) { return i; }));
+      var opts = [], newAnswer = 0;
+      for (var i = 0; i < order.length; i++) {
+        opts.push(q.options[order[i]]);
+        if (order[i] === q.answer) newAnswer = i;
+      }
+      q.options = opts;
+      q.answer = newAnswer;
+      return q;
     }
-    q.options = opts;
-    q.answer = newAnswer;
+
+    /* Same idea for a multiple-select, except the answer is a set of indexes and
+       every one of them has to be remapped. Shuffling the options and leaving
+       the indexes pointing at their old positions would mark correct answers
+       wrong, silently and only sometimes — the worst kind of bug to find. */
+    if (q.type === 'multi' && q.options) {
+      var mOrder = shuffle(q.options.map(function (_, i) { return i; }));
+      var mOpts = [], moved = [];
+      for (var m = 0; m < mOrder.length; m++) {
+        mOpts.push(q.options[mOrder[m]]);
+        if ((q.answers || []).indexOf(mOrder[m]) !== -1) moved.push(m);
+      }
+      q.options = mOpts;
+      q.answers = moved.sort(function (a, b) { return a - b; });
+      return q;
+    }
+
+    /* For a matching question the pairs themselves are shuffled, so the left
+       column is not in the order it was written. The right-hand choices are
+       shuffled separately when the dropdowns are built. */
+    if (q.type === 'match' && q.pairs) {
+      q.pairs = shuffle(q.pairs);
+      return q;
+    }
+
     return q;
   }
 
@@ -252,6 +295,57 @@ var Quiz = (function () {
         }).join('') + '</div>';
     }
 
+    /* Multiple select. Unlike a single choice it cannot submit on click, so
+       there is a Check button and the answer is only read when she presses it.
+       The number to pick is deliberately not shown: "select all that apply" is
+       how the real paper asks, and revealing the count turns a question about
+       the content into a counting exercise. */
+    if (q.type === 'multi') {
+      var mkeys = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+      return '<div id="answerArea">' +
+        '<div class="multinote">Select <b>all</b> that apply — you need every one right.</div>' +
+        '<div class="opts opts-multi">' +
+          q.options.map(function (o, i) {
+            return '<button class="opt opt-pick" type="button" data-multi="' + i + '" aria-pressed="false">' +
+                   '<span class="opt-key">' + mkeys[i] + '</span><span>' + o + '</span>' +
+                   '<span class="opt-tick" aria-hidden="true"></span></button>';
+          }).join('') +
+        '</div>' +
+        '<div class="numrow" style="margin-top:.9rem">' +
+          '<button class="btn btn-primary" type="button" id="multiBtn">Check</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    /* Match the column. Each left-hand item gets a dropdown of every right-hand
+       value. Dropdowns rather than dragging: this has to work with a thumb on a
+       phone, and a drag target that needs precision is miserable there. */
+    if (q.type === 'match') {
+      var choices = shuffle(q.pairs.map(function (p) { return p.right; }));
+      return '<div id="answerArea">' +
+        '<div class="multinote">Match each one — you need every row right.</div>' +
+        '<div class="matchlist">' +
+          q.pairs.map(function (p, i) {
+            return '<div class="matchrow" data-matchrow="' + i + '">' +
+              '<div class="matchrow-left">' + p.left + '</div>' +
+              '<div class="matchrow-pick">' +
+                '<select data-match="' + i + '" aria-label="Match for ' + esc(stripTags(p.left)) + '">' +
+                  '<option value="">Choose…</option>' +
+                  choices.map(function (c) {
+                    return '<option value="' + esc(c) + '">' + esc(c) + '</option>';
+                  }).join('') +
+                '</select>' +
+              '</div>' +
+              '<div class="matchrow-mark" data-matchmark="' + i + '"></div>' +
+            '</div>';
+          }).join('') +
+        '</div>' +
+        '<div class="numrow" style="margin-top:.9rem">' +
+          '<button class="btn btn-primary" type="button" id="matchBtn">Check</button>' +
+        '</div>' +
+      '</div>';
+    }
+
     if (q.type === 'numeric') {
       return '<div id="answerArea">' +
         '<div class="numrow">' +
@@ -307,6 +401,85 @@ var Quiz = (function () {
           });
           finishQuestion(q, right, btn, q.options[chosen]);
         });
+      });
+      return;
+    }
+
+    /* Multiple select, marked all or nothing: the set she picked has to match
+       the correct set exactly. Three or four right out of five scores the same
+       as none, which is harsh but is what was asked for — and it is the only
+       marking that does not reward selecting everything on the screen. */
+    if (q.type === 'multi') {
+      var picks = document.querySelectorAll('[data-multi]');
+      var chosen = {};
+
+      Array.prototype.forEach.call(picks, function (btn) {
+        btn.addEventListener('click', function () {
+          if (S.answered) return;
+          var i = parseInt(btn.getAttribute('data-multi'), 10);
+          if (chosen[i]) { delete chosen[i]; } else { chosen[i] = true; }
+          var on = !!chosen[i];
+          btn.classList.toggle('is-picked', on);
+          btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+      });
+
+      document.getElementById('multiBtn').addEventListener('click', function () {
+        if (S.answered) return;
+
+        var want = q.answers || [], got = [];
+        for (var k in chosen) {
+          if (Object.prototype.hasOwnProperty.call(chosen, k)) got.push(parseInt(k, 10));
+        }
+        got.sort(function (a, b) { return a - b; });
+
+        var right = got.length === want.length;
+        for (var w = 0; right && w < want.length; w++) if (got[w] !== want[w]) right = false;
+
+        Array.prototype.forEach.call(picks, function (b, i) {
+          b.disabled = true;
+          var needed = want.indexOf(i) !== -1, took = !!chosen[i];
+          if (needed && took) b.classList.add('is-right');
+          else if (needed && !took) b.classList.add('is-missed');
+          else if (!needed && took) b.classList.add('is-wrong');
+        });
+        document.getElementById('multiBtn').disabled = true;
+
+        finishQuestion(q, right, document.getElementById('answerArea'),
+                       got.map(function (i) { return q.options[i]; }));
+      });
+      return;
+    }
+
+    /* Match the column, also all or nothing. Every row must be right. */
+    if (q.type === 'match') {
+      document.getElementById('matchBtn').addEventListener('click', function () {
+        if (S.answered) return;
+
+        var rows = document.querySelectorAll('[data-match]');
+        var given = [], right = true;
+
+        Array.prototype.forEach.call(rows, function (sel, i) {
+          var value = sel.value;
+          given.push(value);
+          var ok = value === q.pairs[i].right;
+          if (!ok) right = false;
+          sel.disabled = true;
+
+          var row = document.querySelector('[data-matchrow="' + i + '"]');
+          if (row) row.classList.add(ok ? 'is-right' : 'is-wrong');
+
+          var mark = document.querySelector('[data-matchmark="' + i + '"]');
+          if (mark) {
+            mark.innerHTML = ok
+              ? '<span class="mrk mrk-ok">✓</span>'
+              : '<span class="mrk mrk-no">✗</span><span class="mrk-fix">' +
+                esc(q.pairs[i].right) + '</span>';
+          }
+        });
+
+        document.getElementById('matchBtn').disabled = true;
+        finishQuestion(q, right, document.getElementById('answerArea'), given);
       });
       return;
     }

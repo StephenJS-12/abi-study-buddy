@@ -7,7 +7,7 @@ var files = ["week1.js", "week2.js", "week3.js", "week4.js"];
 var window = {};                 // the data files attach to window.WEEK_DATA
 var problems = [];
 var topicIds = {}, questionIds = {};
-var totals = { topics: 0, questions: 0, mcq: 0, numeric: 0, steps: 0, marks: 0 };
+var totals = { topics: 0, questions: 0, mcq: 0, numeric: 0, steps: 0, multi: 0, match: 0, marks: 0 };
 
 function read(p) {
     var f = fso.OpenTextFile(p, 1);
@@ -97,6 +97,51 @@ for (var w = 0; w < weeks.length; w++) {
                     if (seen[Q.options[o]]) problems.push(qtag + ": duplicate option text");
                     seen[Q.options[o]] = 1;
                 }
+            } else if (Q.type === "multi") {
+                totals.multi++;
+                // Marked all or nothing, so the correct set has to be exactly right.
+                // Two of anything, or all of them, is not a question - the first has
+                // no wrong answer to avoid and the second cannot be got wrong.
+                if (!Q.options || Q.options.length < 4) problems.push(qtag + ": multi needs 4+ options");
+                if (!Q.answers || !Q.answers.length) problems.push(qtag + ": multi has no answers array");
+                else {
+                    if (Q.answers.length === (Q.options || []).length) {
+                        problems.push(qtag + ": multi marks every option correct");
+                    }
+                    if (Q.answers.length < 2) problems.push(qtag + ": multi needs 2+ correct options, else it is an mcq");
+                    var an = {}, prev = -1;
+                    for (var ai = 0; ai < Q.answers.length; ai++) {
+                        var idx = Q.answers[ai];
+                        if (typeof idx !== "number" || idx !== Math.floor(idx) ||
+                            idx < 0 || idx >= (Q.options || []).length) {
+                            problems.push(qtag + ": multi answer index out of range (" + idx + ")");
+                        }
+                        if (an[idx]) problems.push(qtag + ": multi lists the same answer twice");
+                        an[idx] = 1;
+                        if (idx <= prev) problems.push(qtag + ": multi answers must be sorted ascending");
+                        prev = idx;
+                    }
+                }
+                var mseen = {};
+                for (var mo = 0; mo < (Q.options || []).length; mo++) {
+                    if (mseen[Q.options[mo]]) problems.push(qtag + ": duplicate option text");
+                    mseen[Q.options[mo]] = 1;
+                }
+            } else if (Q.type === "match") {
+                totals.match++;
+                if (!Q.pairs || Q.pairs.length < 3) problems.push(qtag + ": match needs 3+ pairs");
+                var lseen = {}, rseen = {};
+                for (var pi = 0; pi < (Q.pairs || []).length; pi++) {
+                    var P = Q.pairs[pi];
+                    if (!P || !P.left || !P.right) { problems.push(qtag + ": pair " + pi + " incomplete"); continue; }
+                    if (lseen[P.left]) problems.push(qtag + ": duplicate left-hand item '" + P.left + "'");
+                    lseen[P.left] = 1;
+                    // Two identical right-hand values make the dropdown ambiguous: she
+                    // could pick the "wrong" one of two identical labels and be marked
+                    // down for an answer that reads exactly the same.
+                    if (rseen[P.right]) problems.push(qtag + ": duplicate right-hand value '" + P.right + "'");
+                    rseen[P.right] = 1;
+                }
             } else if (Q.type === "numeric") {
                 totals.numeric++;
                 if (typeof Q.answer !== "number" || isNaN(Q.answer)) problems.push(qtag + ": numeric answer not a number");
@@ -120,7 +165,8 @@ for (var w = 0; w < weeks.length; w++) {
 
 WScript.Echo("Topics:    " + totals.topics);
 WScript.Echo("Questions: " + totals.questions +
-             "  (mcq " + totals.mcq + ", numeric " + totals.numeric + ", steps " + totals.steps + ")");
+             "  (mcq " + totals.mcq + ", numeric " + totals.numeric + ", steps " + totals.steps +
+             ", multi " + totals.multi + ", match " + totals.match + ")");
 WScript.Echo("Total marks available: " + totals.marks);
 WScript.Echo("");
 

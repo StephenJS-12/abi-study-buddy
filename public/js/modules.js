@@ -35,12 +35,8 @@ var Modules = (function () {
       title: 'Introduction to Business Management',
       emoji: '💼',
       accent: 2,
-      /* Placeholder wording — this describes nothing in particular on purpose,
-         because the notes have not arrived yet and a made-up syllabus would be
-         worse than a vague one. Replace it once the content is real. It is not
-         shown while the module is 'soon'. */
-      blurb: 'Waiting on its notes.',
-      status: 'soon'
+      blurb: 'What a business is, entrepreneurship, ethics, and the environment it all happens in.',
+      status: 'ready'
     }
 
     /* To add another: give it a real id, code and title and it appears on the

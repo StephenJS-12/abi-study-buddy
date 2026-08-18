@@ -73,6 +73,10 @@
 <script src="js/data/exam2.js"></script>
 <script src="js/data/exam3.js"></script>
 <script src="js/data/exam4.js"></script>
+
+<!-- INBA01-5. Self-registering into window.MODULE_CONTENT.inba, so load order
+     against modules.js does not matter. -->
+<script src="js/data/inba/week1.js"></script>
 <!-- After the data files: it adopts what they registered. Before content.js,
      which reads its buckets. -->
 <script src="js/modules.js"></script>

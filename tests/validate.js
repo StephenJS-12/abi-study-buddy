@@ -2,7 +2,12 @@ var REPO = (function () { var f = new ActiveXObject("Scripting.FileSystemObject"
 // Loads the week data files and validates every topic/question structurally.
 var fso = new ActiveXObject("Scripting.FileSystemObject");
 var base = REPO + "\\public\\js\\data\\";
-var files = ["week1.js", "week2.js", "week3.js", "week4.js"];
+// Maths registers into window.WEEK_DATA; business registers into
+// window.MODULE_CONTENT.inba.weeks. Both are validated by exactly the same
+// rules below - a business question with a broken answer index should fail as
+// loudly as a maths one.
+var files = ["week1.js", "week2.js", "week3.js", "week4.js",
+             "inba\\week1.js"];
 
 var window = {};                 // the data files attach to window.WEEK_DATA
 var problems = [];
@@ -26,7 +31,13 @@ for (var i = 0; i < files.length; i++) {
     }
 }
 
-var weeks = window.WEEK_DATA || [];
+var weeks = (window.WEEK_DATA || []);
+var byModule = window.MODULE_CONTENT || {};
+for (var mk in byModule) {
+    if (!byModule.hasOwnProperty(mk)) continue;
+    weeks = weeks.concat(byModule[mk].weeks || []);
+}
+if (!weeks.length) problems.push("no weeks loaded at all - check the file list above");
 
 for (var w = 0; w < weeks.length; w++) {
     var wk = weeks[w];

@@ -13,7 +13,7 @@ var files = ["week1.js", "week2.js", "week3.js", "week4.js",
              // merges its questions into the pools they register, so the loop
              // below validates them exactly like any other question.
              "inba\\paper-assign1.js", "inba\\paper-assign2.js",
-             "inba\\paper-assign3.js"];
+             "inba\\paper-assign3.js", "inba\\paper-assign4.js"];
 
 var window = {};                 // the data files attach to window.WEEK_DATA
 var problems = [];

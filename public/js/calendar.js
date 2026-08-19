@@ -332,9 +332,7 @@ var Calendar = (function () {
       }
       /* A session she chose to study as a whole lesson shows as that lesson,
          not as a list of the topics inside it. Listing five topic names on a
-         month cell is exactly what picking "whole lessons" was meant to stop.
-         Completed sessions have no lessons array and fall through to topics,
-         which is right — what she ticked off was topics. */
+         month cell is exactly what picking "whole lessons" was meant to stop. */
       if (items[i].lessons && items[i].lessons.length) {
         for (j = 0; j < items[i].lessons.length; j++) {
           var L = items[i].lessons[j];
@@ -343,7 +341,13 @@ var Calendar = (function () {
             moduleId: items[i].moduleId,
             text: modEmoji(items[i].moduleId) + ' W' + L.weekNumber + 'L' + L.number +
                   ' · ' + L.title,
-            done: false
+            /* Carried from the session. Completed sessions used to have no
+               lessons array at all and fell through to the topic branch below,
+               so this was always false and could be hardcoded. Now that a
+               finished session keeps the slot it occupied — and with it the
+               lessons it covered — hardcoding it would draw a lesson she has
+               finished as one she still has to do. */
+            done: !!items[i].done
           });
         }
         continue;
@@ -508,9 +512,14 @@ var Calendar = (function () {
     return '<div class="cal-card' + (block.done ? ' is-done' : '') +
       (block.late ? ' is-late' : '') + '" style="' + vars(c) + '">' +
       '<div class="cal-card-head">' +
-        (block.time
-          ? '<span class="cal-time">' + esc(block.time) + '</span>'
-          : '<span class="cal-time cal-time-done">Done</span>') +
+        /* A finished session now keeps the time of the slot it filled, so it
+           has to say both — "09:00" alone would look like work still to do,
+           and "Done" alone would throw away which sitting it was. Only work
+           finished on a day the calendar has no slot for falls back to the
+           bare word. */
+        '<span class="cal-time' + (block.done ? ' cal-time-done' : '') + '">' +
+          (block.done ? '✓ ' : '') + esc(block.time || 'Done') +
+        '</span>' +
         '<span class="cal-mod"><span class="cal-mod-emoji">' +
           modEmoji(block.moduleId) + '</span>' + esc(block.moduleCode) + '</span>' +
       '</div>' +

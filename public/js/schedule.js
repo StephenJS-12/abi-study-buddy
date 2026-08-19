@@ -703,11 +703,26 @@ var Schedule = (function () {
       return out;
     }
 
-    var sessions = [];
+    /* Work she has already ticked off, waiting to be handed a slot. Keyed by
+       the day she ticked it, so a slot only ever sees its own day's work. */
+    var settled = {}, entries = completedEntries(mods);
+    for (i = 0; i < entries.length; i++) {
+      if (!settled[entries[i].date]) settled[entries[i].date] = [];
+      settled[entries[i].date].push(entries[i]);
+    }
+
+    var sessions = [], doneSessions = [];
     for (i = 0; i < slots.length; i++) {
       var slot = slots[i];
       var room = slot.room || slot.topics || 1;
       var items = [], pick = null, skip = null;
+
+      /* A session she has already finished takes its slot before anything is
+         planned into it. Without this the slot is replanned every time she
+         ticks something off, so the session she is sitting in front of keeps
+         growing new work and can never be completed. */
+      var settledHere = takeSettled(settled, slot);
+      if (settledHere) { doneSessions.push(settledHere); continue; }
 
       /* A session pinned to a subject goes to that subject. If it has nothing
          left to give — finished, or its exam already sat — the slot goes to
@@ -728,27 +743,7 @@ var Schedule = (function () {
          than listing the topics inside it — she chose to study by lesson, and
          seeing five topic names is not what she asked for. The topics are
          still carried, because she still ticks them off one at a time. */
-      var lessonList = [];
-      if (slot.unit === 'lessons') {
-        var seenL = {};
-        for (var li = 0; li < items.length; li++) {
-          var lk = items[li].lessonKey;
-          if (!lk || seenL[lk]) continue;
-          /* A module with no lessons — maths — still gets a lesson key so the
-             grouping works, but it is a topic wearing a lesson's clothes.
-             Announcing it as "Lesson 0" with no title told her nothing and
-             hid the topic name she actually needed. */
-          if (!items[li].lesson) continue;
-          seenL[lk] = 1;
-          lessonList.push({
-            key: lk,
-            weekNumber: items[li].weekNumber,
-            number: items[li].lesson,
-            title: items[li].lessonTitle,
-            passName: items[li].passName
-          });
-        }
-      }
+      var lessonList = lessonsIn(items, slot.unit);
 
       sessions.push({
         date: slot.date,
@@ -765,6 +760,14 @@ var Schedule = (function () {
         late: !!late
       });
     }
+
+    /* Finished work the slots could not take — done before her start date, or
+       more in one day than she had sessions for. */
+    doneSessions = doneSessions.concat(sweepSettled(settled));
+    doneSessions.sort(function (a, b) {
+      if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+      return String(a.time) < String(b.time) ? -1 : 1;
+    });
 
     /* Anything still sitting in a queue never got a slot at all. */
     var warnings = [];
@@ -792,7 +795,10 @@ var Schedule = (function () {
 
     return {
       sessions: sessions,
-      done: completedList(mods),
+      /* Completed sessions stay out of `sessions` deliberately: the home tile
+         reads sessions[0] as "what is next", and a finished one appearing
+         there would announce work she has already done. */
+      done: doneSessions,
       exams: examDays,
       warnings: warnings,
       modules: mods,
@@ -876,45 +882,180 @@ var Schedule = (function () {
      session has, so the calendar can draw both without asking which it is
      holding. Several topics finished on one day become one block, which is
      also how the day actually went. */
-  function completedList(mods) {
-    var groups = {}, order = [], i, j, pass;
+  /* ───────────────────── work already done ─────────────────────
+   *
+   * Everything she has ticked off, flat and in the order it should appear on
+   * the calendar: by the day she ticked it, then by module, then in taught
+   * order within the module.
+   *
+   * WHY THIS IS A LIST AND NOT A GROUPED ONE
+   *
+   *   It used to be grouped straight into one untimed block per day, which is
+   *   all the calendar needed to draw it. But the planner needs to know that a
+   *   finished session has USED UP a slot, and for that the finished work has
+   *   to be handed out slot by slot the same way pending work is. See
+   *   takeSettled, and the bug in plan() that this exists to fix.
+   */
+  function completedEntries(mods) {
+    var out = [], i, j, pass;
     for (i = 0; i < mods.length; i++) {
       var topics = topicsFor(mods[i].id);
       for (j = 0; j < topics.length; j++) {
         for (pass = 1; pass <= MAX_PASS; pass++) {
           var on = doneOn(topics[j].id, pass);
           if (!on) continue;
-
-          var gk = on + '|' + mods[i].id;
-          if (!groups[gk]) {
-            groups[gk] = {
-              date: on,
-              time: '',
-              moduleId: mods[i].id,
-              moduleCode: mods[i].code,
-              accent: mods[i].accent,
-              items: [],
+          out.push({
+            date: on,
+            moduleId: mods[i].id,
+            moduleCode: mods[i].code,
+            accent: mods[i].accent,
+            item: {
+              key: markKey(topics[j].id, pass),
+              topicId: topics[j].id,
+              title: topics[j].title,
+              emoji: topics[j].emoji,
+              weekNumber: topics[j].weekNumber,
+              lesson: topics[j].lesson,
+              lessonTitle: topics[j].lessonTitle,
+              lessonKey: topics[j].lessonKey,
+              pass: pass,
+              passName: passName(pass),
               done: true
-            };
-            order.push(gk);
-          }
-          groups[gk].items.push({
-            key: markKey(topics[j].id, pass),
-            topicId: topics[j].id,
-            title: topics[j].title,
-            emoji: topics[j].emoji,
-            weekNumber: topics[j].weekNumber,
-            pass: pass,
-            passName: passName(pass),
-            done: true
+            }
           });
         }
       }
     }
+    return out;
+  }
 
-    var out = [];
-    for (i = 0; i < order.length; i++) out.push(groups[order[i]]);
-    out.sort(function (a, b) { return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
+  /* The lessons a set of items covers, for a session measured in lessons.
+     Shared by planned and completed sessions so a finished one is described
+     exactly the way it was described before she ticked it. */
+  function lessonsIn(items, unit) {
+    if (unit !== 'lessons') return [];
+    var out = [], seen = {}, i;
+    for (i = 0; i < items.length; i++) {
+      var key = items[i].lessonKey;
+      if (!key || seen[key]) continue;
+      /* A module with no lessons — maths — still gets a lesson key so the
+         grouping works, but it is a topic wearing a lesson's clothes.
+         Announcing it as "Lesson 0" with no title told her nothing and hid the
+         topic name she actually needed. */
+      if (!items[i].lesson) continue;
+      seen[key] = 1;
+      out.push({
+        key: key,
+        weekNumber: items[i].weekNumber,
+        number: items[i].lesson,
+        title: items[i].lessonTitle,
+        passName: items[i].passName
+      });
+    }
+    return out;
+  }
+
+  /* Fills one slot with work she has ALREADY finished on that day, or returns
+     null if there is none left to place.
+   *
+   * This is the whole fix for the bug where a session could never be
+   * completed. The calendar is rebuilt from scratch every time anything
+   * changes, and a ticked-off topic drops out of the queue — so today's slot,
+   * having lost the lesson she just finished, simply refilled itself with the
+   * next one. Tick that off and it took the one after. The session was
+   * unfinishable by construction.
+   *
+   * Finished work now occupies its slot exactly as pending work would: same
+   * room, same lesson counting. Today's first session shows the lesson she
+   * completed, and the NEXT lesson goes into the next session, which is what
+   * she expected all along.
+   */
+  function takeSettled(pool, slot) {
+    var bag = pool[slot.date];
+    if (!bag || !bag.length) return null;
+
+    /* A slot pinned to a subject takes that subject's finished work if there
+       is any, so a session she completed lands in the slot she meant it for
+       rather than displacing another module's. */
+    var moduleId = bag[0].moduleId, k;
+    if (slot.mod) {
+      for (k = 0; k < bag.length; k++) {
+        if (bag[k].moduleId === slot.mod) { moduleId = slot.mod; break; }
+      }
+    }
+
+    var room = slot.room || slot.topics || 1;
+    var byLessons = slot.unit === 'lessons';
+    var items = [], seenLesson = {}, lessonsTaken = 0, head = null;
+
+    k = 0;
+    while (k < bag.length) {
+      if (bag[k].moduleId !== moduleId) { k++; continue; }
+
+      if (byLessons) {
+        var lk = bag[k].item.lessonKey + '|' + bag[k].item.pass;
+        if (!seenLesson[lk]) {
+          if (lessonsTaken >= room) break;
+          seenLesson[lk] = 1;
+          lessonsTaken++;
+        }
+      } else if (items.length >= room) {
+        break;
+      }
+
+      if (!head) head = bag[k];
+      items.push(bag[k].item);
+      /* Spliced rather than stepped over: what is left in the bag is what
+         still needs a slot, and the next slot on this day reads the same bag. */
+      bag.splice(k, 1);
+    }
+
+    if (!items.length) return null;
+
+    return {
+      date: slot.date,
+      time: slot.time,
+      minutes: slot.minutes,
+      moduleId: head.moduleId,
+      moduleCode: head.moduleCode,
+      accent: head.accent,
+      unit: slot.unit || 'topics',
+      lessons: lessonsIn(items, slot.unit),
+      items: items,
+      done: true
+    };
+  }
+
+  /* Whatever the slots could not take: work done before her start date, and
+     days where she got through more than she had sessions for. Shown without
+     a time, because there is no slot to borrow one from — but shown, which is
+     the point. Dropping it would lose the record of an afternoon's work. */
+  function sweepSettled(pool) {
+    var out = [], key, i;
+    for (key in pool) {
+      if (!Object.prototype.hasOwnProperty.call(pool, key)) continue;
+      var bag = pool[key];
+      var groups = {}, order = [];
+      for (i = 0; i < bag.length; i++) {
+        var gk = bag[i].moduleId;
+        if (!groups[gk]) {
+          groups[gk] = {
+            date: bag[i].date,
+            time: '',
+            moduleId: bag[i].moduleId,
+            moduleCode: bag[i].moduleCode,
+            accent: bag[i].accent,
+            unit: 'topics',
+            lessons: [],
+            items: [],
+            done: true
+          };
+          order.push(gk);
+        }
+        groups[gk].items.push(bag[i].item);
+      }
+      for (i = 0; i < order.length; i++) out.push(groups[order[i]]);
+    }
     return out;
   }
 

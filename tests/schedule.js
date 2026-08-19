@@ -1230,7 +1230,181 @@ ok(aaaW !== null && aaaW.short === 10,
    (aaaW ? aaaW.short : 'no warning'));
 ok(countFor(pcap.sessions, 'aaa') === 0, "pin: a module pinned out of every slot still got sessions");
 
-// ── 20. pass names ───────────────────────────────────────────────
+// ── 20. a finished session cannot refill itself ──────────────────
+//
+// Abi's bug, and the nastiest one this engine has had, because everything it
+// touched was working exactly as written.
+//
+// The calendar is rebuilt from scratch whenever anything changes, and a ticked
+// topic drops out of the queue. So she finished the lesson in this morning's
+// session, ticked its topics, and the plan was rebuilt — at which point this
+// morning's slot, having lost the lesson it used to hold, took the next one.
+// She ticked that off too. It took the one after. The session was unfinishable
+// by construction, and a one-hour sitting appeared to contain the rest of the
+// module.
+//
+// Finished work now occupies its slot the same way pending work does.
+
+baseline({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 3, unit: 'lessons', lessons: 1, minutes: 60,
+               times: ['09:00', '12:00', '15:00'] },
+    weekend: { count: 3, unit: 'lessons', lessons: 1, minutes: 60,
+               times: ['09:00', '12:00', '15:00'] },
+    exams: { aaa: daysFromToday(60) }
+});
+
+var today = Schedule.todayYmd();
+
+function sessionsOn(list, dateYmd, time) {
+    var out = [];
+    for (var z = 0; z < list.length; z++) {
+        if (list[z].date === dateYmd && (!time || list[z].time === time)) out.push(list[z]);
+    }
+    return out;
+}
+
+var before = Schedule.plan();
+var morning = sessionsOn(before.sessions, today, '09:00');
+ok(morning.length === 1, "refill: expected one 09:00 session today, got " + morning.length);
+
+if (morning.length === 1) {
+    var lessonKeys = {}, keyCount = 0, z;
+    for (z = 0; z < morning[0].items.length; z++) {
+        if (!lessonKeys[morning[0].items[z].lessonKey]) {
+            lessonKeys[morning[0].items[z].lessonKey] = 1;
+            keyCount++;
+        }
+    }
+    ok(keyCount === 1, "refill: a one-lesson session started with " + keyCount + " lessons");
+
+    // She sits the session and ticks off everything in it.
+    var didKeys = [];
+    for (z = 0; z < morning[0].items.length; z++) {
+        Schedule.setDone(morning[0].items[z].topicId, morning[0].items[z].pass, true, today);
+        didKeys.push(morning[0].items[z].key);
+    }
+
+    var after = Schedule.plan();
+
+    // The bug: this came back as a fresh session holding the NEXT lesson.
+    var stillPending = sessionsOn(after.sessions, today, '09:00');
+    ok(stillPending.length === 0,
+       "refill: the session she just finished was replanned with new work — " +
+       "it can never be completed");
+
+    // It is on the calendar, at its own time, as the session she completed.
+    var settledNow = sessionsOn(after.done, today, '09:00');
+    ok(settledNow.length === 1,
+       "refill: the finished session lost its slot, got " + settledNow.length);
+    ok(settledNow.length === 1 && settledNow[0].items.length === didKeys.length,
+       "refill: the finished session does not hold the work she actually ticked");
+    ok(settledNow.length === 1 && settledNow[0].done === true,
+       "refill: the finished session is not marked done");
+
+    // And the next lesson went into the NEXT session, not this one.
+    var noon = sessionsOn(after.sessions, today, '12:00');
+    ok(noon.length === 1, "refill: today's second session vanished, got " + noon.length);
+    for (z = 0; noon.length === 1 && z < noon[0].items.length; z++) {
+        if (indexIn(didKeys, noon[0].items[z].key) !== -1) {
+            fail("refill: work she already ticked reappeared in a later session");
+            break;
+        }
+    }
+
+    // Ticking must not have quietly cost her a session's worth of capacity.
+    ok(after.warnings.length === 0,
+       "refill: finishing work on time produced a shortfall warning");
+}
+
+function indexIn(arr, v) {
+    for (var z = 0; z < arr.length; z++) if (arr[z] === v) return z;
+    return -1;
+}
+
+// Two sessions' worth finished in one day, ticked in one go — which is what
+// actually happens, because she ticks up at the end rather than after each
+// sitting. A finished session has to respect the same room a pending one
+// does, or the whole day collapses into a single session holding everything
+// and the calendar tells her she did four hours in the one at nine.
+baseline({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 3, unit: 'lessons', lessons: 1, minutes: 60,
+               times: ['09:00', '12:00', '15:00'] },
+    weekend: { count: 3, unit: 'lessons', lessons: 1, minutes: 60,
+               times: ['09:00', '12:00', '15:00'] },
+    exams: { aaa: daysFromToday(60) }
+});
+
+var twoUp = Schedule.plan();
+var slot1 = sessionsOn(twoUp.sessions, today, '09:00')[0];
+var slot2 = sessionsOn(twoUp.sessions, today, '12:00')[0];
+ok(slot1 && slot2, "two-up: expected two planned sessions today");
+
+if (slot1 && slot2) {
+    var pair = slot1.items.concat(slot2.items);
+    for (i = 0; i < pair.length; i++) {
+        Schedule.setDone(pair[i].topicId, pair[i].pass, true, today);
+    }
+
+    var doneTwo = Schedule.plan();
+    var settledDay = sessionsOn(doneTwo.done, today);
+    ok(settledDay.length === 2,
+       "two-up: two lessons finished in a day should fill two sessions, got " +
+       settledDay.length);
+
+    var lessonsPer = [], seen, z, y;
+    for (z = 0; z < settledDay.length; z++) {
+        seen = {};
+        var howMany = 0;
+        for (y = 0; y < settledDay[z].items.length; y++) {
+            if (!seen[settledDay[z].items[y].lessonKey]) {
+                seen[settledDay[z].items[y].lessonKey] = 1;
+                howMany++;
+            }
+        }
+        lessonsPer.push(howMany);
+    }
+    for (z = 0; z < lessonsPer.length; z++) {
+        if (lessonsPer[z] > 1) {
+            fail("two-up: a finished one-lesson session swallowed " + lessonsPer[z] +
+                 " lessons — it must hold the same room a planned one does");
+            break;
+        }
+    }
+
+    ok(sessionsOn(doneTwo.sessions, today, '09:00').length === 0 &&
+       sessionsOn(doneTwo.sessions, today, '12:00').length === 0,
+       "two-up: a finished session was replanned with new work");
+    ok(sessionsOn(doneTwo.sessions, today, '15:00').length === 1,
+       "two-up: the session she has NOT done yet should still be planned");
+}
+
+// Work ticked on a day with no slots at all — before her start date, or more
+// in one day than she had sessions for — must still be shown. Dropping it
+// would lose the record of an afternoon's work.
+baseline({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 1, minutes: 60, topics: 1, times: ['09:00'] },
+    weekend: { count: 1, minutes: 60, topics: 1, times: ['09:00'] },
+    exams: { aaa: daysFromToday(60) }
+});
+Schedule.setDone('aaa-t1', 1, true, today);
+Schedule.setDone('aaa-t2', 1, true, today);
+Schedule.setDone('aaa-t3', 1, true, today);
+
+var spill = Schedule.plan();
+ok(doneItemCount(spill.done) === 3,
+   "spill: three topics ticked on a one-session day, " + doneItemCount(spill.done) + " kept");
+
+var timed = 0, untimed = 0;
+for (i = 0; i < spill.done.length; i++) {
+    if (spill.done[i].time) timed++; else untimed++;
+}
+ok(timed === 1, "spill: expected one finished session to take the day's only slot, got " + timed);
+ok(untimed >= 1, "spill: the overflow was dropped instead of shown without a time");
+
+// ── 21. pass names ───────────────────────────────────────────────
 
 ok(Schedule.passName(1) === 'First pass', "names: pass 1");
 ok(Schedule.passName(2) === 'Revision', "names: pass 2");
@@ -1242,7 +1416,8 @@ ok(Schedule.passName(4) === 'Revision 3', "names: pass 4");
 WScript.Echo("Schedule engine checked:");
 WScript.Echo("  dates, slots, settings, ordering, ticking, badges, focus, shortfall");
 WScript.Echo("  warnings, spare-time revision, exam urgency, blocked exam days,");
-WScript.Echo("  multiple topics per session, and capacity counted in topics.");
+WScript.Echo("  multiple topics per session, capacity counted in topics, and a");
+WScript.Echo("  finished session keeping its slot instead of refilling itself.");
 WScript.Echo("");
 
 if (problems.length === 0) {

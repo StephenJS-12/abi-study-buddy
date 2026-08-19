@@ -32,6 +32,10 @@ var Store = (function () {
        themes.js on the way out, so an unknown id falls back to the default
        rather than leaving the page half-painted. */
     moduleThemes: {},
+    /* Assignments, tests and the like, and the to-do list. Both are owned by
+       planner.js, which validates everything on the way in. */
+    events: [],
+    todos: [],
     /* Celebrations are the point of this site, so they default ON even when Windows
        has animations switched off system-wide. She can still turn them off here. */
     settings: { motion: true }
@@ -112,6 +116,29 @@ var Store = (function () {
     for (var k in src) {
       if (!Object.prototype.hasOwnProperty.call(src, k)) continue;
       if (src[k]) out[k] = String(src[k]);
+    }
+    return out;
+  }
+
+  /* Rebuilds an array of plain records, keeping only the fields named and only
+     when they are strings. A restored snapshot has been round-tripped through
+     a text box, so it can hold anything at all. */
+  function recordList(src, fields) {
+    var out = [];
+    if (Object.prototype.toString.call(src) !== '[object Array]') return out;
+    for (var i = 0; i < src.length; i++) {
+      var row = src[i];
+      if (!row || typeof row !== 'object') continue;
+      var keep = {}, ok = true;
+      for (var f = 0; f < fields.length; f++) {
+        var name = fields[f];
+        var v = row[name];
+        if (v === undefined || v === null) v = '';
+        if (typeof v !== 'string' && typeof v !== 'number') { ok = false; break; }
+        keep[name] = String(v);
+      }
+      /* A record with no id or no name is not repairable, only misleading. */
+      if (ok && keep.id) out.push(keep);
     }
     return out;
   }
@@ -236,6 +263,11 @@ var Store = (function () {
       save();
     },
 
+    /* For collections that are edited in place rather than through a setter.
+       planner.js holds the event and to-do arrays directly — copying them out
+       and back for every tick would be ceremony around the same write. */
+    saveNow: function () { save(); },
+
     setModuleTheme: function (moduleId, themeId) {
       if (!state.moduleThemes) state.moduleThemes = {};
       if (themeId) state.moduleThemes[moduleId] = themeId;
@@ -287,6 +319,8 @@ var Store = (function () {
          to the defaults rather than to a broken calendar. */
       if (data.schedule && typeof data.schedule === 'object') out.schedule = data.schedule;
       out.moduleThemes = stringMap(data.moduleThemes);
+      out.events = recordList(data.events, ['id', 'name', 'date', 'time', 'type', 'moduleId', 'done']);
+      out.todos  = recordList(data.todos,  ['id', 'text', 'moduleId', 'done', 'at']);
 
       if (data.lastSetup && typeof data.lastSetup === 'object') out.lastSetup = data.lastSetup;
       if (typeof data.lastModule === 'string') out.lastModule = data.lastModule;

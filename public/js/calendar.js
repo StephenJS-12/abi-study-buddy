@@ -71,12 +71,19 @@ var Calendar = (function () {
     { name: 'amber', ink: '#8A6000', tint: '#FFF4D6', edge: '#FFD667' }
   ];
 
-  var colourOf = {};
+  var colourOf = null;
   function assignColours(mods) {
     colourOf = {};
     for (var i = 0; i < mods.length; i++) colourOf[mods[i].id] = PALETTE[i % PALETTE.length];
   }
-  function hue(moduleId) { return colourOf[moduleId] || PALETTE[0]; }
+
+  /* Assigned on demand as well as during a render, because the dashboard asks
+     for a module's colour on screens the calendar has never drawn on. Left to
+     the render alone, every module on the home screen came out the same. */
+  function hue(moduleId) {
+    if (!colourOf) assignColours(typeof Modules !== 'undefined' ? Modules.ready() : []);
+    return colourOf[moduleId] || PALETTE[0];
+  }
 
   function vars(c) {
     return '--card-ink:' + c.ink + ';--card-tint:' + c.tint + ';--card-edge:' + c.edge;
@@ -130,6 +137,14 @@ var Calendar = (function () {
       push({ kind: 'exam', date: plan.exams[i].date, time: '', exam: plan.exams[i],
              moduleId: plan.exams[i].moduleId });
     }
+
+    /* Assignments, tests and the like. They sit beside the study sessions and
+       take nothing from them — the scheduler has never heard of them. */
+    var evs = Planner.events(null, { includeDone: true });
+    for (i = 0; i < evs.length; i++) {
+      push({ kind: 'event', date: evs[i].date, time: evs[i].time || '',
+             moduleId: evs[i].moduleId, event: evs[i] });
+    }
     for (i = 0; i < plan.done.length; i++) {
       plan.done[i].kind = 'session';
       push(plan.done[i]);
@@ -142,9 +157,10 @@ var Calendar = (function () {
     for (var k in map) {
       if (!Object.prototype.hasOwnProperty.call(map, k)) continue;
       map[k].sort(function (a, b) {
-        /* The exam is the fixed point of its day, so it leads. Completed
-           sessions have no time of day and follow it. */
-        if (a.kind !== b.kind) return a.kind === 'exam' ? -1 : 1;
+        /* The exam is the fixed point of its day, so it leads, then anything
+           else with a deadline, then the study sessions that fill the gaps. */
+        var rank = { exam: 0, event: 1, session: 2 };
+        if (rank[a.kind] !== rank[b.kind]) return rank[a.kind] - rank[b.kind];
         var at = String(a.time || ''), bt = String(b.time || '');
         return at < bt ? -1 : (at > bt ? 1 : 0);
       });
@@ -167,6 +183,7 @@ var Calendar = (function () {
         '<button class="cal-arrow" type="button" data-step="1" aria-label="Next">›</button>' +
       '</div>' +
       '<div class="cal-tools">' +
+        '<button class="cal-addev" type="button" data-addevent="1">+ Add</button>' +
         '<button class="cal-today" type="button" data-today="1">Today</button>' +
         '<div class="cal-views" role="group" aria-label="Calendar view">' +
           '<button class="cal-view' + (view === 'month' ? ' is-on' : '') + '" type="button" data-view="month">Month</button>' +
@@ -266,6 +283,16 @@ var Calendar = (function () {
         out.push({ kind: 'exam', moduleId: items[i].moduleId, text: items[i].exam.label, done: false });
         continue;
       }
+      if (items[i].kind === 'event') {
+        var ev = items[i].event;
+        out.push({
+          kind: 'event',
+          moduleId: items[i].moduleId,
+          text: Planner.typeOf(ev.type).emoji + ' ' + ev.name,
+          done: !!ev.done
+        });
+        continue;
+      }
       for (j = 0; j < items[i].items.length; j++) {
         var it = items[i].items[j];
         out.push({
@@ -336,7 +363,40 @@ var Calendar = (function () {
      a 130px column, which came to about four characters. */
 
   function blockHtmlFor(block) {
-    return block.kind === 'exam' ? examHtml(block) : cardHtml(block);
+    if (block.kind === 'exam') return examHtml(block);
+    if (block.kind === 'event') return eventBlockHtml(block);
+    return cardHtml(block);
+  }
+
+  /* An assignment, test or class. Same shape as a study session so a day reads
+     as one list, but with the type in place of the pass name and no module
+     colour at all when it belongs to no subject. */
+  function eventBlockHtml(block) {
+    var ev = block.event;
+    var t = Planner.typeOf(ev.type);
+    var c = block.moduleId ? hue(block.moduleId) : null;
+    var mod = block.moduleId && typeof Modules !== 'undefined' && Modules.get(block.moduleId)
+      ? Modules.get(block.moduleId).code : 'No module';
+
+    return '<div class="cal-card cal-card-event' + (ev.done ? ' is-done' : '') + '"' +
+      (c ? ' style="' + vars(c) + '"' : '') + '>' +
+      '<div class="cal-card-head">' +
+        '<span class="cal-time">' + (ev.time ? esc(ev.time) : 'All day') + '</span>' +
+        '<span class="cal-mod">' + esc(mod) + '</span>' +
+      '</div>' +
+      '<div class="cal-item' + (ev.done ? ' is-done' : '') + '">' +
+        '<button class="cal-tick" type="button" data-evtick="' + esc(ev.id) + '"' +
+          ' aria-pressed="' + (ev.done ? 'true' : 'false') + '"' +
+          ' title="' + (ev.done ? 'Mark as not done' : 'Mark as done') + '">' +
+          (ev.done ? '✓' : '') + '</button>' +
+        '<span class="cal-item-body">' +
+          '<span class="cal-item-title">' + t.emoji + ' ' + esc(ev.name) + '</span>' +
+          '<span class="cal-item-pass">' + esc(t.name) + '</span>' +
+        '</span>' +
+        '<button class="cal-evdel" type="button" data-evdel="' + esc(ev.id) + '"' +
+          ' aria-label="Remove">×</button>' +
+      '</div>' +
+    '</div>';
   }
 
   function examHtml(block) {
@@ -749,6 +809,32 @@ var Calendar = (function () {
       });
     });
 
+    /* Adding and ticking events. The same box the dashboard uses, so the two
+       screens cannot drift apart about what an event is. */
+    each('[data-addevent]', function (b) {
+      b.addEventListener('click', function () {
+        Dashboard.openAdd(null, function () { keepScroll = window.pageYOffset || 0; redraw(); });
+      });
+    });
+
+    each('[data-evtick]', function (b) {
+      b.addEventListener('click', function () {
+        var id = b.getAttribute('data-evtick');
+        var ev = Planner.findEvent(id);
+        var was = !!(ev && ev.done);
+        Planner.setEventDone(id, !was);
+        if (!was && window.Celebrate && Store.motionOn()) Celebrate.tick(b);
+        again();
+      });
+    });
+
+    each('[data-evdel]', function (b) {
+      b.addEventListener('click', function () {
+        Planner.removeEvent(b.getAttribute('data-evdel'));
+        again();
+      });
+    });
+
     each('[data-view]', function (b) {
       b.addEventListener('click', function () {
         view = b.getAttribute('data-view');
@@ -899,6 +985,9 @@ var Calendar = (function () {
   return {
     init: init,
     render: render,
+    /* The dashboard draws event chips in their module's calendar colour, so
+       the two screens agree about which subject is which. */
+    hueFor: hue,
     /* So the rest of the app can drop her straight onto today. */
     goToday: function () { anchor = Schedule.todayYmd(); openDay = null; }
   };

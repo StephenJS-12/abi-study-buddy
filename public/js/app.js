@@ -361,6 +361,11 @@ var App = (function () {
         '</div>' +
       '</section>' +
 
+      /* Directly under the greeting, so what is coming up and what is late is
+         among the first things she sees rather than something to scroll for.
+         Null scope: everything, across every module and none. */
+      Dashboard.html(null) +
+
       '<div class="section-title">Your modules</div>' +
       '<div class="modgrid">' + cards + '</div>' +
 
@@ -383,6 +388,7 @@ var App = (function () {
     Array.prototype.forEach.call(screen.querySelectorAll('[data-module]'), function (b) {
       b.addEventListener('click', function () { openModule(b.getAttribute('data-module')); });
     });
+    Dashboard.bind(screen, null);
     bindTiles();
   }
 
@@ -609,6 +615,10 @@ var App = (function () {
         '</p>' +
       '</div>' +
 
+      /* The same dashboard, scoped to this module: only its events, only its
+         notes, only its numbers. */
+      Dashboard.html(mod ? mod.id : null) +
+
       /* Two things to do in a module: read about it, or answer questions on it.
          Everything else on this screen used to sit at the same level, which
          made choosing harder than it needed to be. */
@@ -675,6 +685,8 @@ var App = (function () {
               : 'Points, badges and rewards') +
           '</p></button>' +
       '</div>';
+
+    Dashboard.bind(screen, mod ? mod.id : null);
 
     var themeBox = document.getElementById('modTheme');
     if (themeBox) {
@@ -1486,6 +1498,10 @@ var App = (function () {
        be redrawn rather than patching itself. Handing it draw() keeps the
        "which screen am I on" decision in exactly one place. */
     Calendar.init(function () { if (route.name === 'schedule') draw(); });
+
+    /* The dashboard appears on two different screens, so it asks to be
+       redrawn rather than knowing which one it is on. */
+    Dashboard.init(function () { draw(); });
 
     applyMotion();
     showSaveWarning();

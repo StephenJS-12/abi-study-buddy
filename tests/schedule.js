@@ -267,6 +267,87 @@ var day = Schedule.buildSlots('2025-12-01', '2025-12-01');
 ok(day.length === 3 && day[0].time === '07:00' && day[1].time === '13:00' && day[2].time === '19:00',
    "slots: sessions in a day are not in time order");
 
+// ── 2b. sessions are stored in time order and never overlap ──────
+// The settings panel lists sessions in stored order while the calendar sorted
+// them, so a day could read 14:00, 19:30, 14:00, 15:30 in the settings and
+// come out sorted on screen. Ordering is now guaranteed in one place.
+
+set({
+    days: [1],
+    weekday: { count: 4, topics: 1,
+               times: ['14:00', '19:30', '14:00', '15:30'],
+               mins: [60, 60, 60, 60], mods: ['', '', '', ''] },
+    weekend: { count: 1, topics: 1, times: ['09:00'], mins: [60], mods: [''] }
+});
+
+var ord = Schedule.settings().weekday;
+for (i = 1; i < ord.times.length; i++) {
+    if (ord.times[i] < ord.times[i - 1]) {
+        fail("order: stored sessions are not in time order (" + ord.times.join(', ') + ")");
+        break;
+    }
+}
+
+// Two sessions at 14:00, each an hour: the second must be pushed to 15:00,
+// and the 15:30 one out of its way in turn.
+function endsAt(t, m) {
+    var b = String(t).split(':');
+    return Number(b[0]) * 60 + Number(b[1]) + m;
+}
+function startsAt(t) {
+    var b = String(t).split(':');
+    return Number(b[0]) * 60 + Number(b[1]);
+}
+for (i = 1; i < ord.times.length; i++) {
+    if (startsAt(ord.times[i]) < endsAt(ord.times[i - 1], ord.mins[i - 1])) {
+        fail("order: sessions overlap — " + ord.times[i - 1] + " (" + ord.mins[i - 1] +
+             "m) runs into " + ord.times[i]);
+        break;
+    }
+}
+ok(ord.times.length === 4, "order: a session was lost while resolving the clash");
+
+// Lengthening a session pushes the ones after it, rather than swallowing them.
+set({
+    days: [1],
+    weekday: { count: 3, topics: 1,
+               times: ['09:00', '10:00', '11:00'],
+               mins: [180, 60, 60], mods: ['', '', ''] },
+    weekend: { count: 1, topics: 1, times: ['09:00'], mins: [60], mods: [''] }
+});
+var pushed = Schedule.settings().weekday;
+ok(pushed.times[0] === '09:00', "order: the session she lengthened should not move");
+ok(pushed.times[1] === '12:00',
+   "order: a three-hour first session should push the second to 12:00, got " + pushed.times[1]);
+ok(pushed.times[2] === '13:00',
+   "order: the third session should follow the second, got " + pushed.times[2]);
+
+// Weekday and weekend are sanitised separately and must not disturb each other.
+set({
+    days: [0, 1],
+    weekday: { count: 2, topics: 1, times: ['22:00', '22:30'], mins: [60, 60], mods: ['', ''] },
+    weekend: { count: 2, topics: 1, times: ['09:00', '11:00'], mins: [60, 60], mods: ['', ''] }
+});
+var sep = Schedule.settings();
+ok(sep.weekend.times[0] === '09:00' && sep.weekend.times[1] === '11:00',
+   "order: resolving a weekday clash moved the weekend sessions (" + sep.weekend.times.join(', ') + ")");
+ok(sep.weekday.times[1] === '23:00',
+   "order: the weekday clash was not resolved, got " + sep.weekday.times[1]);
+
+// The length and pinned module travel with their own session through the sort.
+set({
+    days: [1],
+    weekday: { count: 3, topics: 1,
+               times: ['20:00', '08:00', '12:00'],
+               mins: [30, 45, 120], mods: ['aaa', 'bbb', ''] },
+    weekend: { count: 1, topics: 1, times: ['09:00'], mins: [60], mods: [''] }
+});
+var carried = Schedule.settings().weekday;
+ok(carried.times[0] === '08:00' && carried.mins[0] === 45 && carried.mods[0] === 'bbb',
+   "order: the earliest session lost its own length or module");
+ok(carried.times[2] === '20:00' && carried.mins[2] === 30 && carried.mods[2] === 'aaa',
+   "order: the latest session lost its own length or module");
+
 // A blocked date produces no slots at all.
 var blockedOut = Schedule.buildSlots('2025-12-01', '2025-12-08', { '2025-12-01': true });
 for (i = 0; i < blockedOut.length; i++) {

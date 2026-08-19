@@ -517,11 +517,28 @@ var Calendar = (function () {
       '</div>';
     }
 
+    /* Sessions are kept in order and never allowed to overlap, so a clash is
+       resolved by pushing the later one back. Enough of them and the day runs
+       out — worth saying, because the times she typed will have moved. */
+    var last = cfg.count - 1;
+    var endsPast = startMinutes(cfg.times[last]) + cfg.mins[last] > 24 * 60;
+    var full = endsPast
+      ? '<p class="cal-note cal-note-tight">These sessions do not all fit in one day — ' +
+        'the last one runs past midnight. Shorten one, or drop a session.</p>'
+      : '';
+
     return sectionHtml('⏰', label, '',
       stepperHtml('Sessions a day', which, 'count', cfg.count) +
       stepperHtml('Topics per session', which, 'topics', cfg.topics) +
-      '<p class="cal-hint cal-hint-tight">Some topics are short — two or three can share one session.</p>' +
+      '<p class="cal-hint cal-hint-tight">Some topics are short — two or three can share one session. ' +
+      'Sessions are kept in order, and a clash pushes the later one back.</p>' +
+      full +
       '<div class="cal-times">' + times + '</div>');
+  }
+
+  function startMinutes(hhmm) {
+    var bits = String(hhmm || '').split(':');
+    return (Number(bits[0]) || 0) * 60 + (Number(bits[1]) || 0);
   }
 
   /* Length is set per session, not per day. Three quarters of an hour after

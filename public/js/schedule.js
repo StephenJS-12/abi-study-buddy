@@ -241,12 +241,63 @@ var Schedule = (function () {
     out.times.length = out.count;
     out.mins.length = out.count;
     out.mods.length = out.count;
+
+    orderSessions(out);
     return out;
   }
 
   function cleanMinutes(v, fallback) {
     var n = Math.floor(Number(v));
     return (isFinite(n) && n >= 10 && n <= 240) ? n : fallback;
+  }
+
+  function toMins(hhmm) {
+    var bits = String(hhmm || '').split(':');
+    return (Number(bits[0]) || 0) * 60 + (Number(bits[1]) || 0);
+  }
+
+  function fromMins(n) {
+    if (n < 0) n = 0;
+    if (n > LAST_MINUTE) n = LAST_MINUTE;
+    return pad(Math.floor(n / 60)) + ':' + pad(n % 60);
+  }
+
+  var LAST_MINUTE = 23 * 60 + 59;
+
+  /* SESSIONS ARE ALWAYS IN TIME ORDER AND NEVER OVERLAP.
+   *
+   * Both of those are guaranteed here rather than left to the screens, because
+   * two screens were disagreeing about it: the calendar sorted a day before
+   * drawing it while the settings panel listed the sessions in whatever order
+   * they were stored, so a day could read 14:00, 19:30, 14:00, 15:30 in the
+   * settings and come out sorted on the calendar.
+   *
+   * Overlaps were possible too — nothing stopped two sessions starting at the
+   * same time, or a two-hour session swallowing the one after it.
+   *
+   * A session that starts before the previous one has finished is pushed to
+   * when that one ends. She keeps the times she can keep, and only the clash
+   * moves. Weekday and weekend blocks are sanitised separately and never see
+   * each other, so a Saturday morning cannot be pushed about by a Tuesday
+   * evening.
+   */
+  function orderSessions(b) {
+    var trio = [], i;
+    for (i = 0; i < b.count; i++) {
+      trio.push({ t: toMins(b.times[i]), m: b.mins[i], mod: b.mods[i] });
+    }
+    trio.sort(function (x, y) { return x.t - y.t; });
+
+    for (i = 1; i < trio.length; i++) {
+      var endsAt = trio[i - 1].t + trio[i - 1].m;
+      if (trio[i].t < endsAt) trio[i].t = Math.min(endsAt, LAST_MINUTE);
+    }
+
+    for (i = 0; i < trio.length; i++) {
+      b.times[i] = fromMins(trio[i].t);
+      b.mins[i] = trio[i].m;
+      b.mods[i] = trio[i].mod;
+    }
   }
 
   function cleanTime(v, i) {
@@ -368,19 +419,16 @@ var Schedule = (function () {
         /* Times are sorted with their pinned module attached, not separately.
            Sorting the two apart would quietly move which subject sits in which
            session every time she edited a time. */
-        var pairs = [], i;
-        for (i = 0; i < cfg.count; i++) {
-          pairs.push({
-            time: cfg.times[i],
-            mins: (cfg.mins && cfg.mins[i]) || 60,
-            mod: (cfg.mods && cfg.mods[i]) || ''
-          });
-        }
-        pairs.sort(function (a, b) { return a.time < b.time ? -1 : (a.time > b.time ? 1 : 0); });
-        for (i = 0; i < pairs.length; i++) {
+        /* Already in time order and free of overlaps — orderSessions() does
+           that once, on the way into the settings, so the calendar and the
+           settings panel can never disagree about a day's shape. */
+        for (var i = 0; i < cfg.count; i++) {
           out.push({
-            date: key, time: pairs[i].time, minutes: pairs[i].mins,
-            topics: cfg.topics, mod: pairs[i].mod
+            date: key,
+            time: cfg.times[i],
+            minutes: (cfg.mins && cfg.mins[i]) || 60,
+            topics: cfg.topics,
+            mod: (cfg.mods && cfg.mods[i]) || ''
           });
         }
       }

@@ -418,6 +418,8 @@ body.reduce-motion .cal-daypanel { animation: none; }
   font-size: .88rem;
   color: var(--ink-soft);
 }
+.cal-note-tight { margin: -.4rem 0 .9rem; padding: .55rem .8rem; font-size: .86rem; }
+
 .cal-linkbtn {
   border: 0;
   background: none;

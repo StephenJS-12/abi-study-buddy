@@ -44,11 +44,19 @@
   --r-xl: 34px;
   --r-pill: 999px;
 
-  /* Depth — soft, coloured, never grey */
-  --shadow-sm: 0 2px 6px rgba(139,109,217,.10);
-  --shadow-md: 0 6px 18px rgba(139,109,217,.14);
-  --shadow-lg: 0 14px 38px rgba(139,109,217,.18);
-  --shadow-pop: 0 10px 0 rgba(139,109,217,.18);
+  /* Depth — soft, coloured, never grey. The tint comes from a variable so a
+     module wearing its own colour does not cast a purple shadow under a green
+     card. See css/modthemes.css. */
+  --shadow-rgb: 139,109,217;
+  --shadow-sm: 0 2px 6px rgba(var(--shadow-rgb),.10);
+  --shadow-md: 0 6px 18px rgba(var(--shadow-rgb),.14);
+  --shadow-lg: 0 14px 38px rgba(var(--shadow-rgb),.18);
+  --shadow-pop: 0 10px 0 rgba(var(--shadow-rgb),.18);
+
+  /* The two extra tints in the background wash, so it can follow a module's
+     colour instead of always being mint and blue. */
+  --wash-1: #D7F6EB;
+  --wash-2: #E4F1FF;
 
   --ease-bounce: cubic-bezier(.34,1.56,.64,1);
   --ease-out: cubic-bezier(.22,.9,.3,1);
@@ -85,8 +93,8 @@ body {
   background:
     radial-gradient(closest-side at 12% 8%,  var(--pink-100), transparent 70%),
     radial-gradient(closest-side at 88% 4%,  var(--lilac-100), transparent 72%),
-    radial-gradient(closest-side at 78% 82%, var(--mint-100), transparent 70%),
-    radial-gradient(closest-side at 6% 74%,  var(--sky-100), transparent 70%),
+    radial-gradient(closest-side at 78% 82%, var(--wash-1), transparent 70%),
+    radial-gradient(closest-side at 6% 74%,  var(--wash-2), transparent 70%),
     var(--bg);
   background-size: 70% 60%, 60% 55%, 65% 60%, 55% 55%, auto;
   background-repeat: no-repeat;

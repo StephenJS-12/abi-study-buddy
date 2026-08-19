@@ -22,6 +22,12 @@ var App = (function () {
   var history = [];
   var MAX_HISTORY = 40;
 
+  /* Screens that belong to one module, and so wear that module's colour.
+     Everything not listed here spans every module and stays the default. */
+  var INSIDE_MODULE = {
+    home: true, week: true, notes: true, notesWeek: true, notesTopic: true
+  };
+
   /* Whether the full reward ladder is showing. Deliberately not persisted —
      it is a view preference for the moment she is in, not something worth
      remembering between sessions. */
@@ -243,6 +249,11 @@ var App = (function () {
        The schedule screen gets the width it needs instead. */
     document.body.classList.toggle('at-schedule', route.name === 'schedule');
 
+    /* A module's own colour, but only on the screens that belong to it. The
+       picker, the schedule and progress all span every module at once, so a
+       single module's colour would mean nothing there. */
+    Themes.apply(INSIDE_MODULE[route.name] ? Content.moduleId() : '');
+
     switch (route.name) {
       case 'modules':   return screenModules();
       case 'home':      return screenHome();
@@ -379,6 +390,45 @@ var App = (function () {
     Content.use(id);
     Store.rememberModule(id);
     go('home');
+  }
+
+  /* Whether the colour picker on the module home is open. Not persisted: it
+     is a thing she opens, changes and forgets, not a preference. */
+  var themePickerOpen = false;
+
+  /* The colour picker for THIS module. It lives on the module's own home
+     screen rather than in the global cog, because the setting belongs to the
+     module and because from here she can see the change happen to the screen
+     she is standing on. */
+  function themePickerHtml(mod) {
+    if (!mod) return '';
+    var current = Themes.get(mod.id);
+    var list = Themes.all(), swatches = '';
+
+    for (var i = 0; i < list.length; i++) {
+      var t = list[i], on = t.id === current;
+      swatches += '<button class="swatch' + (on ? ' is-on' : '') + '" type="button"' +
+        ' data-theme="' + esc(t.id) + '" aria-pressed="' + (on ? 'true' : 'false') + '"' +
+        ' title="' + esc(t.name) + '">' +
+        '<span class="swatch-blob" style="background:' + t.ink +
+          ';box-shadow: inset 0 -0.55rem 0 ' + t.tint + ', inset 0 0 0 0.28rem ' + t.accent + '"></span>' +
+        '<span class="swatch-name">' + esc(t.name) + '</span>' +
+      '</button>';
+    }
+
+    return '<details class="modtheme"' + (themePickerOpen ? ' open' : '') + ' id="modTheme">' +
+      '<summary class="modtheme-head">' +
+        '<span class="modtheme-emoji">🎨</span>' +
+        '<span class="modtheme-title">Colour for ' + esc(mod.code) + '</span>' +
+        '<span class="modtheme-now">' + esc(Themes.swatch(current).name) + '</span>' +
+        '<span class="modtheme-caret">▾</span>' +
+      '</summary>' +
+      '<div class="modtheme-body">' +
+        '<p class="modtheme-hint">Changes how this module looks — its home, its notes and its ' +
+        'questions. Everything shared between modules stays as it is.</p>' +
+        '<div class="swatches">' + swatches + '</div>' +
+      '</div>' +
+    '</details>';
   }
 
   /* What the schedule tile says. The next session is the only thing worth
@@ -605,6 +655,8 @@ var App = (function () {
         '</div>' +
       '</section>' +
 
+      themePickerHtml(mod) +
+
       '<div class="grid-2" style="margin-top:2rem">' +
         /* The calendar covers every module at once, so it is the same screen
            from here as it is from the picker. It is offered in both places
@@ -623,6 +675,21 @@ var App = (function () {
               : 'Points, badges and rewards') +
           '</p></button>' +
       '</div>';
+
+    var themeBox = document.getElementById('modTheme');
+    if (themeBox) {
+      themeBox.addEventListener('toggle', function () { themePickerOpen = themeBox.open; });
+    }
+
+    Array.prototype.forEach.call(screen.querySelectorAll('[data-theme]'), function (b) {
+      b.addEventListener('click', function () {
+        Themes.set(mod.id, b.getAttribute('data-theme'));
+        /* Repaint before redrawing, so the new colour is already on the body
+           when the screen is rebuilt and she sees one change, not two. */
+        Themes.apply(mod.id);
+        screenHome();
+      });
+    });
 
     Array.prototype.forEach.call(screen.querySelectorAll('[data-pickmode]'), function (b) {
       b.addEventListener('click', function () {

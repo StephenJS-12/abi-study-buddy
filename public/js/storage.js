@@ -28,6 +28,10 @@ var Store = (function () {
     /* When she studies, what she has covered, and when the exams are.
        Shape and defaults live in schedule.js — this only has to keep it. */
     schedule: null,
+    /* moduleId -> theme id. Which colour each module wears. Validated by
+       themes.js on the way out, so an unknown id falls back to the default
+       rather than leaving the page half-painted. */
+    moduleThemes: {},
     /* Celebrations are the point of this site, so they default ON even when Windows
        has animations switched off system-wide. She can still turn them off here. */
     settings: { motion: true }
@@ -232,6 +236,13 @@ var Store = (function () {
       save();
     },
 
+    setModuleTheme: function (moduleId, themeId) {
+      if (!state.moduleThemes) state.moduleThemes = {};
+      if (themeId) state.moduleThemes[moduleId] = themeId;
+      else delete state.moduleThemes[moduleId];
+      save();
+    },
+
     motionOn: function () {
       return !state.settings || state.settings.motion !== false;
     },
@@ -275,6 +286,7 @@ var Store = (function () {
          Schedule.settings() on the way out, so a corrupted schedule degrades
          to the defaults rather than to a broken calendar. */
       if (data.schedule && typeof data.schedule === 'object') out.schedule = data.schedule;
+      out.moduleThemes = stringMap(data.moduleThemes);
 
       if (data.lastSetup && typeof data.lastSetup === 'object') out.lastSetup = data.lastSetup;
       if (typeof data.lastModule === 'string') out.lastModule = data.lastModule;

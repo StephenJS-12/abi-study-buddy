@@ -389,3 +389,81 @@
   z-index: 80;
   overflow: hidden;
 }
+
+/* ── the colour picker on a module's home screen ─────────────────
+   Per module, not global: opening maths should be able to look different
+   from opening business, while everything shared between them stays put. */
+
+.modtheme {
+  margin-top: 2rem;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.modtheme-head {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .9rem 1.1rem;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+  background: var(--lilac-50);
+}
+.modtheme-head::-webkit-details-marker { display: none; }
+.modtheme-head::marker { content: ""; }
+.modtheme-emoji { font-size: 1.2rem; line-height: 1; }
+.modtheme-title { min-width: 0; }
+.modtheme-now {
+  margin-left: auto;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--lilac-700);
+  background: var(--surface);
+  border-radius: var(--r-pill);
+  padding: .2rem .7rem;
+  white-space: nowrap;
+}
+.modtheme-caret { color: var(--lilac-700); transition: transform .2s var(--ease-out, ease); }
+.modtheme[open] > .modtheme-head .modtheme-caret { transform: rotate(180deg); }
+
+.modtheme-body { padding: 1rem 1.1rem 1.2rem; }
+.modtheme-hint { margin: 0 0 .9rem; font-size: .89rem; color: var(--ink-soft); line-height: 1.55; }
+
+.swatches {
+  display: grid;
+  gap: .5rem;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  padding: .6rem .35rem .5rem;
+  border: 2px solid var(--line);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink-soft);
+  transition: border-color .16s, transform .16s var(--ease-out, ease);
+}
+.swatch:hover { border-color: var(--lilac-200); transform: translateY(-2px); }
+body.reduce-motion .swatch:hover { transform: none; }
+.swatch.is-on { border-color: var(--lilac-600); color: var(--ink); font-weight: 700; }
+
+/* Three bands in one circle: the primary, its pale tint, and the accent ring.
+   A single flat dot would make Dark blue and Ocean green look interchangeable
+   until she picked one. */
+.swatch-blob {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  flex: none;
+}
+
+.swatch-name { font-size: .76rem; line-height: 1.25; text-align: center; }

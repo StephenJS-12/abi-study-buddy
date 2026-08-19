@@ -594,9 +594,15 @@ body.reduce-motion .cal-sum-fill { transition: none; }
   .cal-fields { grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
 }
 
-.cal-field { display: flex; flex-direction: column; gap: .3rem; }
+/* min-width: 0 is not optional here.
+   A grid item defaults to min-width: auto, which means its track can never
+   shrink below the intrinsic width of what is inside it. On an iPad a native
+   time input in a 12-hour locale ("4:00 PM" plus the clock glyph) reports a
+   much wider intrinsic size than it does on a desktop, so the tracks blew
+   past their 1fr share and the three controls overlapped each other. */
+.cal-field { display: flex; flex-direction: column; gap: .3rem; min-width: 0; }
 .cal-field-label { font-size: .89rem; font-weight: 600; color: var(--ink); }
-.cal-field .cal-time-in { width: 100%; min-width: 0; }
+.cal-field .cal-time-in { width: 100%; min-width: 0; max-width: 100%; }
 .cal-field-note { font-size: .8rem; color: var(--muted); line-height: 1.4; }
 .cal-field-note.is-warn { color: var(--pink-600); font-weight: 600; }
 .cal-time-in.is-empty { border-color: var(--pink-200); background: var(--pink-50); }
@@ -673,13 +679,21 @@ body.reduce-motion .cal-sum-fill { transition: none; }
   margin-bottom: .55rem;
 }
 
+/* 9.5rem rather than 7.5: a 12-hour clock needs "4:00 PM" plus the picker
+   glyph, and 120px was not enough for it on an iPad. Too narrow a minimum
+   does not wrap to two rows, it crams three columns and lets them overflow. */
 .cal-sessgrid {
   display: grid;
   gap: .6rem;
-  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
 }
 .cal-sessgrid .cal-time-in,
-.cal-sessgrid .cal-select { background: var(--surface); width: 100%; min-width: 0; }
+.cal-sessgrid .cal-select {
+  background: var(--surface);
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
 
 /* A native select is the right control here: on a phone and on an iPad it
    opens the system wheel, which is the dial her thumb already knows and

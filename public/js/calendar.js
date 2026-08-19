@@ -894,6 +894,14 @@ var Calendar = (function () {
       }, 400);
     }
 
+    /* Leaving a field is the clearest signal that she has finished with it.
+       Without this the redraw waits on the timer noticing focus has gone,
+       which it eventually does — but a field she tabbed away from and left
+       alone would sit showing a stale plan for as long as she ignored it. */
+    each('.cal-opts input, .cal-opts select', function (inp) {
+      inp.addEventListener('blur', softAgain);
+    });
+
     /* <details> reports its own state, which is the only reliable way to know
        it — she can open it with a click, with the keyboard, or with a find. */
     each('[data-opts]', function (d) {

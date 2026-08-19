@@ -83,6 +83,18 @@
       { number: 3, title: 'Nominal and effective interest rates',
         emoji: '📊',
         topics: ['w4-freq'] }
+    ],
+
+    'week5': [
+      { number: 1, title: 'Determining the present value (PV) of a future accumulated amount',
+        emoji: '⏪',
+        topics: ['w5-pv', 'w5-pvcalc'] },
+      { number: 2, title: 'Changes during a term — interest rates',
+        emoji: '🔀',
+        topics: ['w5-ratefv', 'w5-ratepv'] },
+      { number: 3, title: 'Changes during a term — additional amounts',
+        emoji: '➕',
+        topics: ['w5-addfv', 'w5-addpv'] }
     ]
   };
 

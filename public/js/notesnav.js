@@ -16,10 +16,12 @@
  *   whatever she is reading are opened automatically, so arriving at a topic
  *   from the calendar shows her where in the course she has landed.
  *
- * MATHS HAS NO LESSONS
+ * A WEEK WITHOUT LESSONS
  *
- *   So its weeks list their topics directly, one level shallower. The module
- *   decides its own depth and nothing here needs telling.
+ *   Both modules now have a lesson map, but nothing here requires one. A week
+ *   with no lessons lists its topics directly, one level shallower. The module
+ *   decides its own depth and nothing here needs telling — which is what lets a
+ *   new week be added before its lesson map is written.
  */
 
 var NotesNav = (function () {

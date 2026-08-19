@@ -3,7 +3,7 @@ var REPO = (function () { var f = new ActiveXObject("Scripting.FileSystemObject"
 var fso = new ActiveXObject("Scripting.FileSystemObject");
 var base = REPO + "\\public\\js\\data\\";
 var window = {};
-var files = ["week1.js", "week2.js", "week3.js", "week4.js"];
+var files = ["week1.js", "week2.js", "week3.js", "week4.js", "week5.js"];
 for (var i = 0; i < files.length; i++) {
     var fh = fso.OpenTextFile(base + files[i], 1);
     var src = fh.AtEndOfStream ? "" : fh.ReadAll();
@@ -144,6 +144,64 @@ chk("w4f2", 6 / 12, "effective monthly rate");
 chk("w4f3", compoundFV(30000, 0.12 / 4, 16), "quarterly FV R30000");
 step("w4f4", 0, 8 / 2, "effective half-yearly rate");
 step("w4f4", 2, compoundFV(20000, 0.04, 6), "half-yearly FV R20000");
+
+// ------ Week 5 ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Present value, rate changes partway through a term, and amounts moving in or
+// out mid-term. Everything here is built from grow() rather than from the
+// figures printed in the notes, so a wrong number in week5.js cannot agree with
+// itself. Where the source notes quote a rounded intermediate, the stored tol in
+// the question is what absorbs it — not a fudge here.
+
+// One Rand grown for `years` at a nominal rate compounded `per` times a year.
+function grow(rate, per, years) { return Math.pow(1 + rate / per, per * years); }
+function pvOf(fv, rate, per, years) { return fv / grow(rate, per, years); }
+
+// Lesson 1 - finding the present value
+chk("w5p3", pvOf(33581, 0.10, 4, 5), "PV of R33 581, 10% quarterly, 5yr");
+chk("w5p4", pvOf(8080, 0.15, 12, 0.5), "PV of R8 080, 15% monthly, 6 months");
+chk("w5p5", pvOf(62954, 0.08, 1, 12), "PV of R62 954, 8% yearly, 12yr");
+step("w5p6", 0, 6, "bi-monthly is 6 periods a year");
+step("w5p6", 1, 0.085 / 6, "8.5% per annum as a bi-monthly rate");
+step("w5p6", 2, grow(0.085, 6, 4), "(1 + 0.0141667)^24");
+step("w5p6", 3, pvOf(500000, 0.085, 6, 4), "PV of R500 000, 8.5% bi-monthly, 4yr");
+chk("w5c2", pvOf(1000000, 0.11, 12, 5), "PV of R1m, 11% monthly, 5yr");
+
+// Lesson 2 - the rate changes partway through
+chk("w5rf1", 15000 * grow(0.08, 2, 2), "R15 000 at 8% half-yearly for 2yr");
+chk("w5rf2", 15000 * grow(0.08, 2, 2) * grow(0.10, 2, 3), "then 10% half-yearly for 3yr");
+chk("w5rf4", 200000 * grow(0.12, 1, 8) * grow(0.10, 2, 12), "R200 000, 12% then 10%, 20yr");
+chk("w5rf5", 10000 * grow(0.15, 1, 3) * grow(0.10, 2, 3), "R10 000, 15% then 10%, 6yr");
+chk("w5rf6", 22000 * grow(0.11, 12, 5) * grow(0.12, 4, 7), "R22 000, 11% then 12%, 12yr");
+step("w5rf7", 0, 6, "n for the first year, bi-monthly");
+step("w5rf7", 1, 1000 * grow(0.075, 6, 1), "R1 000 at 7.5% bi-monthly for 1yr");
+step("w5rf7", 2, 18, "n for the remaining 3 years");
+step("w5rf7", 3, 1000 * grow(0.075, 6, 1) * grow(0.085, 6, 3), "then 8.5% for 3yr");
+
+chk("w5rp1", 1000000 / (grow(0.11, 12, 2) * grow(0.10, 12, 3)), "PV of R1m, 11% then 10%");
+chk("w5rp3", 100000 / (grow(0.12, 1, 3) * grow(0.14, 2, 7)), "PV of R100 000, 12% then 14%");
+chk("w5rp4", 55000 / (grow(0.13, 1, 2) * grow(0.12, 2, 4)), "PV of R55 000, 13% then 12%");
+chk("w5rp5", 23000 / (grow(0.11, 2, 3) * grow(0.12, 4, 2)), "PV of R23 000, 11% then 12%");
+chk("w5rp6", 500000 / (grow(0.075, 6, 1) * grow(0.085, 6, 3)), "PV of R500 000, 7.5% then 8.5%");
+
+// Lesson 3 - money moves in or out partway through
+chk("w5af1", 15000 * grow(0.10, 2, 2), "R15 000 at 10% half-yearly for 2yr");
+chk("w5af2", (15000 * grow(0.10, 2, 2) + 20000) * grow(0.10, 2, 3), "plus R20 000, then 3yr more");
+chk("w5af4", (200000 * grow(0.12, 1, 2) - 100000) * grow(0.12, 1, 6), "R200 000 less R100 000 at yr 2");
+chk("w5af5", (80000 * grow(0.15, 4, 3.5) - 80000) * grow(0.15, 4, 6.5), "R80 000 less R80 000 at yr 3.5");
+chk("w5af6", (120000 * grow(0.13, 2, 1) - 75000) * grow(0.13, 2, 3), "R120 000 less R75 000 at yr 1");
+step("w5af7", 0, 700 * grow(0.085, 6, 1), "R700 at 8.5% bi-monthly for 1yr");
+step("w5af7", 1, 700 * grow(0.085, 6, 1) + 300, "plus the R300 deposit");
+step("w5af7", 2, 18, "n for the remaining 3 years");
+step("w5af7", 3, (700 * grow(0.085, 6, 1) + 300) * grow(0.085, 6, 3), "grown for 3yr more");
+
+chk("w5ap1", pvOf(600000, 0.11, 12, 3), "PV of R600 000, 11% monthly, 3yr");
+chk("w5ap2", (pvOf(600000, 0.11, 12, 3) + 400000) / grow(0.11, 12, 2), "loan with R400 000 at yr 2");
+chk("w5ap3", (pvOf(500000, 0.085, 6, 3) - 200000) / grow(0.085, 6, 1), "R500 000 with R200 000 at yr 1");
+// The cash-price questions are checked by discounting each payment separately,
+// which is a different route from the two-step method the solutions show.
+chk("w5ap5", 50000 + pvOf(100000, 0.14, 1, 3) + pvOf(150000, 0.14, 1, 6), "cash price, 14% yearly");
+chk("w5ap6", 80000 + pvOf(100000, 0.12, 4, 2) + pvOf(150000, 0.12, 4, 8), "cash price, 12% quarterly");
+chk("w5ap7", 10000 + pvOf(120000, 0.13, 2, 1) + pvOf(250000, 0.13, 2, 3), "cash price, 13% half-yearly");
 
 // ------ compare ---------------------------------------------------------------------------------------------------------------------------------------------------------
 // -- Week 1 (fractions) ---------------------------------------

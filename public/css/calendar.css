@@ -1,13 +1,27 @@
 /* The study calendar.
 
-   Phone first throughout. Abi uses this on a phone, so the month grid has to
-   survive a 320px screen and every control has to be hittable with a thumb —
-   which is why the options are chips and steppers rather than dropdowns, and
-   why the month cells carry dots rather than text.
+   Sizes this has to work at, in CSS pixels:
+
+     phone            360–430    dots in the month grid, week stacked
+     iPad 10th, tall  ~820       labels in the month grid, week stacked
+     iPad 10th, wide  ~1180      labels, week in 7 columns
+     720p / 1080p     1280–1536  labels, week in 7 columns
+     1440p            ~1720      the same, roomier
+
+   The week view splits into seven columns at 64rem and stacks into day rows
+   below that, which is far better than seven slivers with the titles cut off.
+   Note that this screen widens its container to 1400px — at the site's usual
+   940px, seven columns come out 127px each and the titles do not fit.
 
    Module colour arrives as inline custom properties from calendar.js
    (--card-ink / --card-tint / --card-edge), so adding a third module needs no
    CSS at all. */
+
+/* The rest of the app reads best at 940px. A calendar does not: seven day
+   columns inside 940px leaves 127px each, which is where the topic titles
+   were being cut off. app.js puts `at-schedule` on the body for this screen
+   only, so nothing else on the site changes width. */
+body.at-schedule .screen { max-width: 1400px; }
 
 .cal {
   background: var(--surface);
@@ -31,23 +45,14 @@
 
 .cal-nav { display: flex; align-items: center; gap: .3rem; }
 
-.cal-label {
-  margin: 0;
-  font-size: 1.15rem;
-  min-width: 9.5rem;
-  text-align: center;
-}
+.cal-label { margin: 0; font-size: 1.15rem; min-width: 9.5rem; text-align: center; }
 
 .cal-arrow {
-  width: 2.4rem;
-  height: 2.4rem;
-  flex: none;
-  border: 0;
-  border-radius: 50%;
+  width: 2.4rem; height: 2.4rem; flex: none;
+  border: 0; border-radius: 50%;
   background: var(--lilac-50);
   color: var(--lilac-700);
-  font-size: 1.5rem;
-  line-height: 1;
+  font-size: 1.5rem; line-height: 1;
   cursor: pointer;
   transition: background .16s;
 }
@@ -61,52 +66,33 @@
   color: var(--lilac-700);
   border-radius: var(--r-pill);
   padding: .35rem .8rem;
-  font-size: .85rem;
-  font-weight: 600;
+  font-size: .85rem; font-weight: 600;
   cursor: pointer;
 }
 .cal-today:hover { background: var(--lilac-50); }
 
-.cal-views {
-  display: flex;
-  background: var(--lilac-50);
-  border-radius: var(--r-pill);
-  padding: 2px;
-}
+.cal-views { display: flex; background: var(--lilac-50); border-radius: var(--r-pill); padding: 2px; }
 .cal-view {
-  border: 0;
-  background: none;
+  border: 0; background: none;
   border-radius: var(--r-pill);
   padding: .35rem .75rem;
-  font-size: .85rem;
-  font-weight: 600;
+  font-size: .85rem; font-weight: 600;
   color: var(--ink-soft);
   cursor: pointer;
 }
-.cal-view.is-on {
-  background: var(--surface);
-  color: var(--lilac-700);
-  box-shadow: var(--shadow-sm);
-}
+.cal-view.is-on { background: var(--surface); color: var(--lilac-700); box-shadow: var(--shadow-sm); }
 
 /* ── month grid ─────────────────────────────────────────────── */
 
-.cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-}
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
 
 .cal-dow {
   text-align: center;
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .04em;
-  text-transform: uppercase;
+  font-size: .72rem; font-weight: 700;
+  letter-spacing: .04em; text-transform: uppercase;
   color: var(--muted);
   padding-bottom: .3rem;
 }
-/* Three-letter day names do not fit seven across on a small phone. */
 .cal-dow-tiny { display: none; }
 @media (max-width: 26rem) {
   .cal-dow-full { display: none; }
@@ -117,18 +103,17 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   gap: .2rem;
-  /* Square-ish cells keep it reading as a calendar rather than a list. */
   aspect-ratio: 1 / 1;
   min-height: 2.6rem;
-  padding: .3rem .15rem;
+  padding: .3rem .2rem;
   border: 1px solid transparent;
   border-radius: var(--r-sm);
   background: var(--lilac-50);
   cursor: pointer;
-  font: inherit;
-  color: inherit;
+  font: inherit; color: inherit;
+  overflow: hidden;
   transition: background .14s, border-color .14s;
 }
 .cal-day:hover { background: var(--lilac-100); }
@@ -136,50 +121,86 @@
 .cal-day.is-outside { background: transparent; color: var(--muted); }
 .cal-day.is-outside .cal-date { opacity: .55; }
 
-.cal-day.is-today {
-  border-color: var(--pink-400);
-  background: var(--pink-50);
-}
+.cal-day.is-today { border-color: var(--pink-400); background: var(--pink-50); }
 .cal-day.is-today .cal-date {
-  background: var(--pink-400);
-  color: #fff;
+  background: var(--pink-400); color: #fff;
   border-radius: 50%;
-  width: 1.5rem;
-  height: 1.5rem;
-  display: grid;
-  place-items: center;
+  width: 1.5rem; height: 1.5rem;
+  display: grid; place-items: center;
 }
 
-.cal-day.is-open {
-  border-color: var(--lilac-400);
-  background: var(--lilac-100);
-}
+.cal-day.is-open { border-color: var(--lilac-400); background: var(--lilac-100); }
 
-.cal-date { font-size: .85rem; font-weight: 600; line-height: 1.5rem; }
+/* An exam day is the fixed point of the whole plan, so it gets a border of
+   its own rather than relying on the label alone being noticed. */
+.cal-day.is-examday { border-color: var(--pink-600); background: var(--pink-50); }
 
-.cal-dots {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  min-height: .55rem;
-}
-.cal-dot {
-  width: .42rem;
-  height: .42rem;
-  border-radius: 50%;
+.cal-date {
+  font-size: .85rem; font-weight: 600;
+  line-height: 1.5rem;
+  align-self: center;
   flex: none;
 }
-/* A finished session is drawn hollow. Solid means "still to do", which is the
-   thing she is actually scanning the month for. The border colour is set
-   inline per module, so it must not be given a value here. */
-.cal-dot.is-done {
-  background: transparent;
-  border: 1.5px solid;
-  opacity: .55;
+
+/* ── month cell contents: labels above ~30rem, dots below ───── */
+
+.cal-labels { display: none; }
+
+.cal-dots {
+  display: flex; flex-wrap: wrap;
+  justify-content: center; align-items: center;
+  gap: 2px; min-height: .55rem;
 }
+.cal-dot { width: .42rem; height: .42rem; border-radius: 50%; flex: none; }
+.cal-dot.is-done { background: transparent; border: 1.5px solid; opacity: .55; }
+.cal-dot.is-exam { width: .5rem; height: .5rem; border-radius: 2px; }
 .cal-more { font-size: .6rem; font-weight: 700; color: var(--muted); line-height: 1; }
+
+/* Wide enough for words. Cells stop being square here and grow to fit their
+   labels, because a fixed square would clip the third one. */
+@media (min-width: 30rem) {
+  .cal-day { aspect-ratio: auto; min-height: 5.4rem; }
+  .cal-dots { display: none; }
+  .cal-labels { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+
+  .cal-lab {
+    display: block;
+    max-width: 100%;
+    padding: 1px .3rem;
+    border-radius: 4px;
+    border-left: 3px solid var(--card-ink);
+    background: var(--card-tint);
+    color: var(--card-ink);
+    font-size: .66rem;
+    font-weight: 600;
+    line-height: 1.45;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cal-lab.is-done { opacity: .5; text-decoration: line-through; }
+  .cal-lab.is-exam {
+    background: var(--card-ink);
+    color: #fff;
+    border-left-color: var(--card-ink);
+    font-weight: 700;
+    letter-spacing: .02em;
+  }
+  .cal-lab-more {
+    font-size: .62rem;
+    font-weight: 700;
+    color: var(--muted);
+    padding-left: .3rem;
+    text-align: left;
+  }
+}
+
+/* Roomier cells once there is real width, so three labels never crowd. */
+@media (min-width: 64rem) {
+  .cal-day { min-height: 6.6rem; padding: .35rem .3rem; }
+  .cal-lab { font-size: .72rem; padding: 2px .4rem; }
+}
 
 /* ── week view ──────────────────────────────────────────────── */
 
@@ -190,112 +211,160 @@
   border-radius: var(--r-md);
   padding: .55rem .65rem;
   background: var(--surface);
+  min-width: 0;
 }
 .cal-wday.is-today { border-color: var(--pink-200); background: var(--pink-50); }
 
 .cal-wday-head {
-  font-size: .82rem;
-  font-weight: 700;
+  font-size: .82rem; font-weight: 700;
   color: var(--ink-soft);
   margin-bottom: .4rem;
-  text-transform: uppercase;
-  letter-spacing: .03em;
+  text-transform: uppercase; letter-spacing: .03em;
 }
 .cal-wday-num { color: var(--ink); }
+.cal-wday-body { display: grid; gap: .4rem; min-width: 0; }
 
-.cal-wday-body { display: grid; gap: .4rem; }
-
-/* Seven days across only once there is genuinely room; below that they stack,
-   which is far easier to read on a phone than seven slivers. */
-@media (min-width: 60rem) {
-  .cal-week { grid-template-columns: repeat(7, 1fr); align-items: start; }
-  .cal-wday { min-height: 8rem; }
+/* Seven columns only once each can actually hold a topic title. With the wider
+   container this screen gets, 64rem of viewport leaves roughly 135px a column,
+   which fits a wrapped two-line title. Below it the week stays as day rows —
+   which is what an iPad in portrait gets, and it reads far better there than
+   seven slivers would. */
+@media (min-width: 64rem) {
+  .cal-week {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    align-items: start;
+    gap: .35rem;
+  }
+  .cal-wday { min-height: 9rem; padding: .5rem .4rem; }
 }
 
 /* ── one session ────────────────────────────────────────────── */
 
 .cal-card {
-  display: flex;
-  align-items: stretch;
-  gap: .4rem;
   border: 1px solid var(--card-edge, var(--line));
   border-left: 4px solid var(--card-ink, var(--lilac-400));
   border-radius: var(--r-sm);
   background: var(--card-tint, var(--lilac-50));
   overflow: hidden;
+  min-width: 0;
 }
-
-.cal-card.is-done { opacity: .62; }
-.cal-card.is-done .cal-card-title { text-decoration: line-through; }
-
-/* A session that could not be fitted before its exam. It is still shown —
-   hiding it would be worse — but it must not look like a normal plan. */
+.cal-card.is-done { opacity: .68; }
+/* A session that could not be fitted before its exam. Still shown — hiding it
+   would be worse — but it must not look like a normal plan. */
 .cal-card.is-late { border-style: dashed; }
+
+.cal-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: .4rem;
+  padding: .3rem .5rem .15rem;
+  font-size: .7rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  color: var(--card-ink, var(--lilac-700));
+  text-transform: uppercase;
+}
+.cal-time { font-variant-numeric: tabular-nums; }
+.cal-time-done { opacity: .7; }
+.cal-mod { opacity: .7; font-size: .64rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* One row per topic. The tick sits at the start of the row and the title takes
+   everything else, so a narrow column loses none of the title. */
+.cal-item {
+  display: flex;
+  align-items: stretch;
+  gap: .35rem;
+  padding: .12rem .3rem .3rem;
+  min-width: 0;
+}
+.cal-item + .cal-item { border-top: 1px solid var(--card-edge, var(--line)); padding-top: .3rem; }
+.cal-item.is-done .cal-item-title { text-decoration: line-through; opacity: .7; }
 
 .cal-tick {
   flex: none;
-  width: 2.4rem;
-  border: 0;
-  border-right: 1px solid var(--card-edge, var(--line));
-  background: rgba(255, 255, 255, .55);
+  width: 1.8rem;
+  min-height: 1.8rem;
+  align-self: flex-start;
+  border: 1.5px solid var(--card-edge, var(--line));
+  border-radius: 6px;
+  background: rgba(255, 255, 255, .7);
   color: var(--card-ink, var(--lilac-700));
-  font-size: 1.1rem;
-  font-weight: 700;
-  line-height: 1;
+  font-size: .95rem; font-weight: 700; line-height: 1;
   cursor: pointer;
   transition: background .14s;
 }
-.cal-tick:hover { background: rgba(255, 255, 255, .95); }
-.cal-tick[aria-pressed="true"] { background: var(--card-ink, var(--lilac-600)); color: #fff; }
+.cal-tick:hover { background: #fff; }
+.cal-tick[aria-pressed="true"] {
+  background: var(--card-ink, var(--lilac-600));
+  border-color: var(--card-ink, var(--lilac-600));
+  color: #fff;
+}
 
-.cal-card-body {
+.cal-item-body {
   flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: .1rem;
-  padding: .45rem .6rem;
-  border: 0;
-  background: none;
-  font: inherit;
-  color: inherit;
+  gap: 0;
+  padding: 0;
+  border: 0; background: none;
+  font: inherit; color: inherit;
   text-align: left;
   cursor: pointer;
 }
-.cal-card-body:hover { background: rgba(255, 255, 255, .5); }
+.cal-item-body:hover .cal-item-title { text-decoration: underline; }
 
-.cal-card-top {
-  display: flex;
-  align-items: center;
-  gap: .4rem;
-  font-size: .72rem;
-  font-weight: 700;
-  color: var(--card-ink, var(--lilac-700));
-  text-transform: uppercase;
-  letter-spacing: .03em;
-}
-.cal-time { font-variant-numeric: tabular-nums; }
-.cal-pass { opacity: .75; font-weight: 600; }
-
-.cal-card-title {
-  font-size: .92rem;
+.cal-item-title {
+  font-size: .84rem;
   font-weight: 600;
   line-height: 1.3;
-  /* Two lines then ellipsis: a long topic title must not push the card to
-     three times the height of its neighbours. */
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  /* Wraps rather than truncating. In a 7-column week view a two-line title is
+     far more use than one line ending in an ellipsis. */
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
-.cal-card-mod { font-size: .74rem; color: var(--ink-soft); }
+.cal-item-pass {
+  font-size: .68rem;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  font-weight: 700;
+  opacity: .75;
+}
 
-.cal-empty {
-  margin: 0;
-  font-size: .82rem;
-  color: var(--muted);
-  font-style: italic;
+@media (min-width: 64rem) {
+  .cal-item-title { font-size: .78rem; }
+  .cal-item { gap: .3rem; padding-left: .25rem; padding-right: .25rem; }
+  .cal-tick { width: 1.6rem; min-height: 1.6rem; }
 }
+
+/* ── an exam day ────────────────────────────────────────────── */
+
+.cal-exam {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .45rem .55rem;
+  border-radius: var(--r-sm);
+  background: var(--card-ink);
+  color: #fff;
+  min-width: 0;
+}
+.cal-exam-flag {
+  flex: none;
+  font-size: .62rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  padding: .15rem .35rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, .22);
+}
+.cal-exam-body { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.cal-exam-body b { font-size: .84rem; }
+.cal-exam-title { font-size: .7rem; opacity: .85; overflow-wrap: break-word; }
+
+.cal-empty { margin: 0; font-size: .82rem; color: var(--muted); font-style: italic; }
 
 /* ── the day panel under the month grid ─────────────────────── */
 
@@ -309,11 +378,7 @@
 }
 body.reduce-motion .cal-daypanel { animation: none; }
 
-.cal-daypanel-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+.cal-daypanel-head { display: flex; align-items: center; justify-content: space-between; }
 .cal-daypanel-head h3 { margin: 0; font-size: 1rem; }
 .cal-daypanel-x {
   border: 0; background: none; cursor: pointer;
@@ -342,7 +407,6 @@ body.reduce-motion .cal-daypanel { animation: none; }
   grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
   margin-bottom: 1.2rem;
 }
-
 .cal-sum {
   border: 1px solid var(--line);
   border-radius: var(--r-md);
@@ -350,33 +414,18 @@ body.reduce-motion .cal-daypanel { animation: none; }
   padding: .8rem .9rem;
 }
 .cal-sum-top {
-  display: flex;
-  align-items: center;
-  gap: .45rem;
-  flex-wrap: wrap;
-  margin-bottom: .5rem;
-  font-size: .92rem;
+  display: flex; align-items: center; gap: .45rem; flex-wrap: wrap;
+  margin-bottom: .5rem; font-size: .92rem;
 }
-.cal-sum-chip {
-  width: .8rem; height: .8rem; border-radius: 50%;
-  background: var(--card-ink); flex: none;
-}
+.cal-sum-chip { width: .8rem; height: .8rem; border-radius: 50%; background: var(--card-ink); flex: none; }
 .cal-sum-exam { margin-left: auto; font-size: .78rem; color: var(--ink-soft); }
-
-.cal-sum-track {
-  height: .5rem;
-  border-radius: var(--r-pill);
-  background: var(--lilac-50);
-  overflow: hidden;
-}
+.cal-sum-track { height: .5rem; border-radius: var(--r-pill); background: var(--lilac-50); overflow: hidden; }
 .cal-sum-fill {
-  height: 100%;
-  border-radius: var(--r-pill);
+  height: 100%; border-radius: var(--r-pill);
   background: var(--card-ink);
   transition: width .4s var(--ease-out, ease);
 }
 body.reduce-motion .cal-sum-fill { transition: none; }
-
 .cal-sum-line { margin: .4rem 0 0; font-size: .8rem; color: var(--ink-soft); }
 
 /* ── options ────────────────────────────────────────────────── */
@@ -387,14 +436,10 @@ body.reduce-motion .cal-sum-fill { transition: none; }
   background: var(--surface);
   overflow: hidden;
 }
-
 .cal-opts-head {
-  display: flex;
-  align-items: center;
-  gap: .6rem;
+  display: flex; align-items: center; gap: .6rem;
   padding: .9rem 1.1rem;
-  cursor: pointer;
-  font-weight: 600;
+  cursor: pointer; font-weight: 600;
   list-style: none;
   background: var(--lilac-50);
 }
@@ -405,6 +450,13 @@ body.reduce-motion .cal-sum-fill { transition: none; }
 .cal-opts[open] > .cal-opts-head .cal-opts-caret { transform: rotate(180deg); }
 
 .cal-opts-body { padding: 1rem 1.1rem 1.3rem; display: grid; gap: 1.4rem; }
+
+/* Two columns of settings once there is room, so the panel does not become a
+   very long scroll on a laptop. */
+@media (min-width: 62rem) {
+  .cal-opts-body { grid-template-columns: 1fr 1fr; align-items: start; }
+  .cal-opt-wide { grid-column: 1 / -1; }
+}
 
 .cal-opt h4 { margin: 0 0 .5rem; font-size: .98rem; }
 .cal-hint { margin: -.2rem 0 .6rem; font-size: .84rem; color: var(--ink-soft); }
@@ -419,32 +471,20 @@ body.reduce-motion .cal-sum-fill { transition: none; }
   border-radius: var(--r-pill);
   /* Roomy enough to hit with a thumb without aiming. */
   padding: .45rem .85rem;
-  font-size: .87rem;
-  font-weight: 600;
+  font-size: .87rem; font-weight: 600;
   cursor: pointer;
   transition: background .14s, border-color .14s, color .14s;
 }
 .cal-chip:hover { background: var(--lilac-50); }
-.cal-chip.is-on {
-  background: var(--lilac-600);
-  border-color: var(--lilac-600);
-  color: #fff;
-}
+.cal-chip.is-on { background: var(--lilac-600); border-color: var(--lilac-600); color: #fff; }
 .cal-chip-wide { text-align: left; border-radius: var(--r-sm); }
 
-.cal-row {
-  display: flex;
-  align-items: center;
-  gap: .8rem;
-  margin-bottom: .7rem;
-}
+.cal-row { display: flex; align-items: center; gap: .8rem; margin-bottom: .7rem; }
 .cal-row-wrap { flex-wrap: wrap; }
 .cal-row-label { font-size: .88rem; color: var(--ink-soft); }
 
 .cal-stepper {
-  display: flex;
-  align-items: center;
-  gap: .2rem;
+  display: flex; align-items: center; gap: .2rem;
   margin-left: auto;
   background: var(--lilac-50);
   border-radius: var(--r-pill);
@@ -464,15 +504,12 @@ body.reduce-motion .cal-sum-fill { transition: none; }
 .cal-times { display: grid; gap: .45rem; }
 
 .cal-timerow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: flex; align-items: center; justify-content: space-between;
   gap: .8rem;
-  font-size: .89rem;
-  color: var(--ink-soft);
+  font-size: .89rem; color: var(--ink-soft);
 }
 
-/* type="time" and type="date" give the phone's own wheel picker, which beats
+/* type="time" and type="date" give the device's own wheel picker, which beats
    any dial that could be built here — it is the control her thumb already
    knows, and it handles 12/24-hour and locale without being asked. */
 .cal-time-in {
@@ -489,12 +526,8 @@ body.reduce-motion .cal-sum-fill { transition: none; }
 .cal-focusmod { border: 1px solid var(--line); border-radius: var(--r-md); margin-bottom: .5rem; }
 .cal-focusmod > summary {
   padding: .6rem .8rem;
-  cursor: pointer;
-  font-weight: 600;
-  font-size: .9rem;
-  display: flex;
-  align-items: center;
-  gap: .5rem;
+  cursor: pointer; font-weight: 600; font-size: .9rem;
+  display: flex; align-items: center; gap: .5rem;
 }
 .cal-focusmod > summary .chip { margin-left: auto; }
 .cal-focusmod > div { padding: 0 .8rem .8rem; }

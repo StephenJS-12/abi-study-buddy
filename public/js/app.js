@@ -137,6 +137,11 @@ var App = (function () {
        would be the same number twice on the same screen. Everywhere else the
        bar is the only place she can see it. */
     document.body.classList.toggle('at-home', route.name === 'modules');
+    /* The page is 940px wide because that is a comfortable reading measure for
+       notes and questions. A seven-day calendar is not reading matter, and at
+       940px each day column came out 127px wide with the topic titles cut off.
+       The schedule screen gets the width it needs instead. */
+    document.body.classList.toggle('at-schedule', route.name === 'schedule');
 
     switch (route.name) {
       case 'modules':   return screenModules();
@@ -295,7 +300,14 @@ var App = (function () {
       : (next.date === Schedule.ymd(Schedule.addDays(new Date(), 1))
           ? 'Tomorrow'
           : Schedule.pretty(next.date));
-    return when + ' at ' + next.time + ' — ' + next.title;
+
+    /* A session can hold more than one topic. The tile names the first and
+       counts the rest, because a tile listing three topics stops being a
+       glance. */
+    var first = next.items[0];
+    var more = next.items.length - 1;
+    return when + ' at ' + next.time + ' — ' + first.title +
+           (more > 0 ? ' +' + more + ' more' : '');
   }
 
   /* ───────────────────────── schedule ─────────────────────────
@@ -320,13 +332,18 @@ var App = (function () {
 
   /* Called from a calendar card: switch to that topic's module, then open its
      notes. Switching module first is what makes a card for a subject she is
-     not currently "in" work at all. */
-  function openTopic(moduleId, topicId) {
+     not currently "in" work at all.
+
+     `from` is carried through so the Back button returns her to where she
+     actually came from. Without it she taps a session on the calendar, reads
+     the notes, presses Back and lands in that week's topic list — somewhere
+     she never was, with no way back to her schedule. */
+  function openTopic(moduleId, topicId, from) {
     if (moduleId && moduleId !== Content.moduleId()) {
       Content.use(moduleId);
       Store.rememberModule(moduleId);
     }
-    go('notesTopic', { topicId: topicId });
+    go('notesTopic', { topicId: topicId, from: from || '' });
   }
 
   /* Which kind of session she last picked. Held here rather than per week,
@@ -845,7 +862,15 @@ var App = (function () {
     var w = Content.weekOfTopic(topicId);
     if (!t || !w) return go('notes');
 
-    setCrumb('Week ' + w.number + ' topics', function () { go('notesWeek', { weekId: w.id }); });
+    /* Back goes to wherever she actually came from. Arriving from a calendar
+       session and being returned to a week's topic list is a dead end — she
+       was never there, and her schedule is now two taps away with no sign of
+       which two. */
+    if (route.params.from === 'schedule') {
+      setCrumb('Back to schedule', function () { go('schedule'); });
+    } else {
+      setCrumb('Week ' + w.number + ' topics', function () { go('notesWeek', { weekId: w.id }); });
+    }
 
     screen.innerHTML =
       '<div class="pagehead"><span class="kicker">Week ' + w.number + ' · Notes</span>' +

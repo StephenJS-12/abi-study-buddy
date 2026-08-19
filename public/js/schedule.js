@@ -50,8 +50,11 @@ var Schedule = (function () {
   /* Sunday is 0, matching Date.getDay(), so no translation is ever needed. */
   var DEFAULTS = {
     days: [1, 2, 3, 4, 5],
-    weekday: { count: 2, minutes: 60, times: ['17:00', '19:30'] },
-    weekend: { count: 3, minutes: 60, times: ['09:00', '11:30', '14:00'] },
+    /* `topics` is how many topics fit in ONE session. Some topics are short
+       enough to double up, and being forced to spend a whole hour on a small
+       one is how a schedule starts feeling like a waste of an evening. */
+    weekday: { count: 2, minutes: 60, topics: 1, times: ['17:00', '19:30'] },
+    weekend: { count: 3, minutes: 60, topics: 1, times: ['09:00', '11:30', '14:00'] },
     exams: {},          // moduleId -> 'YYYY-MM-DD'
     marks: {},          // 'topicId|pass' -> 'YYYY-MM-DD' when done, false when explicitly not
     focus: {},          // topicId -> true, revised first
@@ -179,6 +182,8 @@ var Schedule = (function () {
     if (isFinite(c) && c >= 1 && c <= 8) out.count = c;
     var m = Math.floor(Number(b.minutes));
     if (isFinite(m) && m >= 10 && m <= 240) out.minutes = m;
+    var tp = Math.floor(Number(b.topics));
+    if (isFinite(tp) && tp >= 1 && tp <= 4) out.topics = tp;
     if (Object.prototype.toString.call(b.times) === '[object Array]') {
       out.times = [];
       for (var i = 0; i < b.times.length; i++) out.times.push(cleanTime(b.times[i], i));
@@ -291,7 +296,7 @@ var Schedule = (function () {
   /* ───────────────────────── slots ─────────────────────────
      Every moment she has told us she is willing to study, in order. */
 
-  function buildSlots(startYmd, stopYmd) {
+  function buildSlots(startYmd, stopYmd, blocked) {
     var s = live();
     var cur = parseYmd(startYmd) || new Date();
     var out = [], guard = 0;
@@ -301,11 +306,14 @@ var Schedule = (function () {
       if (key > stopYmd) break;
 
       var dow = cur.getDay();
-      if (indexOfNum(s.days, dow) >= 0) {
+      /* Exam days are blocked out entirely. Nobody does a first pass on a
+         topic the morning of the paper, and a schedule that suggests it is
+         a schedule she stops trusting. */
+      if (indexOfNum(s.days, dow) >= 0 && !(blocked && blocked[key])) {
         var cfg = isWeekendDay(dow) ? s.weekend : s.weekday;
         var times = cfg.times.slice(0, cfg.count).sort();
         for (var i = 0; i < times.length; i++) {
-          out.push({ date: key, time: times[i], minutes: cfg.minutes });
+          out.push({ date: key, time: times[i], minutes: cfg.minutes, topics: cfg.topics });
         }
       }
       cur = addDays(cur, 1);
@@ -348,7 +356,31 @@ var Schedule = (function () {
     var anyExam = stop !== start;
     if (!anyExam) stop = ymd(addDays(parseYmd(start) || new Date(), MAX_DAYS - 1));
 
-    var slots = buildSlots(start, stop);
+    /* Exam days are blocked out of the slot list, so nothing is ever planned
+       on top of a paper she is sitting. */
+    var blocked = {}, examDays = [];
+    for (i = 0; i < mods.length; i++) {
+      var ed = s.exams[mods[i].id];
+      if (!ed) continue;
+      blocked[ed] = true;
+      examDays.push({
+        date: ed,
+        moduleId: mods[i].id,
+        moduleCode: mods[i].code,
+        moduleTitle: mods[i].title,
+        label: mods[i].code + ' exam'
+      });
+    }
+    examDays.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
+
+    var slots = buildSlots(start, stop, blocked);
+
+    /* Topic capacity from each slot to the end, so the urgency comparison
+       below can weigh remaining work against remaining CAPACITY rather than
+       against a slot count that may hold two or three topics each. */
+    var capFrom = new Array(slots.length + 1);
+    capFrom[slots.length] = 0;
+    for (i = slots.length - 1; i >= 0; i--) capFrom[i] = capFrom[i + 1] + (slots[i].topics || 1);
 
     /* Per-module state. `queue` holds the required work — first pass, revision,
        second revision — with anything already ticked left out. */
@@ -382,38 +414,52 @@ var Schedule = (function () {
 
     var sessions = [];
     for (i = 0; i < slots.length; i++) {
-      var pick = choose(state, i);
+      var pick = choose(state, i, capFrom);
       if (!pick) continue;
 
-      var item = pick.queue[pick.at];
-      if (!item) {
-        /* Required work is finished and the exam is still ahead: fill the gap
-           with another revision round rather than leaving the calendar blank. */
-        if (!extendRevision(pick, s.focus)) continue;
-        item = pick.queue[pick.at];
-        if (!item) continue;
-      }
-      pick.at++;
-      pick.placed++;
-
       var slot = slots[i];
+      var room = slot.topics || 1;
       var late = pick.exam && slot.date > pick.exam;
-      if (late && item.pass <= 3) pick.overflow++;
+      var items = [];
+
+      /* One session can hold more than one topic. They all come from the same
+         module: switching subject halfway through an hour is not what she
+         meant by two topics in a session. */
+      while (items.length < room) {
+        var item = pick.queue[pick.at];
+        if (!item) {
+          /* Required work is finished and the exam is still ahead: fill the
+             gap with another revision round rather than leaving it blank. */
+          if (!extendRevision(pick, s.focus)) break;
+          item = pick.queue[pick.at];
+          if (!item) break;
+        }
+        pick.at++;
+        pick.placed++;
+        if (late && item.pass <= 3) pick.overflow++;
+
+        items.push({
+          key: markKey(item.topic.id, item.pass),
+          topicId: item.topic.id,
+          title: item.topic.title,
+          emoji: item.topic.emoji,
+          weekNumber: item.topic.weekNumber,
+          pass: item.pass,
+          passName: passName(item.pass),
+          done: false
+        });
+      }
+
+      if (!items.length) continue;
 
       sessions.push({
-        key: markKey(item.topic.id, item.pass),
         date: slot.date,
         time: slot.time,
         minutes: slot.minutes,
         moduleId: pick.module.id,
         moduleCode: pick.module.code,
         accent: pick.module.accent,
-        topicId: item.topic.id,
-        title: item.topic.title,
-        emoji: item.topic.emoji,
-        weekNumber: item.topic.weekNumber,
-        pass: item.pass,
-        passName: passName(item.pass),
+        items: items,
         late: !!late
       });
     }
@@ -441,6 +487,7 @@ var Schedule = (function () {
     return {
       sessions: sessions,
       done: completedList(mods),
+      exams: examDays,
       warnings: warnings,
       modules: mods,
       start: start,
@@ -449,9 +496,11 @@ var Schedule = (function () {
   }
 
   /* Which module should take this slot? Whichever is furthest behind relative
-     to the time it has left — remaining work divided by remaining slots. A
-     module whose exam has passed is finished and takes nothing. */
-  function choose(state, slotIndex) {
+     to the room it has left — remaining topics divided by remaining CAPACITY,
+     which is not the same as the number of slots once a slot can hold two or
+     three topics. A module whose exam has passed is finished and takes
+     nothing. */
+  function choose(state, slotIndex, capFrom) {
     var best = null, bestPressure = -1;
     for (var i = 0; i < state.length; i++) {
       var st = state[i];
@@ -465,8 +514,8 @@ var Schedule = (function () {
       if (remaining <= 0) {
         pressure = st.exam ? 0.0001 : -1;
       } else {
-        var slotsLeft = st.lastSlot - slotIndex + 1;
-        pressure = slotsLeft > 0 ? remaining / slotsLeft : 1e9;
+        var room = capFrom[slotIndex] - capFrom[st.lastSlot + 1];
+        pressure = room > 0 ? remaining / room : 1e9;
       }
       if (pressure < 0) continue;
 
@@ -495,24 +544,40 @@ var Schedule = (function () {
   }
 
   /* Every session she has already completed, against the day she completed it,
-     so the calendar fills in behind her instead of showing empty days. */
+     so the calendar fills in behind her instead of showing empty days.
+
+     Grouped by day and module into the same {..., items:[]} shape a planned
+     session has, so the calendar can draw both without asking which it is
+     holding. Several topics finished on one day become one block, which is
+     also how the day actually went. */
   function completedList(mods) {
-    var out = [], i, j, pass;
+    var groups = {}, order = [], i, j, pass;
     for (i = 0; i < mods.length; i++) {
       var topics = topicsFor(mods[i].id);
       for (j = 0; j < topics.length; j++) {
         for (pass = 1; pass <= MAX_PASS; pass++) {
           var on = doneOn(topics[j].id, pass);
           if (!on) continue;
-          out.push({
+
+          var gk = on + '|' + mods[i].id;
+          if (!groups[gk]) {
+            groups[gk] = {
+              date: on,
+              time: '',
+              moduleId: mods[i].id,
+              moduleCode: mods[i].code,
+              accent: mods[i].accent,
+              items: [],
+              done: true
+            };
+            order.push(gk);
+          }
+          groups[gk].items.push({
             key: markKey(topics[j].id, pass),
-            date: on,
-            moduleId: mods[i].id,
-            moduleCode: mods[i].code,
-            accent: mods[i].accent,
             topicId: topics[j].id,
             title: topics[j].title,
             emoji: topics[j].emoji,
+            weekNumber: topics[j].weekNumber,
             pass: pass,
             passName: passName(pass),
             done: true
@@ -520,6 +585,10 @@ var Schedule = (function () {
         }
       }
     }
+
+    var out = [];
+    for (i = 0; i < order.length; i++) out.push(groups[order[i]]);
+    out.sort(function (a, b) { return a.date < b.date ? -1 : (a.date > b.date ? 1 : 0); });
     return out;
   }
 

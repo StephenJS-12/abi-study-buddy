@@ -1551,6 +1551,933 @@ window.MODULE_CONTENT.inba.weeks.push({
              'matters more than price.'
       }
     ]
+  },
+
+  /* ═══════════════════════ ORGANISING OPERATIONS WORK ═══════════════════════
+     Lesson 4.4. Job design under Lesson 2 is the general treatment; this is
+     the operations department's own, and it is a different subject: not how to
+     make a job bearable, but how to find the best way to do a task and how
+     long that task should take. */
+  {
+    id: 'i4-opswork',
+    title: 'Organising Operations Work',
+    emoji: '⏱️',
+    summary: 'Work study — finding the best method, and setting a fair standard time.',
+    notes: [
+      {
+        heading: 'Why the people matter as much as the machines',
+        emoji: '🧑‍🏭',
+        html:
+          '<p>Operations looks like a subject about machines and workflows, but it is also about the people ' +
+          'who run them. How jobs are designed in the department affects <b>efficiency</b>, <b>quality</b> and ' +
+          '<b>employee satisfaction</b>. A well-designed job brings out the best in people; a poorly designed ' +
+          'one produces <b>errors, burnout and high turnover</b>.</p>'
+      },
+      {
+        heading: 'Work study',
+        emoji: '🔬',
+        html:
+          '<p><b>Work study</b> is a scientific approach that systematically analyses every factor in the work ' +
+          'environment to improve how tasks are carried out. It looks for the most effective way to perform a ' +
+          'task, <b>balancing efficiency against human capability</b>.</p>' +
+          '<div class="keybox"><b>1. Method study</b> · <i>Is there a better, safer, easier way to do this?</i>' +
+          '<br>The systematic recording and investigation of current and proposed work methods, to develop ' +
+          'more efficient ones — reducing costs and unnecessary movement, and improving safety.' +
+          '<br><br><b>2. Work measurement</b> · <i>How long should this take?</i>' +
+          '<br>Techniques for determining the <b>standard time</b> a trained worker should take to complete a ' +
+          'job at a defined level of performance. The point is <b>fair performance standards</b>, and those ' +
+          'standards are then needed for <b>scheduling, budgeting and capacity planning</b>.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i4l-1', type: 'mcq', marks: 2,
+        prompt: 'What is <b>work study</b>?',
+        options: [
+          'A scientific approach that analyses every factor in the work environment to improve how tasks are carried out',
+          'A survey asking employees how satisfied they are with their jobs',
+          'The process of recruiting workers with the right qualifications',
+          'A record of how many hours each employee has worked this month'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Work study', val: 'A systematic, scientific analysis of the work environment' },
+          { lab: 'Its aim', val: 'The most effective way to perform a task' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The word "study" makes it sound like observation for its own sake. It is not — it exists to ' +
+             'change how the work is done.'
+      },
+      {
+        id: 'i4l-2', type: 'match', marks: 3,
+        prompt: 'Match each method of work study to the question it answers.',
+        pairs: [
+          { left: 'Method study', right: 'Is there a better, safer and easier way to do this task?' },
+          { left: 'Work measurement', right: 'How long should this task take a trained worker?' },
+          { left: 'Work study overall', right: 'What is the most effective way to perform this task at all?' }
+        ],
+        solution: [
+          { lab: 'Method study', val: 'Improves HOW the work is done' },
+          { lab: 'Work measurement', val: 'Determines HOW LONG it should take' },
+          { lab: 'Together', val: 'The two methods that make up work study' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The two are easy to blur because both involve watching someone work. One is about the method, ' +
+             'the other about the clock.'
+      },
+      {
+        id: 'i4l-3', type: 'mcq', marks: 3,
+        prompt: 'A warehouse reorganises its shelves so that high-demand items sit closer to the packing ' +
+                'station, and gives the pickers better carts. Staff walk noticeably less each day. Which part ' +
+                'of work study is this?',
+        options: [
+          'Method study — it changed how the work is done, reducing unnecessary movement',
+          'Work measurement — it changed how long the work takes',
+          'Job enrichment — it gave the pickers more control over their work',
+          'Capacity planning — it changed how much the warehouse can handle'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'What changed', val: 'The layout and the equipment — the method' },
+          { lab: 'Method study', val: 'Reduces costs and unnecessary movement, and improves safety' },
+          { lab: 'Answer', val: 'Method study', final: true }
+        ],
+        why: 'The time saved is a <i>result</i>, not the subject. Work measurement would have been setting a ' +
+             'target time for a pick; this changed the walk instead.'
+      },
+      {
+        id: 'i4l-4', type: 'mcq', marks: 3,
+        prompt: 'A bank determines that a trained teller should process a standard cash deposit in 90 ' +
+                'seconds. What is that figure called, and what is it for?',
+        options: [
+          'A standard time — used to set fair performance expectations, and to schedule, budget and plan capacity',
+          'A method study — used to find a better way of processing deposits',
+          'A maximum time — the longest a teller is permitted to take before being disciplined',
+          'An average time — the mean of what all tellers currently achieve'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Standard time', val: 'What a trained worker should take at a defined level of performance' },
+          { lab: 'Set by', val: 'Work measurement' },
+          { lab: 'Used for', val: 'Fair standards, scheduling, budgeting and capacity planning' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The last option is the trap. A standard is what the work <i>should</i> take, not the average of ' +
+             'what it currently does — an average would bake in whatever is going wrong today.'
+      },
+      {
+        id: 'i4l-5', type: 'multi', marks: 4,
+        prompt: 'Standard times are needed for more than judging individual performance. Which of these does ' +
+                'the module say they are used for? <b>Select all that apply.</b>',
+        options: [
+          'Scheduling',
+          'Budgeting',
+          'Capacity planning',
+          'Setting fair performance standards',
+          'Deciding which employees to make redundant',
+          'Setting the selling price of the product'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'Scheduling', val: 'How many people are needed, and when' },
+          { lab: 'Budgeting', val: 'What the labour will cost' },
+          { lab: 'Capacity planning', val: 'How much the operation can handle' },
+          { lab: 'Fair standards', val: 'The stated purpose of work measurement' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'A standard time looks like a stick to beat people with, and the list of uses shows it is mostly ' +
+             'a planning tool — you cannot roster a shift without knowing how long the work takes.'
+      },
+      {
+        id: 'i4l-6', type: 'multi', marks: 4,
+        prompt: 'What does the module say a poorly designed job produces? <b>Select all that apply.</b>',
+        options: [
+          'Errors',
+          'Burnout',
+          'High turnover',
+          'Higher wages for the workers affected',
+          'Automatic redesign by the operations manager'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Errors', val: 'Quality suffers' },
+          { lab: 'Burnout', val: 'Satisfaction suffers' },
+          { lab: 'High turnover', val: 'And then the people leave' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'The three run into one another, which is what makes job design an operations problem and not ' +
+             'only an HR one: errors are a quality cost before they are a people cost.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ MARKETING COMMUNICATIONS ═══════════════════════
+     Lesson 4.8. */
+  {
+    id: 'i4-mktcomms',
+    title: 'Organising Marketing Communications',
+    emoji: '📢',
+    summary: 'Dividing communication into specialised parts, and keeping one message across all of them.',
+    notes: [
+      {
+        heading: 'The structure',
+        emoji: '🗂️',
+        html:
+          '<p><b>Marketing communications</b> are all the methods of communicating with stakeholders — not ' +
+          'only selling to customers. The first step in organising them is to divide the function into ' +
+          '<b>coordinated, specialised elements</b>:</p>' +
+          '<div class="keybox"><b>Advertising</b> · paid, non-personal advertisements, including digital' +
+          '<br><b>Personal selling</b> · direct, person-to-person communication' +
+          '<br><b>Direct marketing</b> · communicating directly with customers to generate a response, such ' +
+          'as email or direct mail' +
+          '<br><b>Sales promotion</b> · short-term incentives to encourage purchases' +
+          '<br><b>Publicity and public relations</b> · managing reputation and the relationship with the ' +
+          'public, through earned media and events</div>' +
+          '<p>The marketing manager assigns clear roles and responsibilities for each — while ensuring they ' +
+          'all work together to deliver <b>one consistent message</b>.</p>'
+      },
+      {
+        heading: 'The other organising decisions',
+        emoji: '🧭',
+        html:
+          '<div class="keybox"><b>Allocating resources and budgets</b> · people and money go to each section. ' +
+          'Marketing works with finance on a master budget, then decides how much goes to each element, and ' +
+          'how the advertising budget is split across media platforms.' +
+          '<br><br><b>Establishing channels and media choices</b> · choosing the platforms that reach the ' +
+          'audience, and keeping the message and look consistent across traditional and digital channels. It ' +
+          'means setting up communication lines between internal teams and outside partners such as media ' +
+          'agencies.' +
+          '<br><br><b>Managing people and roles</b> · assigning sales representatives to regions or client ' +
+          'types, building specialist teams, and selecting and training the people who represent the brand.' +
+          '<br><br><b>Coordinating public relations</b> · event management — press conferences, exhibitions, ' +
+          'sponsorships — and a <b>crisis protocol</b> saying who is authorised to speak for the organisation.' +
+          '<br><br><b>Managing databases and direct marketing</b> · database management so campaigns can be ' +
+          'targeted, and coordination between telemarketing, direct mail and email so they tell one story.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i4m-1', type: 'multi', marks: 4,
+        prompt: 'Which of these are the specialised elements a marketing communications function is divided ' +
+                'into? <b>Select all that apply.</b>',
+        options: [
+          'Advertising',
+          'Personal selling',
+          'Direct marketing',
+          'Sales promotion',
+          'Publicity and public relations',
+          'Product design'
+        ],
+        answers: [0, 1, 2, 3, 4],
+        solution: [
+          { lab: 'The five', val: 'Advertising, personal selling, direct marketing, sales promotion, publicity and PR' },
+          { lab: 'Product design', val: 'Part of the product itself, not of communicating about it' },
+          { lab: 'Answer', val: 'The first five', final: true }
+        ],
+        why: 'Marketing communications covers every method of talking to stakeholders. Designing the thing ' +
+             'being talked about is a different job.'
+      },
+      {
+        id: 'i4m-2', type: 'match', marks: 4,
+        prompt: 'Match each element of marketing communications to what it is.',
+        pairs: [
+          { left: 'Advertising', right: 'Paid, non-personal advertisements, including digital' },
+          { left: 'Personal selling', right: 'Direct, person-to-person communication' },
+          { left: 'Direct marketing', right: 'Communicating directly with a customer to generate a response' },
+          { left: 'Sales promotion', right: 'Short-term incentives to encourage a purchase' }
+        ],
+        solution: [
+          { lab: 'Advertising', val: 'Paid and non-personal' },
+          { lab: 'Personal selling', val: 'Person to person' },
+          { lab: 'Direct marketing', val: 'Straight to the customer, wanting a response' },
+          { lab: 'Sales promotion', val: 'Short-term, incentive-based' },
+          { lab: 'Answer', val: 'All four rows as above', final: true }
+        ],
+        why: 'Direct marketing and personal selling both reach one customer at a time. The difference is that ' +
+             'direct marketing is asking for a <i>response</i>, not holding a conversation.'
+      },
+      {
+        id: 'i4m-3', type: 'mcq', marks: 3,
+        prompt: 'A marketing manager divides the communications function into five specialised sections and ' +
+                'gives each its own roles and responsibilities. What must she also ensure, and why?',
+        options: [
+          'That all five work together to deliver one consistent message',
+          'That each section reports to a different senior manager, to keep them independent',
+          'That each section has an equal share of the budget',
+          'That the sections never communicate with outside agencies'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Specialisation', val: 'Divides the work into parts that can be done well' },
+          { lab: 'The risk', val: 'Five parts each saying something slightly different' },
+          { lab: 'Answer', val: 'One consistent message', final: true }
+        ],
+        why: 'This is the general organising problem in one place: dividing work creates the need to ' +
+             'coordinate it. Five well-run sections with five different messages is worse than one mediocre ' +
+             'message.'
+      },
+      {
+        id: 'i4m-4', type: 'mcq', marks: 3,
+        prompt: 'As part of coordinating public relations, an organisation writes down in advance who is ' +
+                'authorised to speak to the media and the public during an emergency. What is this called?',
+        options: [
+          'A crisis protocol',
+          'A media plan',
+          'A master budget',
+          'A database management policy'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Crisis protocol', val: 'Communications during emergencies, and who may speak' },
+          { lab: 'Why in advance', val: 'Being prepared is part of the PR role' },
+          { lab: 'Answer', val: 'A crisis protocol', final: true }
+        ],
+        why: 'The point of writing it down beforehand is that a crisis is exactly when nobody has time to ' +
+             'decide who should be talking.'
+      },
+      {
+        id: 'i4m-5', type: 'multi', marks: 4,
+        prompt: 'Allocating resources and budgets is one of the organising decisions in marketing ' +
+                'communications. Which of these does it involve? <b>Select all that apply.</b>',
+        options: [
+          'Working with finance to develop a master budget',
+          'Deciding how much of the budget each element receives',
+          'Splitting the advertising budget across specific media platforms',
+          'Setting the price the product will sell for',
+          'Deciding which suppliers the business will buy raw materials from'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Master budget', val: 'The total to be spent on marketing communications, agreed with finance' },
+          { lab: 'Per element', val: 'How much advertising gets, how much PR gets' },
+          { lab: 'Per platform', val: 'Split according to specific marketing goals' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'Pricing is one of the four Ps and suppliers belong to purchasing. Both are marketing-adjacent, ' +
+             'which is what makes them plausible here.'
+      },
+      {
+        id: 'i4m-6', type: 'mcq', marks: 3,
+        prompt: 'Why does organising direct marketing start with database management?',
+        options: [
+          'Because campaigns can only be targeted, and feel personal and relevant, if the data behind them is organised',
+          'Because the law requires every business to keep a customer database',
+          'Because a database replaces the need to coordinate telemarketing, direct mail and email',
+          'Because databases are cheaper than advertising'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Direct marketing', val: 'Communicating directly with a customer to generate a response' },
+          { lab: 'What it relies on', val: 'Well-organised data, and coordinated execution' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Direct marketing sent to the wrong list is not direct marketing, it is junk mail. The database ' +
+             'is what makes the "direct" part true.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ ORGANISING DISTRIBUTION ═══════════════════════
+     Lesson 4.9. */
+  {
+    id: 'i4-mktdist',
+    title: 'Organising Distribution',
+    emoji: '🚚',
+    summary: 'Channels, how widely the product is available, and moving and storing it.',
+    notes: [
+      {
+        heading: 'Channels and coverage',
+        emoji: '🛣️',
+        html:
+          '<p>A marketing campaign that creates demand is worth nothing if the product cannot reach the ' +
+          'customer. A <b>distribution channel</b> is the path a product takes from the producer to the end ' +
+          'user. Organising it means selecting the right <b>intermediaries</b> — wholesalers and retailers — ' +
+          'and building teams to manage those partnerships, negotiate agreements, and train and support them.</p>' +
+          '<p>A <b>direct</b> channel reaches the customer with no intermediary; an <b>indirect</b> channel ' +
+          'relies on distributors to reach many outlets.</p>' +
+          '<div class="keybox"><b>Market coverage</b> — how widely available the product will be, and each ' +
+          'choice needs a different structure' +
+          '<br><b>Intensive</b> · the product is everywhere. A broad structure coordinating many partners; ' +
+          'the challenge is managing the network.' +
+          '<br><b>Selective</b> · a limited number of chosen outlets. A more selective, managed structure ' +
+          'with a specialised team, so the customer experience can be controlled.' +
+          '<br><b>Exclusive</b> · very few locations. A tight, controlled relationship with each partner.</div>'
+      },
+      {
+        heading: 'Logistics, and working with everyone else',
+        emoji: '📦',
+        html:
+          '<p>Organising <b>logistics</b> means structuring a system for the physical movement and storage of ' +
+          'goods:</p>' +
+          '<div class="keybox"><b>Transportation</b> · how the product moves — road, rail, air or sea' +
+          '<br><b>Storage</b> · where inventory is held, and how many warehouses there are. One central ' +
+          'warehouse or several regional centres, a decision that changes delivery times and costs.' +
+          '<br><b>Inventory management</b> · how much stock sits at each point in the channel. Too much ties ' +
+          'up cash; too little means stockouts and lost sales.</div>' +
+          '<p>Distribution also has to be <b>coordinated internally</b>: marketing works closely with ' +
+          'purchasing to make sure raw materials are available, and with operations and finance. Distribution ' +
+          'is directly linked to the purchasing and supply chain function.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i4n-1', type: 'mcq', marks: 2,
+        prompt: 'A <b>distribution channel</b> is:',
+        options: [
+          'The path a product takes from the producer to the end user',
+          'The medium an advertisement is broadcast on',
+          'The warehouse where finished goods are stored',
+          'The route a delivery vehicle drives between two towns'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Distribution channel', val: 'Producer to end user' },
+          { lab: 'Organising it', val: 'Selecting intermediaries, and managing those partnerships' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The word "channel" is used for media in the section just before this one, which is exactly why ' +
+             'the second option is offered.'
+      },
+      {
+        id: 'i4n-2', type: 'match', marks: 3,
+        prompt: 'Match each level of market coverage to the structure it needs.',
+        pairs: [
+          { left: 'Intensive distribution', right: 'A broad structure coordinating many partners — the challenge is managing the network' },
+          { left: 'Selective distribution', right: 'A more managed structure with a specialised team, so the customer experience can be controlled' },
+          { left: 'Exclusive distribution', right: 'A tight, controlled relationship with each of very few partners' }
+        ],
+        solution: [
+          { lab: 'Intensive', val: 'Everywhere — the organisational problem is scale' },
+          { lab: 'Selective', val: 'A chosen few — the organisational problem is control' },
+          { lab: 'Exclusive', val: 'Almost nowhere — the organisational problem is the relationship' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The three appear in Week 3 as a planning decision about where to sell. Here the same three are ' +
+             'an organising decision: each one demands a different shape of team.'
+      },
+      {
+        id: 'i4n-3', type: 'multi', marks: 4,
+        prompt: 'Organising logistics covers the physical movement and storage of goods. Which decisions does ' +
+                'it include? <b>Select all that apply.</b>',
+        options: [
+          'Transportation — road, rail, air or sea',
+          'Storage — where inventory is held and how many warehouses there are',
+          'Inventory management — how much stock sits at each point in the channel',
+          'Which intermediaries to appoint as distributors',
+          'What the product should be priced at'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Transportation', val: 'How the product moves' },
+          { lab: 'Storage', val: 'Where it waits, and in how many places' },
+          { lab: 'Inventory management', val: 'How much waits at each point' },
+          { lab: 'Intermediaries', val: 'A channel decision, not a logistics one' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'Appointing distributors is the closest wrong answer, because it is part of distribution — but ' +
+             'it is organising the <i>channel</i>, not moving the goods along it.'
+      },
+      {
+        id: 'i4n-4', type: 'mcq', marks: 3,
+        prompt: 'A business is deciding whether to hold its stock in one central warehouse or several ' +
+                'regional distribution centres. What does the module say this decision affects?',
+        options: [
+          'Delivery times and costs',
+          'The price the product can be sold at',
+          'Which intermediaries will agree to stock the product',
+          'The quality of the product itself'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The decision', val: 'How many warehouses, and where' },
+          { lab: 'What it changes', val: 'Delivery times and costs' },
+          { lab: 'Answer', val: 'Delivery times and costs', final: true }
+        ],
+        why: 'One warehouse is cheaper to run and further from most customers. That trade-off is the whole ' +
+             'decision.'
+      },
+      {
+        id: 'i4n-5', type: 'mcq', marks: 3,
+        prompt: 'What does the module say goes wrong at each extreme of inventory management?',
+        options: [
+          'Too much stock ties up cash; too little causes stockouts and lost sales',
+          'Too much stock causes stockouts; too little ties up cash',
+          'Both extremes only affect delivery times, not money',
+          'Neither extreme matters once a distribution channel is chosen'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Too much', val: 'Cash tied up in stock that is not selling' },
+          { lab: 'Too little', val: 'Stockouts, and the sales that go with them' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The same balance appears in Week 6 as inventory control. Here it is an organising decision — ' +
+             'how much sits at each point in the channel — rather than a control one.'
+      },
+      {
+        id: 'i4n-6', type: 'multi', marks: 4,
+        prompt: 'Distribution cannot be organised by the marketing department alone. Which functions does ' +
+                'the module say it must work closely with? <b>Select all that apply.</b>',
+        options: [
+          'Purchasing, so that raw materials for production are available',
+          'Operations',
+          'Finance',
+          'Public relations',
+          'Human resources'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Purchasing', val: 'Distribution is directly linked to the purchasing and supply chain function' },
+          { lab: 'Operations', val: 'What is being distributed has to be made first' },
+          { lab: 'Finance', val: 'Warehouses and transport are capital decisions' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'PR and HR are real functions that distribution touches eventually, but the three named here are ' +
+             'the ones it cannot work without.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ OTHER ELEMENTS IN FINANCE ═══════════════════════
+     Lesson 4.11. */
+  {
+    id: 'i4-finorg',
+    title: 'More Organising in Finance',
+    emoji: '🧾',
+    summary: 'Who may spend what, the systems that make it consistent, and who finance talks to.',
+    notes: [
+      {
+        heading: 'Beyond the structure itself',
+        emoji: '🗃️',
+        html:
+          '<p>Apart from the organisational structure, the finance function has other elements to contend ' +
+          'with in organising:</p>' +
+          '<div class="keybox"><b>Resource allocation</b> · once the budget is set, finance directs the flow ' +
+          'of money. It establishes clear rules: <b>who can approve a spending request</b>, the <b>spending ' +
+          'limits</b> for department managers, and the <b>process for requesting funds</b> for a new project. ' +
+          'It also ensures the money is safe and accessible.' +
+          '<br><br><b>Systems and processes</b> · every financial action needs a clear process, or the ' +
+          'business runs on rules that change from day to day. Finance designs and maintains them: processes ' +
+          'such as submitting an expense report or getting a purchase approved; a central information or ' +
+          'accounting system; and <b>standardisation</b> — one universal list of categories, so the same ' +
+          'purchase made by two departments is recorded the same way.' +
+          '<br><br><b>Coordination and communication</b> · finance does not work in a silo. It connects to ' +
+          'every other part of the business, needs knowledge of several disciplines, and has to stay aware of ' +
+          'the external business environment.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i4o-1', type: 'multi', marks: 4,
+        prompt: 'Once the budget is set, finance directs the flow of money by establishing clear rules. ' +
+                'Which rules does the module name? <b>Select all that apply.</b>',
+        options: [
+          'Who can approve a spending request',
+          'The spending limits for department managers',
+          'The process for requesting funds for a new project',
+          'Which suppliers each department must use',
+          'How much each department is allowed to earn'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Approval', val: 'Who may say yes, and to what' },
+          { lab: 'Limits', val: 'How much a manager may commit' },
+          { lab: 'Requesting', val: 'How to ask for money for something new' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'All three are about <i>authority over money</i> rather than about the money itself — which is ' +
+             'why resource allocation belongs to organising and not to planning.'
+      },
+      {
+        id: 'i4o-2', type: 'mcq', marks: 3,
+        prompt: 'Finance insists that every department uses the same universal list of categories, so that ' +
+                'pens bought by the marketing team and pens bought by the sales team are recorded the same ' +
+                'way. What is this an example of?',
+        options: [
+          'Standardisation',
+          'Resource allocation',
+          'Coordination and communication',
+          'Specialisation'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Standardisation', val: 'One universal list, so the same thing is recorded the same way' },
+          { lab: 'Part of', val: 'The systems and processes finance designs and maintains' },
+          { lab: 'Answer', val: 'Standardisation', final: true }
+        ],
+        why: 'Standardisation appears in Lesson 2 as a job design principle. This is the same idea applied to ' +
+             'records rather than to tasks — consistency regardless of who does it.'
+      },
+      {
+        id: 'i4o-3', type: 'multi', marks: 4,
+        prompt: 'Which of these are the systems and processes the finance department designs and maintains? ' +
+                '<b>Select all that apply.</b>',
+        options: [
+          'A process for submitting an expense report',
+          'A process for getting a purchase approved',
+          'A central information or accounting system',
+          'A universal list of spending categories',
+          'The advertising schedule for the year'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'Processes', val: 'Expense reports, purchase approvals' },
+          { lab: 'Systems', val: 'A central accounting or information system' },
+          { lab: 'Standardisation', val: 'One list of categories for everyone' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'The point of all four is that a financial action should work the same way every time. A business ' +
+             'without them is described as one where the traffic laws change on every journey.'
+      },
+      {
+        id: 'i4o-4', type: 'mcq', marks: 3,
+        prompt: 'Why does the module say the finance department cannot work in a silo?',
+        options: [
+          'Because it connects to every other part of the business, needs knowledge of several disciplines, and must stay aware of the external environment',
+          'Because it does not have enough staff to work alone',
+          'Because accounting rules require two departments to sign off every transaction',
+          'Because finance reports to marketing rather than to top management'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Connected to', val: 'Every other functional area' },
+          { lab: 'Draws on', val: 'Several subject disciplines' },
+          { lab: 'Watches', val: 'The external business environment' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Money moves through every function, so finance ends up as the one department that has to ' +
+             'understand a little of what all of them do.'
+      },
+      {
+        id: 'i4o-5', type: 'match', marks: 3,
+        prompt: 'Match each element of organising in finance to what it deals with.',
+        pairs: [
+          { left: 'Resource allocation', right: 'Who may approve spending, and up to what limit' },
+          { left: 'Systems and processes', right: 'The steps a financial action follows, every time' },
+          { left: 'Coordination and communication', right: 'Finance’s connections to the other functions and to the outside world' }
+        ],
+        solution: [
+          { lab: 'Resource allocation', val: 'Authority over money' },
+          { lab: 'Systems and processes', val: 'Consistency of method' },
+          { lab: 'Coordination', val: 'Everyone else' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The three answer three different questions: who decides, how it is done, and who else needs to ' +
+             'know.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ WHERE PURCHASING SITS ═══════════════════════
+     Lesson 4.15. Note this is NOT the same as 4.14, which is centralised
+     against decentralised — that is about where authority sits horizontally,
+     and this is about how high up the function reports. */
+  {
+    id: 'i4-purlevel',
+    title: 'How High Purchasing Sits',
+    emoji: '🪜',
+    summary: 'The five factors that decide how senior the purchasing function is.',
+    notes: [
+      {
+        heading: 'A strategic placement',
+        emoji: '📌',
+        html:
+          '<p>A purchasing function buried inside the accounting department has a very different impact from ' +
+          'one represented in the boardroom. Its <b>hierarchical level</b> reflects how strategically the ' +
+          'company views its supply chain, which makes the placement of purchasing on the organisation chart ' +
+          'a <b>strategic decision</b>.</p>' +
+          '<div class="keybox"><b>Five factors determining the level</b>' +
+          '<br><b>1. The amount of spending</b> · the more of the company’s money that flows through ' +
+          'purchasing, the more important it becomes. A retailer where most costs are inventory needs a ' +
+          'high-level executive reporting to the CEO; a service firm spending little may place it at an ' +
+          'operational level.' +
+          '<br><b>2. Supplier power</b> · when suppliers hold more power, purchasing needs more influence. ' +
+          'Few supplier options, or concentrated market power, calls for high-level negotiation and strategic ' +
+          'relationship management.' +
+          '<br><b>3. The scale and complexity of the business</b> · purchasing needs evolve from simple buying ' +
+          'to complex supply chain management as a company grows.' +
+          '<br><b>4. The critical nature of what is bought</b> · the expertise a purchase demands drives the ' +
+          'position. Buying paper clips is not buying custom-designed components.' +
+          '<br><b>5. Top management’s perception</b> · if purchasing is seen only as a cost centre to be ' +
+          'minimised it will sit low; if it is seen as a value centre, important to quality and innovation, ' +
+          'it will sit higher.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i4p-1', type: 'multi', marks: 4,
+        prompt: 'Which of these determine how high the purchasing and supply function sits in the ' +
+                'organisation? <b>Select all that apply.</b>',
+        options: [
+          'The amount of spending flowing through it',
+          'Supplier power',
+          'The scale and complexity of the business',
+          'The critical nature of what is being purchased',
+          'Top management’s perception of the function',
+          'The number of years the purchasing manager has worked there'
+        ],
+        answers: [0, 1, 2, 3, 4],
+        solution: [
+          { lab: 'The five factors', val: 'Spending, supplier power, scale and complexity, criticality, and perception' },
+          { lab: 'Length of service', val: 'A fact about a person, not about the function' },
+          { lab: 'Answer', val: 'The first five', final: true }
+        ],
+        why: 'Four of the five are facts about the business. The fifth is an opinion held by top management — ' +
+             'and it is listed as a determining factor just like the others.'
+      },
+      {
+        id: 'i4p-2', type: 'mcq', marks: 3,
+        prompt: 'In a large retailer, most of the company’s costs are the inventory it buys to sell. ' +
+                'Which factor does this describe, and what does it imply for where purchasing sits?',
+        options: [
+          'The amount of spending — a high financial impact demands a high-level executive reporting to the CEO',
+          'Supplier power — a retailer has many suppliers competing for its business',
+          'The critical nature of what is purchased — retail goods need specialist buyers',
+          'Top management’s perception — retailers traditionally value purchasing highly'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The factor', val: 'The amount of spending flowing through purchasing' },
+          { lab: 'Described as', val: 'The most straightforward of the five' },
+          { lab: 'The implication', val: 'A high-level executive reporting directly to the CEO' },
+          { lab: 'Answer', val: 'The amount of spending', final: true }
+        ],
+        why: 'It is called the most straightforward factor for a reason: the more of the company’s money ' +
+             'a function controls, the harder it is to leave it low down.'
+      },
+      {
+        id: 'i4p-3', type: 'mcq', marks: 3,
+        prompt: 'A company buys custom-designed components that require the buyer to understand engineering ' +
+                'and global markets. Which factor is raising the purchasing function’s level here?',
+        options: [
+          'The critical nature of what is being purchased — the expertise a purchase demands drives the position',
+          'The amount of spending — custom components are expensive',
+          'The scale and complexity of the business',
+          'Supplier power'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The factor', val: 'How critical, and how specialised, the purchase is' },
+          { lab: 'The contrast drawn', val: 'Buying paper clips is not buying custom-designed components' },
+          { lab: 'Answer', val: 'The critical nature of what is being purchased', final: true }
+        ],
+        why: 'Cost is the tempting answer and it is a different factor. What matters here is the knowledge ' +
+             'the buyer needs, not the size of the invoice.'
+      },
+      {
+        id: 'i4p-4', type: 'mcq', marks: 3,
+        prompt: 'Two companies spend similar amounts on similar goods, yet one has a supply chain executive ' +
+                'in top management and the other has a purchasing officer reporting to the finance manager. ' +
+                'Which of the five factors best explains a difference the other four cannot?',
+        options: [
+          'Top management’s perception — whether purchasing is seen as a cost centre or a value centre',
+          'The amount of spending',
+          'Supplier power',
+          'The critical nature of what is being purchased'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Cost centre', val: 'Something to be minimised — low status' },
+          { lab: 'Value centre', val: 'Important to quality and innovation — higher position' },
+          { lab: 'Answer', val: 'Top management’s perception', final: true }
+        ],
+        why: 'The question rules out the measurable factors on purpose. When the facts are the same and the ' +
+             'answer is different, what is left is what management believes.'
+      },
+      {
+        id: 'i4p-5', type: 'mcq', marks: 3,
+        prompt: 'What does the module say the hierarchical level of the purchasing function reflects?',
+        options: [
+          'How strategically the company views its supply chain',
+          'How many people the purchasing department employs',
+          'How long the company has been trading',
+          'How many suppliers the company currently uses'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The level', val: 'Where purchasing sits on the organisation chart' },
+          { lab: 'What it reflects', val: 'How strategically the supply chain is viewed' },
+          { lab: 'Which makes it', val: 'A strategic decision, not an administrative one' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'This is the point of the whole topic: where a function sits on a chart is a statement about how ' +
+             'much the company thinks it matters.'
+      },
+      {
+        id: 'i4p-6', type: 'mcq', marks: 3,
+        prompt: 'A manufacturer has very few possible suppliers for a key input, and those suppliers hold ' +
+                'concentrated market power. What does the module say this calls for?',
+        options: [
+          'More influence for purchasing, since high-level negotiation and strategic relationship management are needed',
+          'Less influence for purchasing, since there is little choice to be made',
+          'Moving purchasing into the operations department',
+          'Switching from centralised to decentralised purchasing'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The factor', val: 'Supplier power' },
+          { lab: 'The rule', val: 'When suppliers hold more power, purchasing needs more influence' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The second option is the intuitive one and it is backwards. Few options does not mean little to ' +
+             'decide — it means the negotiation matters more, so it needs someone more senior doing it.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ INSIDE THE PURCHASING DEPARTMENT ═══════════════
+     Lesson 4.16. */
+  {
+    id: 'i4-purinternal',
+    title: 'Inside the Purchasing Department',
+    emoji: '🗂️',
+    summary: 'Generalists or specialists, the three kinds of coordination, and cross-functional teams.',
+    notes: [
+      {
+        heading: 'Two models',
+        emoji: '⚖️',
+        html:
+          '<p>The <b>internal organisation of the purchasing function</b> is how tasks and responsibilities ' +
+          'are divided <i>within</i> the department. There are two models (Erasmus et al., 2023):</p>' +
+          '<div class="keybox"><b>The generalist model</b> (informal structure) · buyers handle whatever ' +
+          'purchase requests reach them, taking a wide variety of items from start to finish. Most common in ' +
+          '<b>smaller businesses</b> with lower volumes and less complex needs.' +
+          '<br><br><b>The specialist model</b> (structured approach) · the team is divided by category or by ' +
+          'supplier. Each buyer becomes an expert in their area and builds relationships with their own ' +
+          'suppliers. Suits <b>larger businesses</b> with high spending and complex needs.</div>'
+      },
+      {
+        heading: 'Coordination, and cross-functional teams',
+        emoji: '🤝',
+        html:
+          '<div class="keybox"><b>Three types of coordination</b>' +
+          '<br><b>Internal</b> · different buyers and teams inside the purchasing department working together' +
+          '<br><b>Supplier</b> · building strong, ethical relationships with suppliers' +
+          '<br><b>Cross-department</b> · working closely with finance, marketing, production and the rest</div>' +
+          '<p>A <b>cross-functional sourcing team</b> brings people from different departments together on a ' +
+          'specific buying project — to get diverse perspectives, encourage innovation, and make sure the ' +
+          'company gets the best possible value. They are often formed for big tasks, and may even include a ' +
+          'key supplier for input on ingredients or manufacturing.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i4q-1', type: 'match', marks: 3,
+        prompt: 'Match each way of organising a purchasing department to what it means.',
+        pairs: [
+          { left: 'The generalist model', right: 'Buyers handle whatever request reaches them, across a wide variety of items' },
+          { left: 'The specialist model', right: 'The team is divided by category or supplier, and each buyer becomes an expert' },
+          { left: 'A cross-functional sourcing team', right: 'People from several departments brought together for one buying project' }
+        ],
+        solution: [
+          { lab: 'Generalist', val: 'An informal structure — everyone does everything' },
+          { lab: 'Specialist', val: 'A structured approach — everyone has an area' },
+          { lab: 'Cross-functional', val: 'Not a model at all, but a team formed for a task' },
+          { lab: 'Answer', val: 'All three rows as above', final: true }
+        ],
+        why: 'The first two are choices about how the department is built. The third sits across it and is ' +
+             'assembled when a particular purchase needs more than purchasing knows.'
+      },
+      {
+        id: 'i4q-2', type: 'mcq', marks: 3,
+        prompt: 'A large mining company gives each buyer a specific category and lets them deal exclusively ' +
+                'with the suppliers in it. Which model is this, and what kind of business does it suit?',
+        options: [
+          'The specialist model — larger businesses with high spending and complex purchasing needs',
+          'The specialist model — smaller businesses that cannot afford many buyers',
+          'The generalist model — larger businesses that need flexibility',
+          'The generalist model — any business, since it is the simpler of the two'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Specialist model', val: 'Divided by category or supplier; each buyer an expert' },
+          { lab: 'Suits', val: 'Larger businesses, high spending, complex needs' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Specialising costs you flexibility and buys you expertise. That trade is only worth making once ' +
+             'the volume is there to justify it.'
+      },
+      {
+        id: 'i4q-3', type: 'mcq', marks: 3,
+        prompt: 'In a small company, one buyer might order stationery one day, appoint a marketing agency the ' +
+                'next, and place an order for raw steel the week after. Which model is this, and why does it ' +
+                'suit the business?',
+        options: [
+          'The generalist model — lower purchasing volumes and less complex needs do not justify specialists',
+          'The specialist model — the buyer specialises in variety',
+          'The generalist model — small companies are legally required to use one buyer',
+          'A cross-functional sourcing team — several kinds of purchase are involved'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Generalist model', val: 'Jacks-of-all-trades, handling the whole process for any item' },
+          { lab: 'Most common in', val: 'Smaller businesses, lower volumes, less complexity' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'It is a real choice rather than a shortcoming. Splitting one buyer into three specialists needs ' +
+             'enough work to keep three specialists busy.'
+      },
+      {
+        id: 'i4q-4', type: 'multi', marks: 4,
+        prompt: 'What are the three types of coordination a purchasing department needs? ' +
+                '<b>Select all that apply.</b>',
+        options: [
+          'Internal coordination, between buyers and teams inside the department',
+          'Supplier coordination, building strong and ethical supplier relationships',
+          'Cross-department coordination, with finance, marketing and production',
+          'Competitor coordination, agreeing prices with rival buyers',
+          'Customer coordination, letting customers choose the suppliers'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Internal', val: 'Inside the department' },
+          { lab: 'Supplier', val: 'Outward, to the people it buys from' },
+          { lab: 'Cross-department', val: 'Sideways, to the rest of the business' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'The fourth option is worth pausing on: agreeing prices with rival buyers is collusion, which ' +
+             'the ethics topic in Week 1 rules out entirely.'
+      },
+      {
+        id: 'i4q-5', type: 'multi', marks: 4,
+        prompt: 'What is the purpose of a cross-functional sourcing team? <b>Select all that apply.</b>',
+        options: [
+          'To get diverse perspectives on the purchase',
+          'To encourage innovation',
+          'To make sure the company gets the best possible value',
+          'To remove the need for a purchasing department',
+          'To reduce the number of suppliers the company deals with'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Diverse perspectives', val: 'Engineering, finance and purchasing see different things' },
+          { lab: 'Innovation', val: 'Which a single buyer working alone is unlikely to produce' },
+          { lab: 'Best value', val: 'The point of the exercise' },
+          { lab: 'Answer', val: 'The first three', final: true }
+        ],
+        why: 'It is an addition to the purchasing department, not a replacement for it — a buyer is normally ' +
+             'on the team, managing costs and contracts.'
+      },
+      {
+        id: 'i4q-6', type: 'mcq', marks: 3,
+        prompt: 'A cross-functional sourcing team is being assembled for a major new product. Who might be ' +
+                'included, beyond the company’s own staff?',
+        options: [
+          'A key supplier, to give input on ingredients and manufacturing',
+          'A competitor, to benchmark the price',
+          'A customer, to approve the final specification',
+          'Nobody — cross-functional means internal departments only'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The team', val: 'People from different departments, on one buying project' },
+          { lab: 'May also include', val: 'A key supplier, for input on ingredients or manufacturing' },
+          { lab: 'Answer', val: 'A key supplier', final: true }
+        ],
+        why: 'The last option is the natural assumption from the name and it is wrong. "Cross-functional" ' +
+             'describes where the members come from, not a boundary at the company gate.'
+      }
+    ]
   }
 
   ]

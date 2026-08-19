@@ -67,17 +67,17 @@
         topics: ['i4-principles', 'i4-authority', 'i4-power', 'i4-delegation', 'i4-jobdesign'] },
       { number: 3, title: 'Departmentalisation',
         topics: ['i4-depart', 'i4-structure'] },
-      /* The sixteen numbered items in this lesson are now confirmed, but its
-         TITLE still is not — it appears in neither the screenshot nor the
-         extracted notes. "Functional area organising" follows the pattern of
-         Week 3's "Functional area planning" and Week 6's "Functional area
-         control".
+      /* The sixteen numbered items in this lesson are confirmed and all of
+         them are now covered, except 4.13 — which is absent from the source
+         notes themselves — and 4.5, an E-Bike SA application.
 
-         Six of its items have no topic here yet. They are listed in the
-         commit that recorded them; the pages exist in the source notes, so
-         they can be written whenever Stephen wants them. */
+         The lesson's TITLE is still unconfirmed: it appears in neither the
+         screenshot nor the extracted notes. "Functional area organising"
+         follows the pattern of Week 3's "Functional area planning" and Week
+         6's "Functional area control". */
       { number: 4, title: 'Functional area organising',
-        topics: ['i4-opsorg', 'i4-hrmkt', 'i4-finpur'] }
+        topics: ['i4-opsorg', 'i4-opswork', 'i4-hrmkt', 'i4-mktcomms', 'i4-mktdist',
+                 'i4-finpur', 'i4-finorg', 'i4-purlevel', 'i4-purinternal'] }
     ],
 
     'inba-week5': [

@@ -3,7 +3,7 @@ var REPO = (function () { var f = new ActiveXObject("Scripting.FileSystemObject"
 var fso = new ActiveXObject("Scripting.FileSystemObject");
 var base = REPO + "\\public\\js\\data\\";
 var window = {};
-var files = ["week1.js", "week2.js", "week3.js", "week4.js", "week5.js"];
+var files = ["week1.js", "week2.js", "week3.js", "week4.js", "week5.js", "week6.js"];
 for (var i = 0; i < files.length; i++) {
     var fh = fso.OpenTextFile(base + files[i], 1);
     var src = fh.AtEndOfStream ? "" : fh.ReadAll();
@@ -202,6 +202,87 @@ chk("w5ap3", (pvOf(500000, 0.085, 6, 3) - 200000) / grow(0.085, 6, 1), "R500 000
 chk("w5ap5", 50000 + pvOf(100000, 0.14, 1, 3) + pvOf(150000, 0.14, 1, 6), "cash price, 14% yearly");
 chk("w5ap6", 80000 + pvOf(100000, 0.12, 4, 2) + pvOf(150000, 0.12, 4, 8), "cash price, 12% quarterly");
 chk("w5ap7", 10000 + pvOf(120000, 0.13, 2, 1) + pvOf(250000, 0.13, 2, 3), "cash price, 13% half-yearly");
+
+// ------ Week 6 ------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Annuities. Everything here is built from the two bracket factors rather than
+// from any figure printed in the notes or worked out by hand elsewhere, so a
+// wrong number in week6.js cannot agree with itself.
+//
+// The rate questions have no closed form. They are bisected here — a different
+// method from the financial calculator the notes use, which is the point: two
+// routes to the same number.
+
+// What n payments of R1 are worth at the END of the term, and at the start.
+function fvFactor(i, n) { return (Math.pow(1 + i, n) - 1) / i; }
+function pvFactor(i, n) { return (1 - Math.pow(1 + i, -n)) / i; }
+function annFv(pmt, i, n) { return pmt * fvFactor(i, n); }
+function annPmtFromFv(fv, i, n) { return fv / fvFactor(i, n); }
+function annPmtFromPv(pv, i, n) { return pv / pvFactor(i, n); }
+
+/* Both factors rise strictly with the rate, so bisection is safe. */
+function bisect(f, target) {
+    var lo = 1e-9, hi = 1, mid, k;
+    for (k = 0; k < 200; k++) { mid = (lo + hi) / 2; if (f(mid) < target) lo = mid; else hi = mid; }
+    return (lo + hi) / 2;
+}
+function rateForFv(pmt, n, fv) { return bisect(function (x) { return annFv(pmt, x, n); }, fv); }
+function rateForPmt(pv, n, pmt) { return bisect(function (x) { return annPmtFromPv(pv, x, n); }, pmt); }
+function termFor(pv, pmt, i) { return -Math.log(1 - pv * i / pmt) / Math.log(1 + i); }
+
+// Lesson 1 - the pay-point tablet, and the annuity formula
+chk("w6a4", 1000 * Math.pow(1.10, 4) - 1000, "interest on the first of five R1 000 deposits");
+chk("w6a5", annFv(1000, 0.10, 5), "R1 000 a year, 10%, 5 years");
+chk("w6f2", annFv(1000, 0.10, 5), "the same by the annuity formula");
+chk("w6f3", annFv(500, 0.08 / 12, 12), "R500 a month, i(12) = 8%, 12 months");
+chk("w6f4", annFv(2500, 0.0725 / 12, 60), "R2 500 monthly, 7.25%, 5 years");
+chk("w6f5", annFv(1800, 0.0725 / 2, 8), "R1 800 half-yearly, 7.25%, 4 years");
+chk("w6f6", annFv(3500, 0.085 / 4, 32), "R3 500 quarterly, 8.5%, 8 years");
+step("w6f7", 0, 0.048 / 12, "4.8% as a monthly rate");
+step("w6f7", 1, 36, "payments in 3 years, monthly");
+step("w6f7", 2, fvFactor(0.048 / 12, 36), "the FV bracket");
+step("w6f7", 3, annFv(1500, 0.048 / 12, 36), "R1 500 monthly, 4.8%, 3 years");
+
+chk("w6c5", annFv(1000, 0.10, 5), "the calculator's answer for the tablet");
+
+// Lesson 1 - solving for the payment
+chk("w6p1", annPmtFromFv(10000, 0.10, 5), "PMT for R10 000 in 5 years at 10%");
+chk("w6p2", annPmtFromFv(10000, 0.08 / 12, 12), "PMT for R10 000 in 12 months at i(12) = 8%");
+chk("w6p4", annPmtFromPv(35000, 0.15 / 12, 8), "instalment on R35 000, 15%, 8 months");
+chk("w6p5", annPmtFromPv(52500, 0.09 / 12, 12), "instalment on R52 500, 9%, 12 months");
+chk("w6p6", annPmtFromPv(60000, 0.085 / 4, 9), "instalment on R60 000, 8.5%, 9 quarters");
+chk("w6p7", annPmtFromPv(72000, 0.132 / 4, 14), "instalment on R72 000, 13.2%, 14 quarters");
+
+// Lesson 1 - solving for the rate and the term. Stored as percentages a year,
+// so the periodic rate is scaled back up by the number of periods.
+chk("w6r2", rateForFv(750, 12, 9500) * 12 * 100, "rate for R750 a month reaching R9 500");
+chk("w6r3", rateForFv(1500, 36, 62403.85) * 12 * 100, "rate for R1 500 a month reaching R62 403.85");
+chk("w6r4", rateForFv(6500, 28, 236540.30) * 4 * 100, "rate for R6 500 a quarter reaching R236 540.30");
+chk("w6r5", rateForFv(11500, 11, 203804.35) * 1 * 100, "rate for R11 500 a year reaching R203 804.35");
+chk("w6r6", termFor(250000, 7685.03, 0.067 / 12), "payments to clear R250 000 at 6.7%");
+chk("w6r7", termFor(2400000, 23961.12, 0.105 / 12), "payments to clear R2 400 000 at 10.5%");
+chk("w6r8", termFor(230000, 37848.58, 0.131 / 2), "payments to clear R230 000 at 13.1%");
+
+// Lesson 2 - what the truck costs
+chk("w6l1", 9262 * 72, "total paid on the pickup truck");
+chk("w6l2", 9262 * 72 - 499950, "interest on the pickup truck");
+chk("w6l3", rateForPmt(499950, 72, 9262) * 12 * 100, "the rate behind the truck finance");
+step("w6l6", 0, 9262 * 72, "total paid");
+step("w6l6", 1, 9262 * 72 - 499950, "interest");
+step("w6l6", 2, 0, "FV of a fully amortised loan");
+step("w6l6", 3, rateForPmt(499950, 72, 9262) * 12 * 100, "the rate");
+
+// Lesson 2 - the repayment schedule. The single-repayment loan is rolled
+// forward year by year rather than powered up in one go, which is the schedule
+// the notes build and a genuinely different route to R8 052.55.
+var roll = 5000, yr;
+for (yr = 1; yr <= 5; yr++) roll = roll * 1.10;
+chk("w6s1", roll, "R5 000 at 10% for 5 years, rolled forward a year at a time");
+var roll3 = 5000;
+for (yr = 1; yr <= 3; yr++) roll3 = roll3 * 1.10;
+chk("w6s2", roll3, "settling that loan at the end of year 3");
+chk("w6s5", 26459.71 * pvFactor(0.15 / 4, 7), "outstanding after 1 of 8 quarterly payments");
+chk("w6s6", 26459.71 * pvFactor(0.15 / 4, 6), "outstanding after 2 of 8 quarterly payments");
+chk("w6s7", 62412.60 * pvFactor(0.095, 2), "outstanding after 2 of 4 yearly payments");
 
 // ------ compare ---------------------------------------------------------------------------------------------------------------------------------------------------------
 // -- Week 1 (fractions) ---------------------------------------

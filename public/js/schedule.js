@@ -377,6 +377,31 @@ var Schedule = (function () {
   /* ───────────────────────── the work to be done ───────────────────────── */
 
   /* Every topic of every ready module, in the order she would meet them. */
+  /* A week's topics, in the order they are taught. Falls back to the order
+     they were written in for a module with no lessons. */
+  function orderByLesson(week) {
+    var raw = week.topics || [];
+    if (!week.lessons || !week.lessons.length) return raw;
+
+    var byId = {}, i, j;
+    for (i = 0; i < raw.length; i++) byId[raw[i].id] = raw[i];
+
+    var out = [], placed = {};
+    for (i = 0; i < week.lessons.length; i++) {
+      var ids = week.lessons[i].topicIds || [];
+      for (j = 0; j < ids.length; j++) {
+        if (!byId[ids[j]] || placed[ids[j]]) continue;
+        placed[ids[j]] = 1;
+        out.push(byId[ids[j]]);
+      }
+    }
+    /* A topic in no lesson would otherwise vanish from the schedule entirely,
+       which is a far worse failure than being in the wrong place.
+       validate.js reports it, but it must not be dropped here. */
+    for (i = 0; i < raw.length; i++) if (!placed[raw[i].id]) out.push(raw[i]);
+    return out;
+  }
+
   function topicsFor(moduleId) {
     var out = [];
     if (typeof Modules === 'undefined') return out;
@@ -392,7 +417,18 @@ var Schedule = (function () {
         lessonTitles[weeks[w].lessons[L].number] = weeks[w].lessons[L].title;
       }
 
-      var topics = weeks[w].topics || [];
+      /* IN LESSON ORDER, NOT FILE ORDER.
+       *
+       * A week's topics array is the order they happen to have been written
+       * in, which is not always the order they are taught in — Week 5 has a
+       * Lesson 3 topic sitting after three Lesson 4 topics. Following the file
+       * gave her a Saturday that ran Lesson 3, Lesson 4, Lesson 3, Lesson 4,
+       * and split a lesson across two sittings hours apart.
+       *
+       * The lesson map is the authority on the order, and it is the thing that
+       * was checked against Milpark's own contents page. Anything not in a
+       * lesson keeps its place at the end, which is how maths behaves. */
+      var topics = orderByLesson(weeks[w]);
       for (var t = 0; t < topics.length; t++) {
         out.push({
           id: topics[t].id,

@@ -55,9 +55,19 @@ var Store = {
     hasBadge: function (id) { return !!badges[id]; }
 };
 
-/* Ten topics, filed into lessons of 2, 3 and 5 - deliberately uneven, because
-   a session measured in lessons holds however many topics that lesson happens
-   to contain, and equal lessons would hide any mistake about that. */
+/* Ten topics, filed into lessons of 2, 3 and 5.
+ *
+ * Deliberately uneven, because a session measured in lessons holds however
+ * many topics that lesson happens to contain, and equal lessons would hide any
+ * mistake about that.
+ *
+ * And deliberately OUT OF ORDER: topic 9 belongs to Lesson 2 but is written
+ * after the Lesson 3 topics, exactly as the real Week 5 has a Lesson 3 topic
+ * sitting after three Lesson 4 ones. A week's topic array is the order things
+ * were written in, not the order they are taught in, and following the file
+ * gave a day that ran Lesson 3, Lesson 4, Lesson 3, Lesson 4. */
+var LESSON_OF = { 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 3, 8: 3, 9: 2, 10: 3 };
+
 function makeTopics(prefix, n) {
     var out = [];
     for (var i = 1; i <= n; i++) {
@@ -65,15 +75,31 @@ function makeTopics(prefix, n) {
             id: prefix + '-t' + i,
             title: 'Topic ' + i,
             emoji: 'T',
-            lesson: i <= 2 ? 1 : (i <= 5 ? 2 : 3)
+            lesson: LESSON_OF[i]
         });
     }
     return out;
 }
 
+/* The lesson map the app builds from lessons.js, which is what decides the
+   taught order. Listed here in lesson order, as the real one is. */
+function lessonsFor(prefix) {
+    return [
+        { number: 1, title: 'Lesson one', emoji: 'L',
+          topicIds: [prefix + '-t1', prefix + '-t2'], wanted: 2 },
+        { number: 2, title: 'Lesson two', emoji: 'L',
+          topicIds: [prefix + '-t3', prefix + '-t4', prefix + '-t9'], wanted: 3 },
+        { number: 3, title: 'Lesson three', emoji: 'L',
+          topicIds: [prefix + '-t5', prefix + '-t6', prefix + '-t7',
+                     prefix + '-t8', prefix + '-t10'], wanted: 5 }
+    ];
+}
+
 var CONTENT = {
-    aaa: { weeks: [{ number: 1, title: 'W1', topics: makeTopics('aaa', 10) }] },
-    bbb: { weeks: [{ number: 1, title: 'W1', topics: makeTopics('bbb', 10) }] }
+    aaa: { weeks: [{ number: 1, title: 'W1', topics: makeTopics('aaa', 10),
+                     lessons: lessonsFor('aaa') }] },
+    bbb: { weeks: [{ number: 1, title: 'W1', topics: makeTopics('bbb', 10),
+                     lessons: lessonsFor('bbb') }] }
 };
 
 var Modules = {
@@ -834,9 +860,7 @@ var sizes = {};
 for (i = 0; i < aaaSessions.length; i++) {
     var ses = aaaSessions[i], firstLesson = null, mixed = false;
     for (var z = 0; z < ses.items.length; z++) {
-        var tid = ses.items[z].topicId;
-        var num = Number(tid.replace('aaa-t', ''));
-        var lesson = num <= 2 ? 1 : (num <= 5 ? 2 : 3);
+        var lesson = LESSON_OF[Number(ses.items[z].topicId.replace('aaa-t', ''))];
         if (firstLesson === null) firstLesson = lesson;
         else if (lesson !== firstLesson) mixed = true;
     }
@@ -980,6 +1004,54 @@ ok(Schedule.settings().weekday.unit === 'topics',
    "lessons: an unknown unit should fall back to topics, got " + Schedule.settings().weekday.unit);
 set({ weekday: { count: 1, unit: 'lessons', lessons: 99, times: ['09:00'], mins: [60], mods: [''] } });
 ok(Schedule.settings().weekday.lessons <= 4, "lessons: an absurd lesson count should be capped");
+
+// ── 18d. topics are scheduled in the order they are TAUGHT ───────
+// A week's topic array is the order things were written in, which is not the
+// order they are taught in - the real Week 5 has a Lesson 3 topic sitting
+// after three Lesson 4 ones. Following the file gave a Saturday that ran
+// Lesson 3, Lesson 4, Lesson 3, Lesson 4, and split one lesson across two
+// sittings hours apart.
+
+set({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 2, unit: 'topics', topics: 1, times: ['09:00', '15:00'],
+               mins: [60, 60], mods: ['aaa', 'aaa'] },
+    weekend: { count: 2, unit: 'topics', topics: 1, times: ['09:00', '15:00'],
+               mins: [60, 60], mods: ['aaa', 'aaa'] },
+    exams: { aaa: daysFromToday(60) }
+});
+
+var pOrder = Schedule.plan(), fo = flat(pOrder.sessions);
+var seq = [];
+for (i = 0; i < fo.length; i++) {
+    if (fo[i].moduleId !== 'aaa' || fo[i].pass !== 1) continue;
+    seq.push(LESSON_OF[Number(fo[i].topicId.replace('aaa-t', ''))]);
+}
+ok(seq.length === 10, "taught order: expected all 10 first-pass topics, got " + seq.length);
+
+/* Lesson numbers must never go backwards. Topic 9 belongs to Lesson 2 but is
+   written after the Lesson 3 topics, so file order would give 1,1,2,2,3,3,3,3,2,3
+   and this check would catch it at the ninth. */
+for (i = 1; i < seq.length; i++) {
+    if (seq[i] < seq[i - 1]) {
+        fail("taught order: the first pass goes back to Lesson " + seq[i] +
+             " after reaching Lesson " + seq[i - 1] + " — order was " + seq.join(','));
+        break;
+    }
+}
+
+/* And each lesson must be covered in one unbroken run, not returned to. */
+var runsOf = {}, prev = null;
+for (i = 0; i < seq.length; i++) {
+    if (seq[i] !== prev) { runsOf[seq[i]] = (runsOf[seq[i]] || 0) + 1; prev = seq[i]; }
+}
+for (var lk2 in runsOf) {
+    if (!Object.prototype.hasOwnProperty.call(runsOf, lk2)) continue;
+    if (runsOf[lk2] > 1) {
+        fail("taught order: Lesson " + lk2 + " is split into " + runsOf[lk2] +
+             " separate runs — order was " + seq.join(','));
+    }
+}
 
 // ── 18c. revision is optional; the first pass is not ─────────────
 // The plan is a guide, not a law. Covering everything once before the exam is

@@ -159,7 +159,44 @@ check(/(id="|url\(#)(pipSkin|pipFlesh|pipStone)\b/.test(BROKEN),
 check(!/(id="|url\(#)(pipSkin|pipFlesh|pipStone)\b/.test('<span id="pipPanel">'),
       "GUARD BROKEN: the gradient-id check is flagging the panel's own element ids");
 
-WScript.Echo("Celebration and Pip checks run: 12");
+// 13. The chat panel can be resized.
+//
+// The panel is pinned to the bottom-right corner it grows out of, so only the
+// top and left edges can enlarge it — dragging the bottom-right outwards would
+// push it off screen. Three grips, and the drag must subtract the pointer delta
+// rather than add it. Getting that sign wrong is the failure that looks like
+// nothing happening, or like the panel fleeing the cursor.
+var buddyCss = read(REPO + "\\public\\css\\buddy.css");
+
+['pip-grip-corner', 'pip-grip-top', 'pip-grip-left'].forEach(function (cls) {
+    check(buddySrc.indexOf(cls) !== -1, "buddy.js renders the " + cls + " handle");
+    check(buddyCss.indexOf('.' + cls) !== -1, "buddy.css positions the " + cls + " handle");
+});
+
+check(/w0\s*-\s*\(ev\.clientX\s*-\s*fromX\)/.test(buddySrc) &&
+      /h0\s*-\s*\(ev\.clientY\s*-\s*fromY\)/.test(buddySrc),
+      "a resize drag must subtract the delta - the panel grows up and to the left");
+
+// Touch. Without touch-action the browser claims the gesture for scrolling and
+// the panel never moves on her iPad, which is where she actually reads.
+check(/\.pip-grip\s*\{[^}]*touch-action:\s*none/.test(buddyCss),
+      "the grips must set touch-action: none, or a drag on the iPad scrolls instead");
+check(buddySrc.indexOf('pointerdown') !== -1 && buddySrc.indexOf('setPointerCapture') !== -1,
+      "resizing uses pointer events with capture, so it works for touch and mouse alike");
+
+// A remembered size must never be able to collapse the panel or overflow the
+// screen, whatever is in localStorage.
+check(/MIN_W\s*=\s*\d+/.test(buddySrc) && /MIN_H\s*=\s*\d+/.test(buddySrc),
+      "buddy.js clamps a restored size to a minimum");
+check(/max-width:\s*calc\(100vw/.test(buddyCss) && /max-height:\s*calc\(100vh/.test(buddyCss),
+      "buddy.css clamps the panel to the viewport, inline pixel sizes included");
+
+// The size is device-local on purpose: Store syncs to her account, and a width
+// dragged out on a laptop has no business turning up on her phone.
+check(buddySrc.indexOf('localStorage') !== -1 && !/Store\.[A-Za-z]*[Pp]ipSize/.test(buddySrc),
+      "the panel size is kept device-local rather than synced through Store");
+
+WScript.Echo("Celebration and Pip checks run: 13");
 WScript.Echo("");
 if (!fails.length) {
     WScript.Echo("Celebrations fire by default and the toggle works.");

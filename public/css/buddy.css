@@ -110,17 +110,72 @@ body.reduce-motion .pip-button { animation: none; }
 
 .pip-panel {
   position: relative;
-  width: min(23rem, calc(100vw - 2.2rem));
+  /* 50% wider and twice as tall as it started, then clamped to what the screen
+     can actually show. A definite height rather than a max-height, so the input
+     row sits in the same place whether the thread holds one message or thirty.
+
+     buddy.js overrides both with inline pixel values once she has dragged the
+     panel; the max-* below clamp that too, so a size remembered from a bigger
+     window cannot push the panel off a smaller one. */
+  width: min(34.5rem, calc(100vw - 2.2rem));
+  height: min(60rem, calc(100vh - 8rem));
+  max-width: calc(100vw - 2.2rem);
+  max-height: calc(100vh - 8rem);
   background: linear-gradient(170deg, #fff 0%, var(--lilac-50) 100%);
   border: 2px solid var(--lilac-100);
   border-radius: 1.6rem;
   box-shadow: 0 20px 50px rgba(74, 52, 87, .26);
   display: flex;
   flex-direction: column;
-  max-height: min(30rem, calc(100vh - 8rem));
   transform-origin: bottom right;
   animation: pip-pop .32s var(--ease-bounce, cubic-bezier(.34,1.56,.64,1));
 }
+
+/* ── resizing ─────────────────────────────────────────────────────
+   The panel is pinned to the corner it grows out of, so the only directions
+   that can make it bigger are leftwards and upwards — dragging the bottom-right
+   corner outwards would just push it off the screen. So the grips live on the
+   two edges that can move and on the corner between them, and buddy.js
+   subtracts the drag rather than adding it. */
+
+.pip-grip {
+  position: absolute;
+  z-index: 3;
+  /* The drag is ours. Without this the browser claims the gesture for scrolling
+     on a touch screen and the panel never moves. */
+  touch-action: none;
+}
+
+.pip-grip-corner {
+  top: -5px; left: -5px;
+  width: 24px; height: 24px;
+  cursor: nwse-resize;
+}
+.pip-grip-top  { top: -5px; left: 19px; right: 19px; height: 10px; cursor: ns-resize; }
+.pip-grip-left { left: -5px; top: 19px; bottom: 19px; width: 10px; cursor: ew-resize; }
+
+/* A small bracket in the corner, so there is something to aim at. Faint until
+   the panel is hovered — it is an affordance, not decoration. */
+.pip-grip-corner::after {
+  content: "";
+  position: absolute;
+  top: 7px; left: 7px;
+  width: 10px; height: 10px;
+  border-top: 2px solid var(--lilac-400);
+  border-left: 2px solid var(--lilac-400);
+  border-radius: 4px 0 0 0;
+  opacity: .45;
+  transition: opacity .16s;
+}
+.pip-panel:hover .pip-grip-corner::after,
+.pip-grip-corner:focus-visible::after { opacity: 1; }
+.pip-grip-corner:focus-visible { outline: 2px solid var(--lilac-400); outline-offset: 2px; border-radius: 4px; }
+
+/* Held on the body rather than the panel: once a drag starts the pointer
+   regularly leaves the grip, and without this every pass over the page selects
+   text and flickers the cursor back. */
+body.pip-resizing { user-select: none; -webkit-user-select: none; cursor: nwse-resize; }
+body.pip-resizing .pip-panel { animation: none; }
 
 /* Springs out of the corner she lives in, rather than fading in from nowhere. */
 @keyframes pip-pop {
@@ -263,5 +318,8 @@ body.reduce-motion .pip-dots i { animation: none; opacity: .6; }
   .pip { right: .7rem; bottom: .7rem; }
   .pip-button { width: 3.5rem; height: 3.5rem; }
   .pip-face { width: 2.6rem; height: 2.6rem; }
-  .pip-panel { max-height: calc(100vh - 7rem); }
+  .pip-panel { height: calc(100vh - 7rem); max-height: calc(100vh - 7rem); }
+  /* Nothing to drag towards on a phone — the panel already fills what there is,
+     and a 10px grip along the edge would only get in the way of the scroll. */
+  .pip-grip { display: none; }
 }

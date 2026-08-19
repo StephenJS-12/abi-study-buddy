@@ -135,6 +135,12 @@ var Buddy = (function () {
           '<button type="submit" id="pipSend" aria-label="Send">' +
             '<span class="pip-send-icon">🚀</span></button>' +
         '</form>' +
+        /* Grips for resizing. Only the top and left edges can grow the panel —
+           see the note in buddy.css. */
+        '<span class="pip-grip pip-grip-corner" data-grip="both" tabindex="0"' +
+          ' role="separator" aria-label="Drag to resize the chat"></span>' +
+        '<span class="pip-grip pip-grip-top" data-grip="y" aria-hidden="true"></span>' +
+        '<span class="pip-grip pip-grip-left" data-grip="x" aria-hidden="true"></span>' +
         /* The little point at the bottom, aimed at Pip herself, so the panel
            reads as her talking rather than as a widget that appeared. */
         '<span class="pip-tail" aria-hidden="true"></span>' +
@@ -155,6 +161,128 @@ var Buddy = (function () {
 
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && open) toggle(false);
+    });
+
+    bindResize();
+  }
+
+  /* ── resizing ──────────────────────────────────────────────────── */
+
+  /* Small enough to still be a chat, not so small the input row wraps. */
+  var MIN_W = 260;
+  var MIN_H = 230;
+
+  /* Device-local, and deliberately not in Store: Store syncs to her account, and
+     a width dragged out on a laptop has no business turning up on her phone. */
+  var SIZE_KEY = 'abi.pip.size';
+
+  /* Matches the max-width and max-height in buddy.css. The CSS is what actually
+     constrains the panel; this keeps the number we remember honest so a size
+     saved on a big screen does not reopen wrong on a small one. */
+  function ceiling() {
+    return {
+      w: Math.max(MIN_W, window.innerWidth - 36),
+      h: Math.max(MIN_H, window.innerHeight - 128)
+    };
+  }
+
+  function applySize(w, h) {
+    var cap = ceiling();
+    w = Math.min(Math.max(w, MIN_W), cap.w);
+    h = Math.min(Math.max(h, MIN_H), cap.h);
+    panel.style.width = w + 'px';
+    panel.style.height = h + 'px';
+    return { w: w, h: h };
+  }
+
+  function rememberSize(size) {
+    try { localStorage.setItem(SIZE_KEY, size.w + 'x' + size.h); } catch (e) {}
+  }
+
+  function storedSize() {
+    var raw;
+    try { raw = localStorage.getItem(SIZE_KEY); } catch (e) { return null; }
+    if (!raw) return null;
+    var bits = String(raw).split('x');
+    var w = parseInt(bits[0], 10), h = parseInt(bits[1], 10);
+    /* A corrupt or half-written value falls back to the CSS default rather than
+       collapsing the panel to nothing. */
+    if (!(w > 0) || !(h > 0)) return null;
+    return { w: w, h: h };
+  }
+
+  function bindResize() {
+    var grips = panel.querySelectorAll('.pip-grip');
+    for (var i = 0; i < grips.length; i++) grip(grips[i]);
+
+    var saved = storedSize();
+    if (saved) applySize(saved.w, saved.h);
+
+    /* A rotated iPad or a dragged-in window can leave the remembered size larger
+       than the screen. Re-clamped rather than thrown away, so her choice comes
+       back when there is room for it again. */
+    window.addEventListener('resize', function () {
+      if (!panel.style.width) return;
+      applySize(parseFloat(panel.style.width), parseFloat(panel.style.height));
+    });
+  }
+
+  function grip(handle) {
+    var axis = handle.getAttribute('data-grip');
+
+    /* Pointer events rather than mouse ones, so the same code covers her iPad.
+       Capture means the drag keeps working when the pointer runs off the grip,
+       which on a 10px strip is immediately. */
+    handle.addEventListener('pointerdown', function (down) {
+      down.preventDefault();
+
+      var box = panel.getBoundingClientRect();
+      var fromX = down.clientX, fromY = down.clientY;
+      var w0 = box.width, h0 = box.height;
+
+      try { handle.setPointerCapture(down.pointerId); } catch (e) {}
+      document.body.classList.add('pip-resizing');
+
+      function move(ev) {
+        /* Subtracted, not added: the panel is pinned to the bottom-right, so
+           dragging up and left is what makes it bigger. */
+        applySize(
+          axis === 'y' ? w0 : w0 - (ev.clientX - fromX),
+          axis === 'x' ? h0 : h0 - (ev.clientY - fromY)
+        );
+      }
+
+      function done() {
+        handle.removeEventListener('pointermove', move);
+        handle.removeEventListener('pointerup', done);
+        handle.removeEventListener('pointercancel', done);
+        document.body.classList.remove('pip-resizing');
+        /* Measured rather than read back off the inline style. A press with no
+           drag never sets one, and parseFloat('') is NaN — which would store
+           "NaNxNaN" and paint the panel with an invalid width. Measuring also
+           catches the case where the CSS max-* clamped the panel tighter than
+           applySize did, so what is remembered is what is actually on screen. */
+        var box = panel.getBoundingClientRect();
+        rememberSize(applySize(box.width, box.height));
+      }
+
+      handle.addEventListener('pointermove', move);
+      handle.addEventListener('pointerup', done);
+      handle.addEventListener('pointercancel', done);
+    });
+
+    /* Keyboard, for the corner grip only. A pointer is not the only way to
+       reach it, and 32px a press is enough to be useful without being tedious. */
+    handle.addEventListener('keydown', function (e) {
+      var dw = 0, dh = 0;
+      if (e.key === 'ArrowLeft') dw = 32;
+      else if (e.key === 'ArrowRight') dw = -32;
+      else if (e.key === 'ArrowUp') dh = 32;
+      else if (e.key === 'ArrowDown') dh = -32;
+      else return;
+      e.preventDefault();
+      var box = panel.getBoundingClientRect();
+      rememberSize(applySize(box.width + dw, box.height + dh));
     });
   }
 

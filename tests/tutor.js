@@ -123,6 +123,80 @@ var withHistory = Tutor.payload(
 );
 check(withHistory.history.length === 2, "prior turns are carried");
 
+// ── what Pip has been told about the site ──────────────────────
+//
+// Pip's knowledge of the modules lives in src/tutor.js as prose, deliberately
+// server-side so the page cannot talk her into describing a module it is not
+// showing. The cost of that is drift: the business module was written, six
+// weeks of it, while her prompt still said Stephen had not built it yet — so
+// she told Abi she knew nothing about business, which is exactly what she had
+// been told to say.
+//
+// These checks compare the prose against the data files. They cannot verify the
+// wording is good, only that it has not gone stale in the ways it actually went
+// stale: a module missing, a week count behind, a threshold changed.
+
+var worker = read(REPO + "\\src\\tutor.js");
+var catalogue = read(REPO + "\\public\\js\\modules.js");
+
+function guideFor(id) {
+    // Each guide is a template literal opening `id: \`` and closing at the
+    // backtick before the next comma-newline. Crude, and fine: the shape is
+    // right there in the same repo and a change to it fails loudly here.
+    var at = worker.indexOf("\n  " + id + ": `");
+    if (at === -1) return "";
+    var from = worker.indexOf("`", at) + 1;
+    var to = worker.indexOf("`", from);
+    return to === -1 ? "" : worker.substring(from, to);
+}
+
+// Every module on the home screen must be one Pip can talk about.
+var ids = [], m, idRe = /id: '([a-z]+)',\s*\n\s*code:/g;
+while ((m = idRe.exec(catalogue)) !== null) ids.push(m[1]);
+check(ids.length >= 2, "found the module catalogue (" + ids.length + " modules)");
+
+for (var g = 0; g < ids.length; g++) {
+    check(guideFor(ids[g]).length > 0,
+          "src/tutor.js has a MODULE_GUIDES entry for '" + ids[g] + "'");
+}
+
+// The week count in the prose must match the week files on disk. Counted from
+// the numbered list Pip is given, so adding week 6 without telling her fails.
+function weekFilesFor(id) {
+    var dir = REPO + "\\public\\js\\data" + (id === "mabu" ? "" : "\\" + id);
+    var folder = fso.GetFolder(dir), count = 0;
+    for (var e = new Enumerator(folder.Files); !e.atEnd(); e.moveNext()) {
+        if (/^week\d+\.js$/i.test(e.item().Name)) count++;
+    }
+    return count;
+}
+
+for (var w2 = 0; w2 < ids.length; w2++) {
+    var id = ids[w2], guide = guideFor(id), have = weekFilesFor(id);
+    var listed = 0;
+    while (guide.indexOf("\n" + (listed + 1) + ". ") !== -1) listed++;
+    check(listed === have,
+          id + ": Pip is told about " + listed + " weeks, but " + have +
+          " week files exist — update MODULE_GUIDES in src/tutor.js");
+}
+
+// The badge threshold is quoted to her in prose and lives in storage.js.
+var badgeAt = /BADGE_AT\s*=\s*(\d+)/.exec(read(REPO + "\\public\\js\\storage.js"));
+check(!!badgeAt, "found BADGE_AT in storage.js");
+if (badgeAt) {
+    check(worker.indexOf("at " + badgeAt[1] + " correct answers") !== -1,
+          "Pip is told badges unlock at " + badgeAt[1] +
+          " correct answers, matching storage.js");
+}
+
+// The bug itself: naming one module in the rules that apply everywhere is what
+// made her deny knowing the other one.
+var baseFrom = worker.indexOf("const BASE_RULES");
+var baseTo = worker.indexOf("const MODE_RULES");
+var base = worker.substring(baseFrom, baseTo);
+check(base.indexOf("MABU") === -1 && base.indexOf("INBA") === -1,
+      "BASE_RULES names no single module — which module she is in comes from MODULE_GUIDES");
+
 WScript.Echo("Tutor payload checks run: " + n);
 WScript.Echo("");
 if (!fails.length) {

@@ -460,7 +460,10 @@ for (i = 0; i < pu.sessions.length; i++) {
 }
 ok(afterExamAaa === 0, "urgency: the finished module is still taking slots after its exam");
 
-// ── 13. no exam dates at all still produces a plan ───────────────
+// ── 13. no exam date means no sessions ───────────────────────────
+// A schedule with no deadline is not a plan, it is a list of everything she
+// has to do stretching into next year — the exact feeling the screen exists
+// to remove. Nothing is planned until she says when the paper is.
 
 set({
     days: [1, 2, 3, 4, 5],
@@ -469,15 +472,31 @@ set({
     exams: {}
 });
 
-var pn = Schedule.plan(), fn2 = flat(pn.sessions);
-ok(requiredCount(pn.sessions) === 60,
-   "no exams: all 60 required topics should still be planned, got " + requiredCount(pn.sessions));
+var pn = Schedule.plan();
+ok(pn.sessions.length === 0,
+   "no exams: nothing should be scheduled without a deadline, got " + pn.sessions.length + " sessions");
 ok(pn.warnings.length === 0, "no exams: there is no deadline to miss, so no warning");
 ok(pn.exams.length === 0, "no exams: nothing should be marked as an exam day");
+ok(pn.needsDates.length === 2,
+   "no exams: both modules should be reported as waiting for a date, got " + pn.needsDates.length);
 
-var extraN = 0;
-for (i = 0; i < fn2.length; i++) if (fn2[i].pass > 3) extraN++;
-ok(extraN === 0, "no exams: without a deadline there is no gap to fill, so no extra revision");
+// One module dated and the other not: only the dated one appears.
+set({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 3, minutes: 60, topics: 1, times: ['09:00', '12:00', '15:00'] },
+    weekend: { count: 3, minutes: 60, topics: 1, times: ['09:00', '12:00', '15:00'] },
+    exams: { aaa: daysFromToday(60) }
+});
+
+var pmix = Schedule.plan();
+ok(countFor(pmix.sessions, 'bbb') === 0,
+   "half dated: the undated module is still being scheduled");
+ok(requiredCount(pmix.sessions, 'aaa') === 30,
+   "half dated: the dated module should still get all 30 of its topics, got " +
+   requiredCount(pmix.sessions, 'aaa'));
+ok(pmix.needsDates.length === 1 && pmix.needsDates[0].id === 'bbb',
+   "half dated: the wrong module was reported as waiting for a date");
+ok(pmix.warnings.length === 0, "half dated: the dated module fits, so there should be no warning");
 
 // ── 14. an exam already gone ─────────────────────────────────────
 

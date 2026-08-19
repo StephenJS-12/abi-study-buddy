@@ -292,7 +292,13 @@ var App = (function () {
              (plan.warnings.length === 1 ? ' module will not fit' : ' modules will not fit');
     }
     var next = plan.sessions.length ? plan.sessions[0] : null;
-    if (!next) return 'Plan your run-up to the exams';
+    if (!next) {
+      /* Nothing is planned until she has given an exam date, so the tile has
+         to say what is missing rather than just looking empty. */
+      return plan.needsDates.length
+        ? 'Add your exam dates to fill this in'
+        : 'Everything is done — nothing left to plan';
+    }
 
     var today = Schedule.todayYmd();
     var when = next.date === today

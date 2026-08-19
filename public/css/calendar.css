@@ -385,6 +385,50 @@ body.reduce-motion .cal-daypanel { animation: none; }
   font-size: 1.5rem; line-height: 1; color: var(--muted); padding: 0 .3rem;
 }
 
+/* ── asking for the exam dates ──────────────────────────────── */
+
+/* Nothing at all is planned until she says when the papers are, so this is
+   the first thing she sees on a fresh calendar. An empty grid with no
+   explanation is the one state that makes a scheduler look broken. */
+.cal-prompt {
+  border: 2px dashed var(--lilac-200);
+  background: linear-gradient(150deg, var(--lilac-50), var(--pink-50));
+  border-radius: var(--r-lg);
+  padding: 1.6rem 1.3rem;
+  margin-bottom: 1.2rem;
+  text-align: center;
+}
+.cal-prompt-emoji { font-size: 2.2rem; display: block; margin-bottom: .4rem; }
+.cal-prompt h3 { margin: 0 0 .5rem; font-size: 1.15rem; }
+.cal-prompt p {
+  margin: 0 auto 1rem;
+  max-width: 46ch;
+  font-size: .92rem;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+
+/* The quieter version, for when some modules are dated and some are not. */
+.cal-note {
+  border: 1px solid var(--lilac-200);
+  background: var(--lilac-50);
+  border-radius: var(--r-md);
+  padding: .7rem .95rem;
+  margin-bottom: 1.2rem;
+  font-size: .88rem;
+  color: var(--ink-soft);
+}
+.cal-linkbtn {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--lilac-600);
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 /* ── warnings ───────────────────────────────────────────────── */
 
 .cal-warn {

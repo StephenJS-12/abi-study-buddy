@@ -344,17 +344,20 @@ var Schedule = (function () {
     var mods = moduleList();
     var i, j;
 
-    /* How far to generate. Past the last exam there is nothing left to plan;
-       with no exams set at all we still need somewhere to stop, so we allow
-       enough room for the three required passes and let the loop end when the
-       queues run dry. */
-    var stop = start;
+    /* NOTHING IS PLANNED FOR A MODULE WITH NO EXAM DATE.
+
+       A schedule with no deadline is not a plan, it is a list of everything
+       she has to do stretching into next year — which is exactly the feeling
+       this screen exists to remove. So a module contributes sessions only once
+       she has told us when its paper is. The modules still waiting are handed
+       back as `needsDates` so the screen can ask for them by name. */
+    var stop = start, needsDates = [];
     for (i = 0; i < mods.length; i++) {
       var e = s.exams[mods[i].id];
-      if (e && e > stop) stop = e;
+      if (!e) { needsDates.push(mods[i]); continue; }
+      if (e > stop) stop = e;
     }
-    var anyExam = stop !== start;
-    if (!anyExam) stop = ymd(addDays(parseYmd(start) || new Date(), MAX_DAYS - 1));
+    var anyExam = needsDates.length < mods.length;
 
     /* Exam days are blocked out of the slot list, so nothing is ever planned
        on top of a paper she is sitting. */
@@ -373,7 +376,7 @@ var Schedule = (function () {
     }
     examDays.sort(function (a, b) { return a.date < b.date ? -1 : 1; });
 
-    var slots = buildSlots(start, stop, blocked);
+    var slots = anyExam ? buildSlots(start, stop, blocked) : [];
 
     /* Topic capacity from each slot to the end, so the urgency comparison
        below can weigh remaining work against remaining CAPACITY rather than
@@ -386,6 +389,10 @@ var Schedule = (function () {
        second revision — with anything already ticked left out. */
     var state = [];
     for (i = 0; i < mods.length; i++) {
+      /* No exam date, no sessions. She can date one module and leave the other
+         blank, and only the dated one appears on the calendar. */
+      if (!s.exams[mods[i].id]) continue;
+
       var topics = topicsFor(mods[i].id);
       var focus = s.focus;
       var queue = [];
@@ -396,7 +403,7 @@ var Schedule = (function () {
       state.push({
         module: mods[i],
         topics: topics,
-        exam: s.exams[mods[i].id] || '',
+        exam: s.exams[mods[i].id],
         queue: queue,
         at: 0,
         nextPass: 4,
@@ -409,7 +416,7 @@ var Schedule = (function () {
     /* The index of the last slot that falls on or before each module's exam.
        Precomputed so the urgency comparison below stays O(1) per slot. */
     for (i = 0; i < state.length; i++) {
-      state[i].lastSlot = state[i].exam ? lastSlotOnOrBefore(slots, state[i].exam) : slots.length - 1;
+      state[i].lastSlot = lastSlotOnOrBefore(slots, state[i].exam);
     }
 
     var sessions = [];
@@ -490,6 +497,9 @@ var Schedule = (function () {
       exams: examDays,
       warnings: warnings,
       modules: mods,
+      /* Modules still waiting for an exam date, so the screen can name them
+         rather than just showing an empty calendar. */
+      needsDates: needsDates,
       start: start,
       stop: stop
     };

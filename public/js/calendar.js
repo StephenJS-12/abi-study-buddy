@@ -85,7 +85,10 @@ var Calendar = (function () {
   /* ───────────────────────── the screen ───────────────────────── */
 
   function render(el) {
-    if (keepScroll < 0 && window.pageYOffset) keepScroll = window.pageYOffset;
+    /* Consumed on the way in, so a render always leaves it cleared. Leaving a
+       value behind would mean the next unrelated draw jumped her somewhere. */
+    var restore = keepScroll;
+    keepScroll = -1;
 
     var plan = Schedule.plan();
     var s = Schedule.settings();
@@ -97,6 +100,7 @@ var Calendar = (function () {
 
     el.innerHTML =
       warningsHtml(plan) +
+      promptHtml(plan) +
       '<div class="cal">' +
         headerHtml() +
         (view === 'month' ? monthHtml(byDate) : weekHtml(byDate)) +
@@ -107,11 +111,7 @@ var Calendar = (function () {
 
     bind(el, plan);
 
-    if (keepScroll > 0) {
-      var y = keepScroll;
-      keepScroll = -1;
-      window.scrollTo(0, y);
-    }
+    if (restore > 0) window.scrollTo(0, restore);
   }
 
   /* Planned sessions, completed ones and exam days all share the calendar.
@@ -526,11 +526,55 @@ var Calendar = (function () {
           ' data-exam="' + esc(m.id) + '">' +
       '</label>';
     }
+
+    /* A start date in the past is ignored by the engine, which always begins
+       at today. Showing it back to her anyway is the honest thing: it is what
+       she typed, and clearing it is one tap. */
+    var startRow = '<label class="cal-timerow">' +
+      '<span>Start studying on</span>' +
+      '<input class="cal-time-in" type="date" value="' + esc(s.start || '') + '"' +
+        ' data-start="1" min="' + esc(Schedule.todayYmd()) + '">' +
+    '</label>';
+
     return '<div class="cal-opt cal-opt-wide">' +
-      '<h4>Exam dates</h4>' +
-      '<p class="cal-hint">Sessions are packed in before these, and the exam day itself is ' +
-      'left clear. Leave blank if you do not know yet.</p>' +
+      '<h4>Dates</h4>' +
+      '<p class="cal-hint">Nothing is scheduled for a module until you say when its exam is. ' +
+      'Sessions are packed in before that date, and the exam day itself is left clear.</p>' +
+      startRow +
+      '<p class="cal-hint">Leave the start blank to begin today.</p>' +
       rows +
+    '</div>';
+  }
+
+  /* Shown when there is nothing on the calendar because she has not said when
+     the papers are. An empty calendar with no explanation is the one state
+     that makes a scheduler look broken rather than unfilled. */
+  function promptHtml(plan) {
+    if (!plan.needsDates.length) return '';
+
+    var names = [];
+    for (var i = 0; i < plan.needsDates.length; i++) names.push(plan.needsDates[i].code);
+    var list = names.join(' and ');
+
+    if (!plan.sessions.length) {
+      return '<div class="cal-prompt">' +
+        '<span class="cal-prompt-emoji">🗓️</span>' +
+        '<h3>Tell me when your exams are</h3>' +
+        '<p>Nothing is planned yet. Add an exam date for <b>' + esc(list) + '</b> and the ' +
+        'whole run-up fills itself in — first pass, revision and second revision, ' +
+        'laid out around the days and times you study.</p>' +
+        '<button class="btn btn-pink" type="button" data-openopts="1">Add exam dates</button>' +
+      '</div>';
+    }
+
+    /* Some modules dated, some not. Quieter, because the calendar is doing its
+       job — but she still needs to know why one subject is missing from it. */
+    return '<div class="cal-note">' +
+      '<b>' + esc(list) + '</b> ' + (names.length === 1 ? 'has' : 'have') +
+      ' no exam date yet, so ' + (names.length === 1 ? 'it is' : 'they are') +
+      ' not on the calendar. ' +
+      '<button class="cal-linkbtn" type="button" data-openopts="1">Add ' +
+      (names.length === 1 ? 'it' : 'them') + '</button>' +
     '</div>';
   }
 
@@ -713,6 +757,25 @@ var Calendar = (function () {
         if (inp.value) s.exams[id] = inp.value; else delete s.exams[id];
         Schedule.update({ exams: s.exams });
         again();
+      });
+    });
+
+    each('[data-start]', function (inp) {
+      inp.addEventListener('change', function () {
+        Schedule.update({ start: inp.value || null });
+        again();
+      });
+    });
+
+    /* Opens the options panel and takes her to it, because the button that
+       says "add exam dates" has to actually put the fields in front of her. */
+    each('[data-openopts]', function (b) {
+      b.addEventListener('click', function () {
+        optsOpen = true;
+        keepScroll = 0;
+        redraw();
+        var panel = document.querySelector('.cal-opts');
+        if (panel && panel.scrollIntoView) panel.scrollIntoView({ block: 'start' });
       });
     });
 

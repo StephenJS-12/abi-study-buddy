@@ -1380,9 +1380,9 @@ if (slot1 && slot2) {
        "two-up: the session she has NOT done yet should still be planned");
 }
 
-// Work ticked on a day with no slots at all — before her start date, or more
-// in one day than she had sessions for — must still be shown. Dropping it
-// would lose the record of an afternoon's work.
+// More work in a day than the day had sessions for. She did it in the sitting
+// she had, so it belongs to that sitting — one session holding all of it,
+// rather than a session plus a homeless block floating at the top of the day.
 baseline({
     days: [0, 1, 2, 3, 4, 5, 6],
     weekday: { count: 1, minutes: 60, topics: 1, times: ['09:00'] },
@@ -1401,8 +1401,35 @@ var timed = 0, untimed = 0;
 for (i = 0; i < spill.done.length; i++) {
     if (spill.done[i].time) timed++; else untimed++;
 }
-ok(timed === 1, "spill: expected one finished session to take the day's only slot, got " + timed);
-ok(untimed >= 1, "spill: the overflow was dropped instead of shown without a time");
+ok(timed === 1, "spill: expected one finished session, got " + timed);
+ok(untimed === 0,
+   "spill: work done in the day's only sitting should join it, not float off untimed");
+for (i = 0; i < spill.done.length; i++) {
+    if (spill.done[i].time === '09:00' && spill.done[i].items.length !== 3) {
+        fail("spill: the 09:00 sitting holds " + spill.done[i].items.length +
+             " topics, but she ticked 3 that day");
+    }
+}
+
+// Work ticked on a day the calendar has NO slots for at all — before her start
+// date — has no sitting to join. It must still be shown, without a time.
+// Dropping it would lose the record of an afternoon's work.
+baseline({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    start: daysFromToday(7),
+    weekday: { count: 1, minutes: 60, topics: 1, times: ['09:00'] },
+    weekend: { count: 1, minutes: 60, topics: 1, times: ['09:00'] },
+    exams: { aaa: daysFromToday(60) }
+});
+Schedule.setDone('aaa-t1', 1, true, today);
+Schedule.setDone('aaa-t2', 1, true, today);
+
+var early = Schedule.plan();
+ok(doneItemCount(early.done) === 2,
+   "early: work done before the start date was dropped, kept " + doneItemCount(early.done));
+var anyTimed = false;
+for (i = 0; i < early.done.length; i++) if (early.done[i].time) anyTimed = true;
+ok(!anyTimed, "early: a day with no slots cannot lend a time to the work done on it");
 
 // ── 21. a part-finished session keeps the rest of its lesson ─────
 //
@@ -1523,7 +1550,149 @@ function orderIn(list, topicId) {
     return 999;
 }
 
-// ── 22. pass names ───────────────────────────────────────────────
+// ── 22. working ahead must not evict another subject ─────────────
+//
+// Abi's second report, and the thing she likes about the calendar taken one
+// step too far.
+//
+// Ticking a future day's topic moves it to today, which is exactly what she
+// wants: finish early, carry on into the next lesson, and it lands on the day
+// she actually did it. But finished work claimed the next free slot of the day
+// whatever module it belonged to. So a one o'clock business session finished
+// early, plus a business lesson pulled forward from tomorrow, took BOTH of
+// today's slots — and the six o'clock maths session was evicted to make room
+// for a subject that already had its turn.
+//
+// Work she did ahead now joins the sitting she did it in. The other subject
+// keeps its session.
+
+reset();
+savedSchedule = {
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 2, unit: 'lessons', lessons: 1, minutes: 60,
+               times: ['13:00', '18:00'], mods: ['aaa', 'bbb'] },
+    weekend: { count: 2, unit: 'lessons', lessons: 1, minutes: 60,
+               times: ['13:00', '18:00'], mods: ['aaa', 'bbb'] },
+    exams: { aaa: daysFromToday(60), bbb: daysFromToday(60) }
+};
+
+var twoMod = Schedule.plan();
+var oneToday = sessionsOn(twoMod.sessions, today, '13:00')[0];
+var sixToday = sessionsOn(twoMod.sessions, today, '18:00')[0];
+ok(oneToday && sixToday, "ahead: expected a session at 13:00 and one at 18:00 today");
+ok(oneToday && oneToday.moduleId === 'aaa', "ahead: 13:00 should be pinned to aaa");
+ok(sixToday && sixToday.moduleId === 'bbb', "ahead: 18:00 should be pinned to bbb");
+
+// Tomorrow's 13:00 is the aaa lesson she will pull forward.
+var tomorrow = Schedule.ymd(Schedule.addDays(Schedule.parseYmd(today), 1));
+var aheadSess = sessionsOn(twoMod.sessions, tomorrow, '13:00')[0];
+ok(aheadSess && aheadSess.moduleId === 'aaa', "ahead: expected an aaa session tomorrow at 13:00");
+
+if (oneToday && sixToday && aheadSess) {
+    var z;
+    // She finishes today's one o'clock lesson...
+    for (z = 0; z < oneToday.items.length; z++) {
+        Schedule.setDone(oneToday.items[z].topicId, oneToday.items[z].pass, true, today);
+    }
+    // ...and, with time left, carries straight on into tomorrow's.
+    for (z = 0; z < aheadSess.items.length; z++) {
+        Schedule.setDone(aheadSess.items[z].topicId, aheadSess.items[z].pass, true, today);
+    }
+
+    var after = Schedule.plan();
+
+    // The bug: bbb lost its evening session to aaa's extra lesson.
+    var evening = sessionsOn(after.sessions, today, '18:00')
+        .concat(sessionsOn(after.done, today, '18:00'));
+    ok(evening.length === 1,
+       "ahead: today's 18:00 session vanished, got " + evening.length);
+    ok(evening.length === 1 && evening[0].moduleId === 'bbb',
+       "ahead: working ahead in aaa evicted bbb from its own 18:00 session — it now holds " +
+       (evening.length ? evening[0].moduleId : 'nothing'));
+
+    // Both aaa lessons are on today, in the sitting she did them in.
+    var sitting = sessionsOn(after.done, today, '13:00')
+        .concat(sessionsOn(after.sessions, today, '13:00'));
+    ok(sitting.length === 1, "ahead: expected one 13:00 session today, got " + sitting.length);
+
+    var lessons = {}, count = 0;
+    for (z = 0; sitting.length === 1 && z < sitting[0].items.length; z++) {
+        if (!lessons[sitting[0].items[z].lessonKey]) {
+            lessons[sitting[0].items[z].lessonKey] = 1;
+            count++;
+        }
+    }
+    ok(count === 2,
+       "ahead: the sitting she worked ahead in should hold both lessons, holds " + count);
+
+    // And nothing was lost or duplicated anywhere in the plan.
+    var all = flat(after.sessions), seen = {};
+    for (z = 0; z < all.length; z++) seen[all[z].key] = (seen[all[z].key] || 0) + 1;
+    for (z = 0; z < after.done.length; z++) {
+        for (var y = 0; y < after.done[z].items.length; y++) {
+            var kk = after.done[z].items[y].key;
+            seen[kk] = (seen[kk] || 0) + 1;
+        }
+    }
+    var doubled = 0, kn;
+    for (kn in seen) if (seen.hasOwnProperty(kn) && seen[kn] > 1) doubled++;
+    ok(doubled === 0, "ahead: " + doubled + " topics appear more than once in the plan");
+}
+
+// The same thing again with the sessions NOT pinned to a module, which is a
+// different code path: choose() decides who gets the slot rather than the
+// setting. It is also the case that needs finished work to count toward the
+// module's tally — otherwise a subject can tick its way through the morning and
+// still look untouched when the afternoon slots are handed out, and take those
+// as well.
+
+reset();
+savedSchedule = {
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 2, unit: 'lessons', lessons: 1, minutes: 60, times: ['13:00', '18:00'] },
+    weekend: { count: 2, unit: 'lessons', lessons: 1, minutes: 60, times: ['13:00', '18:00'] },
+    exams: { aaa: daysFromToday(60), bbb: daysFromToday(60) }
+};
+
+var free = Schedule.plan();
+var freeOne = sessionsOn(free.sessions, today, '13:00')[0];
+var freeSix = sessionsOn(free.sessions, today, '18:00')[0];
+ok(freeOne && freeSix, "free: expected two sessions today");
+ok(freeOne && freeSix && freeOne.moduleId !== freeSix.moduleId,
+   "free: two equally urgent modules should get one session each, not both to one");
+
+if (freeOne && freeSix) {
+    var mineMod = freeOne.moduleId, othersMod = freeSix.moduleId, z;
+
+    /* Her sitting, plus the next session of the SAME module wherever the
+       planner put it — the lesson she would carry on into. */
+    var next = null;
+    for (i = 0; i < free.sessions.length; i++) {
+        if (free.sessions[i] !== freeOne && free.sessions[i].moduleId === mineMod) {
+            next = free.sessions[i];
+            break;
+        }
+    }
+    ok(next !== null, "free: found no later session of the same module to work ahead into");
+
+    if (next) {
+        for (z = 0; z < freeOne.items.length; z++) {
+            Schedule.setDone(freeOne.items[z].topicId, freeOne.items[z].pass, true, today);
+        }
+        for (z = 0; z < next.items.length; z++) {
+            Schedule.setDone(next.items[z].topicId, next.items[z].pass, true, today);
+        }
+
+        var freeAfter = Schedule.plan();
+        var stillTheirs = sessionsOn(freeAfter.sessions, today, '18:00')
+            .concat(sessionsOn(freeAfter.done, today, '18:00'));
+        ok(stillTheirs.length === 1 && stillTheirs[0].moduleId === othersMod,
+           "free: working ahead in " + mineMod + " took " + othersMod +
+           "'s unpinned 18:00 session");
+    }
+}
+
+// ── 23. pass names ───────────────────────────────────────────────
 
 ok(Schedule.passName(1) === 'First pass', "names: pass 1");
 ok(Schedule.passName(2) === 'Revision', "names: pass 2");

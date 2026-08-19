@@ -846,3 +846,54 @@ body.reduce-motion .cal-sum-fill { transition: none; }
 }
 .cal-focusweek > summary .chip { margin-left: auto; flex: none; }
 .cal-focusweek > div { padding: .6rem .7rem .7rem; }
+
+/* ── a folded session ───────────────────────────────────────────
+   Week view only. Seven columns each listing five topics with tick boxes is
+   more than anyone reads at a glance, so only today's sessions start open and
+   the rest of the week folds to one line: the time, the module, and which
+   lesson it is.
+
+   A <details> rather than a class and a click handler — it opens on tap, on
+   Enter and on find-in-page, and reports its own state. */
+
+.cal-card.is-fold > summary { list-style: none; cursor: pointer; }
+.cal-card.is-fold > summary::-webkit-details-marker { display: none; }
+.cal-card.is-fold > summary::marker { content: ""; }
+
+.cal-card-sum { display: block; }
+.cal-card-sum:hover { background: rgba(255, 255, 255, .45); }
+
+/* The gist line, under the time and module. Hidden once open, because the
+   lesson bar below then says the same thing with the title attached. */
+.cal-gist {
+  display: flex;
+  align-items: baseline;
+  gap: .3rem;
+  padding: .1rem .5rem .4rem;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--card-ink, var(--lilac-700));
+}
+.cal-card.is-fold[open] > summary .cal-gist { display: none; }
+
+.cal-gist-text { min-width: 0; overflow-wrap: break-word; }
+
+.cal-caret {
+  flex: none;
+  font-size: .6rem;
+  line-height: 1.5;
+  transition: transform .16s var(--ease-out, ease);
+}
+.cal-card.is-fold[open] > summary .cal-caret { transform: rotate(90deg); }
+
+/* Open, the caret has nowhere to live in the gist, so it moves to the head.
+   Without this there is no way to tell an open card from an unfoldable one. */
+.cal-card.is-fold > summary .cal-card-head { display: flex; }
+.cal-card.is-fold[open] > summary .cal-card-head::after {
+  content: "▾";
+  font-size: .6rem;
+  opacity: .7;
+  margin-left: .3rem;
+}

@@ -51,6 +51,16 @@ var Calendar = (function () {
   var focusWeekOpen = {};
   var keepScroll = -1;
 
+  /* Which folded week-view sessions she has opened or shut by hand, keyed by
+     date|time|module. Absent means "however the day decides" — today open, the
+     rest of the week shut. Held here rather than in Store because it is where
+     she is looking right now, not a preference worth keeping between sessions.
+
+     It exists because ticking a topic rebuilds the whole calendar: without it,
+     opening a future session and ticking one topic would snap it shut again
+     before she could reach the second. */
+  var openCards = {};
+
   function esc(s) {
     return String(s === undefined || s === null ? '' : s)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -407,8 +417,23 @@ var Calendar = (function () {
       var key = Schedule.ymd(day);
       var items = byDate[key] || [];
 
+      /* Today's sessions are open; the rest of the week folds away. A week of
+         seven columns each listing five topics with tick boxes is more than
+         she can read at a glance, and the day she is actually working is the
+         one she needs open.
+
+         An open card stays open across a redraw — see openCards — so ticking
+         one topic does not shut the session she is halfway through. */
       var cards = '';
-      for (var j = 0; j < items.length; j++) cards += blockHtmlFor(items[j]);
+      for (var j = 0; j < items.length; j++) {
+        var b = items[j];
+        cards += blockHtmlFor(b, {
+          fold: true,
+          open: b.kind === 'session'
+            ? (openCards[cardKey(b)] !== undefined ? openCards[cardKey(b)] : key === today)
+            : false
+        });
+      }
       if (!items.length) cards = '<p class="cal-empty">Nothing planned</p>';
 
       out += '<div class="cal-wday' + (key === today ? ' is-today' : '') + '">' +
@@ -428,10 +453,12 @@ var Calendar = (function () {
      column — the old layout gave it whatever was left after a 40px button and
      a 130px column, which came to about four characters. */
 
-  function blockHtmlFor(block) {
+  /* Only study sessions fold. An exam is one line already, and an event is the
+     thing on the day she most needs to see without opening anything. */
+  function blockHtmlFor(block, opts) {
     if (block.kind === 'exam') return examHtml(block);
     if (block.kind === 'event') return eventBlockHtml(block);
-    return cardHtml(block);
+    return cardHtml(block, opts);
   }
 
   /* An assignment, test or class. Same shape as a study session so a day reads
@@ -476,7 +503,41 @@ var Calendar = (function () {
     '</div>';
   }
 
-  function cardHtml(block) {
+  /* The one line a folded session shows. Deliberately the lesson TAG and not
+     its title: folded is meant to be scannable, and seven columns of "The
+     nature and role of business" is the clutter this exists to remove.
+
+     A session measured in topics rather than lessons has no lesson to name, so
+     the week and a count is as close to the rule as it gets. */
+  function gistFor(block) {
+    var i, out = [];
+
+    if (block.lessons && block.lessons.length) {
+      for (i = 0; i < block.lessons.length; i++) {
+        out.push('Wk ' + block.lessons[i].weekNumber + ' · Lesson ' + block.lessons[i].number);
+      }
+      return out.join('  ·  ');
+    }
+
+    var seen = {}, weeks = [];
+    for (i = 0; i < block.items.length; i++) {
+      var w = block.items[i].weekNumber;
+      if (w && !seen[w]) { seen[w] = 1; weeks.push(w); }
+    }
+    var n = block.items.length;
+    return (weeks.length ? 'Wk ' + weeks.join(', ') + ' · ' : '') +
+           n + (n === 1 ? ' topic' : ' topics');
+  }
+
+  /* Identifies a card across a redraw, so one she has opened stays open when
+     ticking something rebuilds the screen. Date, time and module are what make
+     a session unique within a week. */
+  function cardKey(block) {
+    return block.date + '|' + (block.time || '') + '|' + block.moduleId;
+  }
+
+  function cardHtml(block, opts) {
+    opts = opts || {};
     var c = hue(block.moduleId);
     var rows = '', i;
 
@@ -514,23 +575,44 @@ var Calendar = (function () {
       }
     }
 
-    return '<div class="cal-card' + (block.done ? ' is-done' : '') +
-      (block.late ? ' is-late' : '') + '" style="' + vars(c) + '">' +
-      '<div class="cal-card-head">' +
-        /* A finished session now keeps the time of the slot it filled, so it
-           has to say both — "09:00" alone would look like work still to do,
-           and "Done" alone would throw away which sitting it was. Only work
-           finished on a day the calendar has no slot for falls back to the
-           bare word. */
-        '<span class="cal-time' + (block.done ? ' cal-time-done' : '') + '">' +
-          (block.done ? '✓ ' : '') + esc(block.time || 'Done') +
+    var klass = 'cal-card' + (block.done ? ' is-done' : '') +
+      (block.late ? ' is-late' : '');
+
+    /* A finished session now keeps the time of the slot it filled, so the head
+       has to say both — "09:00" alone would look like work still to do, and
+       "Done" alone would throw away which sitting it was. Only work finished on
+       a day the calendar has no slot for falls back to the bare word. */
+    var head =
+      '<span class="cal-time' + (block.done ? ' cal-time-done' : '') + '">' +
+        (block.done ? '✓ ' : '') + esc(block.time || 'Done') +
+      '</span>' +
+      '<span class="cal-mod"><span class="cal-mod-emoji">' +
+        modEmoji(block.moduleId) + '</span>' + esc(block.moduleCode) + '</span>';
+
+    if (!opts.fold) {
+      return '<div class="' + klass + '" style="' + vars(c) + '">' +
+        '<div class="cal-card-head">' + head + '</div>' +
+        lessonBar + rows +
+      '</div>';
+    }
+
+    /* Folded, for the week view. A <details> rather than a class and a click
+       handler: it opens on tap, on Enter and on find-in-page, and it reports
+       its own state, which is the only reliable way to know it.
+
+       The gist is hidden by CSS once open, because the lesson bar underneath
+       says the same thing with the title attached. */
+    return '<details class="' + klass + ' is-fold" style="' + vars(c) + '"' +
+      (opts.open ? ' open' : '') + ' data-card="' + esc(cardKey(block)) + '">' +
+      '<summary class="cal-card-sum">' +
+        '<span class="cal-card-head">' + head + '</span>' +
+        '<span class="cal-gist">' +
+          '<span class="cal-caret">▸</span>' +
+          '<span class="cal-gist-text">' + esc(gistFor(block)) + '</span>' +
         '</span>' +
-        '<span class="cal-mod"><span class="cal-mod-emoji">' +
-          modEmoji(block.moduleId) + '</span>' + esc(block.moduleCode) + '</span>' +
-      '</div>' +
-      lessonBar +
-      rows +
-    '</div>';
+      '</summary>' +
+      lessonBar + rows +
+    '</details>';
   }
 
   /* The list under the month grid for whichever day she tapped. */
@@ -956,6 +1038,16 @@ var Calendar = (function () {
         anchor = Schedule.todayYmd();
         openDay = null;
         again();
+      });
+    });
+
+    /* A folded session remembering whether she opened it. <details> reports its
+       own state, which is the only reliable way to know it — she can open one
+       by tap, by keyboard, or by find-in-page. No redraw: opening a card is not
+       a change to the plan. */
+    each('[data-card]', function (d) {
+      d.addEventListener('toggle', function () {
+        openCards[d.getAttribute('data-card')] = d.open;
       });
     });
 

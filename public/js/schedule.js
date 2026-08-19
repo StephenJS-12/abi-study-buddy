@@ -718,6 +718,11 @@ var Schedule = (function () {
       settled[entries[i].date].push(entries[i]);
     }
 
+    /* date|moduleId -> the settled session that took a slot that day, so extra
+       work she did in the same sitting joins it instead of evicting a later
+       session. */
+    var homes = {};
+
     var sessions = [], doneSessions = [];
     for (i = 0; i < slots.length; i++) {
       var slot = slots[i];
@@ -727,11 +732,25 @@ var Schedule = (function () {
       /* A session she has already started takes its slot before anything is
          planned into it. Without this the slot is replanned every time she
          ticks something off, so the session she is sitting in front of keeps
-         growing new work and can never be completed. */
-      var settledHere = takeSettled(settled, slot);
+         growing new work and can never be completed.
+
+         It may only take the slot if the slot was going to that module anyway
+         — see takeSettled. Work she did ahead of herself waits in the bag and
+         joins the sitting she actually did it in. */
+      var settledHere = takeSettled(settled, slot, wouldTake(state, slot, i));
       if (settledHere) {
         var host = stateFor(state, settledHere.moduleId);
-        if (host) topUp(host, slot, settledHere);
+        if (host) {
+          /* Counted as work this module has had, so choose() sends the next
+             slot to whoever is now furthest behind. Without it a module could
+             tick its way through a morning and still look untouched when the
+             afternoon slots were handed out. */
+          host.placed += settledHere.items.length;
+          topUp(host, slot, settledHere);
+        }
+        /* Remembered so anything she did ahead can join this sitting rather
+           than taking a slot of its own. */
+        homes[slot.date + '|' + settledHere.moduleId] = settledHere;
         /* Finished ones are a record; part-finished ones are still work, and
            belong with the sessions so the home tile can offer her the one she
            is halfway through rather than the next untouched one. */
@@ -779,7 +798,7 @@ var Schedule = (function () {
 
     /* Finished work the slots could not take — done before her start date, or
        more in one day than she had sessions for. */
-    doneSessions = doneSessions.concat(sweepSettled(settled));
+    doneSessions = doneSessions.concat(sweepSettled(settled, homes, state));
     doneSessions.sort(function (a, b) {
       if (a.date !== b.date) return a.date < b.date ? -1 : 1;
       return String(a.time) < String(b.time) ? -1 : 1;
@@ -986,18 +1005,53 @@ var Schedule = (function () {
    * completed, and the NEXT lesson goes into the next session, which is what
    * she expected all along.
    */
-  function takeSettled(pool, slot) {
+  /* Which module the planner would give this slot to if nothing had been
+     ticked. Neither choose() nor pinned() changes anything, so this is safe to
+     ask speculatively. */
+  function wouldTake(state, slot, index) {
+    if (slot.mod) {
+      var p = pinned(state, index, slot.mod);
+      if (p) return p.module.id;
+    }
+    var c = choose(state, index, null);
+    return c ? c.module.id : null;
+  }
+
+  function bagHas(bag, moduleId) {
+    for (var k = 0; k < bag.length; k++) if (bag[k].moduleId === moduleId) return true;
+    return false;
+  }
+
+  function takeSettled(pool, slot, want) {
     var bag = pool[slot.date];
     if (!bag || !bag.length) return null;
 
-    /* A slot pinned to a subject takes that subject's finished work if there
-       is any, so a session she completed lands in the slot she meant it for
-       rather than displacing another module's. */
-    var moduleId = bag[0].moduleId, k;
-    if (slot.mod) {
-      for (k = 0; k < bag.length; k++) {
-        if (bag[k].moduleId === slot.mod) { moduleId = slot.mod; break; }
-      }
+    /* WHICH MODULE MAY CLAIM THIS SLOT.
+     *
+     * `want` is the module the slot would have gone to anyway. Only that
+     * module's finished work may take it.
+     *
+     * The alternative — letting any of the day's finished work take the next
+     * free slot — is what broke when Abi finished her one o'clock lesson early
+     * and carried on into tomorrow's. Both lessons were business and both were
+     * ticked today, so the second one took the six o'clock slot and evicted the
+     * maths session that was supposed to be there. Working ahead should not
+     * cost her a different subject's session.
+     *
+     * Turning the slot down leaves that work in the bag; it is merged into the
+     * sitting she actually did it in once every slot has been dealt with. See
+     * sweepSettled.
+     *
+     * `want` is null only when nothing is pending anywhere — the end of the
+     * course. Then there is no session to protect and the old first-come rule
+     * is fine. */
+    var moduleId, k;
+    if (want) {
+      if (!bagHas(bag, want)) return null;
+      moduleId = want;
+    } else {
+      moduleId = bag[0].moduleId;
+      if (slot.mod && bagHas(bag, slot.mod)) moduleId = slot.mod;
     }
 
     var room = slot.room || slot.topics || 1;
@@ -1127,17 +1181,33 @@ var Schedule = (function () {
     return null;
   }
 
-  /* Whatever the slots could not take: work done before her start date, and
-     days where she got through more than she had sessions for. Shown without
-     a time, because there is no slot to borrow one from — but shown, which is
-     the point. Dropping it would lose the record of an afternoon's work. */
-  function sweepSettled(pool) {
-    var out = [], key, i;
+  /* Whatever the slots could not take.
+   *
+   * Two kinds end up here. Work finished on a day the calendar has no slot for
+   * — before her start date, or more in one day than she had sessions — and
+   * work she did AHEAD, which turned a slot down so it would not evict another
+   * module's session.
+   *
+   * The second kind has a home: the sitting she actually did it in. `homes`
+   * holds the settled session each module already took that day, so an extra
+   * lesson joins the one o'clock session rather than appearing on its own.
+   * Only what has no home at all becomes an untimed block. */
+  function sweepSettled(pool, homes, state) {
+    var out = [], touched = [], key, i;
+
     for (key in pool) {
       if (!Object.prototype.hasOwnProperty.call(pool, key)) continue;
       var bag = pool[key];
       var groups = {}, order = [];
+
       for (i = 0; i < bag.length; i++) {
+        var home = homes[bag[i].date + '|' + bag[i].moduleId];
+        if (home) {
+          home.items.push(bag[i].item);
+          if (indexOfIn(touched, home) === -1) touched.push(home);
+          continue;
+        }
+
         var gk = bag[i].moduleId;
         if (!groups[gk]) {
           groups[gk] = {
@@ -1157,7 +1227,28 @@ var Schedule = (function () {
       }
       for (i = 0; i < order.length; i++) out.push(groups[order[i]]);
     }
+
+    /* A session that has just grown has to be put back in taught order and
+       have its lesson list rebuilt, or it lists a lesson it no longer only
+       holds. */
+    for (i = 0; i < touched.length; i++) {
+      var sess = touched[i];
+      var st = stateFor(state, sess.moduleId);
+      if (st) {
+        sess.items.sort(function (a, b) {
+          if (a.pass !== b.pass) return a.pass - b.pass;
+          return (st.order[a.topicId] || 0) - (st.order[b.topicId] || 0);
+        });
+      }
+      sess.lessons = lessonsIn(sess.items, sess.unit);
+    }
+
     return out;
+  }
+
+  function indexOfIn(arr, v) {
+    for (var i = 0; i < arr.length; i++) if (arr[i] === v) return i;
+    return -1;
   }
 
   function passName(n) {

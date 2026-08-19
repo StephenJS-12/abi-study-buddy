@@ -140,10 +140,22 @@ function flat(sessions) {
     return out;
 }
 
+/* Everything the plan schedules, first pass and revision alike. */
 function requiredCount(sessions, moduleId) {
     var f = flat(sessions), n = 0;
     for (var i = 0; i < f.length; i++) {
         if (f[i].pass > 3) continue;
+        if (moduleId && f[i].moduleId !== moduleId) continue;
+        n++;
+    }
+    return n;
+}
+
+/* The first pass alone — the only work the plan treats as required. */
+function firstPassCount(sessions, moduleId) {
+    var f = flat(sessions), n = 0;
+    for (var i = 0; i < f.length; i++) {
+        if (f[i].pass !== 1) continue;
         if (moduleId && f[i].moduleId !== moduleId) continue;
         n++;
     }
@@ -592,8 +604,12 @@ for (i = 0; i < pu.warnings.length; i++) if (pu.warnings[i].moduleId === 'aaa') 
 ok(aaaWarn === null,
    "urgency: the urgent module ran out of sessions before its exam - it is being starved by the module " +
    "with four months to spare" + (aaaWarn ? " (" + aaaWarn.short + " short)" : ""));
-ok(requiredCount(pu.sessions, 'aaa') === 30,
-   "urgency: expected all 30 aaa topics before its exam, got " + requiredCount(pu.sessions, 'aaa'));
+/* The first pass is what has to fit. Revision for aaa may well lose slots to
+   bbb's first pass, and should — everything gets covered once before anything
+   gets covered twice. */
+ok(firstPassCount(pu.sessions, 'aaa') === 10,
+   "urgency: the urgent module's first pass is incomplete, got " +
+   firstPassCount(pu.sessions, 'aaa') + " of 10");
 
 var bbbEarly = 0;
 for (i = 0; i < pu.sessions.length; i++) {
@@ -955,6 +971,86 @@ ok(Schedule.settings().weekday.unit === 'topics',
 set({ weekday: { count: 1, unit: 'lessons', lessons: 99, times: ['09:00'], mins: [60], mods: [''] } });
 ok(Schedule.settings().weekday.lessons <= 4, "lessons: an absurd lesson count should be capped");
 
+// ── 18c. revision is optional; the first pass is not ─────────────
+// The plan is a guide, not a law. Covering everything once before the exam is
+// the only thing it treats as required; revision is added afterwards, only
+// while there is room. A calendar that declared her hundreds of sittings
+// behind because it had silently demanded three passes of everything would be
+// a reprimand rather than a plan.
+
+/* Barely enough room for one pass and nothing more: no warning, and no
+   revision squeezed in ahead of first-pass work. */
+set({
+    days: [1, 2, 3, 4, 5],
+    weekday: { count: 2, unit: 'topics', topics: 1, times: ['17:00', '19:00'],
+               mins: [60, 60], mods: ['', ''] },
+    weekend: { count: 1, unit: 'topics', topics: 1, times: ['09:00'], mins: [60], mods: [''] },
+    exams: { aaa: daysFromToday(15), bbb: daysFromToday(15) }
+});
+
+var pTight = Schedule.plan();
+ok(pTight.warnings.length === 0,
+   "optional: 20 first-pass topics fit in ~22 slots, so nothing should be reported short — got " +
+   (pTight.warnings.length ? pTight.warnings[0].text : ''));
+ok(firstPassCount(pTight.sessions) === 20,
+   "optional: every topic should be covered once, got " + firstPassCount(pTight.sessions));
+
+/* EVERYTHING once before ANYTHING twice. No revision may be scheduled before
+   the last first-pass session of either module. */
+var lastFirst = '', firstRevision = '';
+var ft = flat(pTight.sessions);
+for (i = 0; i < ft.length; i++) {
+    var when = ft[i].date + ' ' + ft[i].time;
+    if (ft[i].pass === 1) { if (when > lastFirst) lastFirst = when; }
+    else if (!firstRevision || when < firstRevision) firstRevision = when;
+}
+ok(!firstRevision || firstRevision > lastFirst,
+   "optional: revision was scheduled at " + firstRevision +
+   " while first-pass work was still outstanding until " + lastFirst);
+
+/* Plenty of room: revision appears, and it is not counted against her either
+   way. */
+set({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 3, unit: 'topics', topics: 1, times: ['09:00', '12:00', '15:00'],
+               mins: [60, 60, 60], mods: ['', '', ''] },
+    weekend: { count: 3, unit: 'topics', topics: 1, times: ['09:00', '12:00', '15:00'],
+               mins: [60, 60, 60], mods: ['', '', ''] },
+    exams: { aaa: daysFromToday(90), bbb: daysFromToday(90) }
+});
+var pRoomy = Schedule.plan(), fr = flat(pRoomy.sessions);
+var revisions = 0;
+for (i = 0; i < fr.length; i++) if (fr[i].pass > 1) revisions++;
+ok(revisions > 0, "optional: with three months of room, revision should be scheduled");
+ok(pRoomy.warnings.length === 0, "optional: everything fits, so no warning");
+ok(firstPassCount(pRoomy.sessions) === 20, "optional: the first pass should still be complete");
+
+/* Nowhere near enough room: the warning counts FIRST-PASS topics only. Twenty
+   topics, three Mondays, so ten are covered and ten are not. */
+set({
+    days: [1],
+    weekday: { count: 1, unit: 'topics', topics: 1, times: ['17:00'], mins: [60], mods: [''] },
+    weekend: { count: 1, unit: 'topics', topics: 1, times: ['09:00'], mins: [60], mods: [''] },
+    exams: { aaa: daysFromToday(21), bbb: daysFromToday(21) }
+});
+var pShort = Schedule.plan();
+var total = 0;
+for (i = 0; i < pShort.warnings.length; i++) total += pShort.warnings[i].short;
+ok(total === 20 - firstPassCount(pShort.sessions),
+   "optional: the shortfall should be exactly the first-pass topics with no slot — reported " +
+   total + ", actually " + (20 - firstPassCount(pShort.sessions)));
+ok(total < 40, "optional: the shortfall is still counting revision she was never owed (" + total + ")");
+
+/* And no revision at all should be scheduled while first-pass work is being
+   dropped for want of room. */
+var fs = flat(pShort.sessions);
+for (i = 0; i < fs.length; i++) {
+    if (fs[i].pass > 1) {
+        fail("optional: revision was scheduled while first-pass topics were going uncovered");
+        break;
+    }
+}
+
 // ── 19. pinning a session to a module ────────────────────────────
 // She wants business at 17:00 and maths at 19:00. Nothing else may take
 // those slots while the pinned module still has work.
@@ -1045,8 +1141,10 @@ set({
 var pcap = Schedule.plan();
 var aaaW = null;
 for (i = 0; i < pcap.warnings.length; i++) if (pcap.warnings[i].moduleId === 'aaa') aaaW = pcap.warnings[i];
-ok(aaaW !== null && aaaW.short === 30,
-   "pin: a module pinned out of every slot should report all 30 topics short, got " +
+/* Ten first-pass topics with nowhere to go. Not thirty: revision it never had
+   room for is not a shortfall. */
+ok(aaaW !== null && aaaW.short === 10,
+   "pin: a module pinned out of every slot should report its 10 first-pass topics short, got " +
    (aaaW ? aaaW.short : 'no warning'));
 ok(countFor(pcap.sessions, 'aaa') === 0, "pin: a module pinned out of every slot still got sessions");
 

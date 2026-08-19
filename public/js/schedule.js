@@ -11,14 +11,21 @@
  *   an hour is not enough for more and a schedule that quietly expects three
  *   topics in one sitting is a schedule she will fall behind on in week one.
  *
- *   Every topic is studied three times: a first pass, a revision, and a second
- *   revision. Those are laid END TO END and generated up front, so the whole
- *   run to the exam is visible on day one rather than appearing a fortnight at
- *   a time.
+ *   THE FIRST PASS IS THE WORK. REVISION IS A BONUS.
  *
- *   If she starts early enough that all three passes fit with room left over,
- *   further revision rounds are generated to fill the space rather than
- *   leaving the calendar empty in the run-up to the exam.
+ *   Covering every topic once, before the exam, is the only thing this plan
+ *   treats as required. Revision rounds are added afterwards, one at a time,
+ *   and only while there is still room before the exam — so a plan with three
+ *   weeks in it revises everything twice, and a plan with three days in it
+ *   simply does not, without ever telling her she is behind.
+ *
+ *   That also fixes the order across modules: a module still on its first
+ *   pass always outranks one that has finished and would be revising.
+ *   Everything is covered once before anything is covered twice.
+ *
+ *   The shortfall warning only ever counts first-pass topics. A calendar that
+ *   announced she was three hundred sittings behind because it had silently
+ *   demanded three passes of everything is not a guide, it is a reprimand.
  *
  * WHY DONE TOPICS VANISH FROM THE FUTURE
  *
@@ -554,8 +561,21 @@ var Schedule = (function () {
       return arr;
     }
 
-    /* Per-module state. `queue` holds the required work — first pass, revision,
-       second revision — with anything already ticked left out. */
+    /* Per-module state.
+     *
+     * `queue` holds the REQUIRED work, and required means the first pass and
+     * nothing else. Revision is a bonus: worth doing, scheduled whenever there
+     * is room before the exam, and never counted against her when there is
+     * not. A schedule that declares her three hundred sittings behind because
+     * it silently demanded three passes of everything is not a guide, it is a
+     * reprimand.
+     *
+     * That also decides the order of the whole calendar. A module still on its
+     * first pass always outranks a module that has finished one and would be
+     * revising — see choose(), where a finished queue drops to almost no
+     * priority. Everything gets covered once before anything gets covered
+     * twice.
+     */
     var state = [];
     for (i = 0; i < mods.length; i++) {
       /* No exam date, no sessions. She can date one module and leave the other
@@ -563,19 +583,19 @@ var Schedule = (function () {
       if (!s.exams[mods[i].id]) continue;
 
       var topics = topicsFor(mods[i].id);
-      var focus = s.focus;
+      var first = passQueue(topics, 1, s.focus);
       var queue = [];
-      for (var pass = 1; pass <= 3; pass++) {
-        var q = passQueue(topics, pass, focus);
-        for (j = 0; j < q.length; j++) queue.push({ topic: q[j], pass: pass });
-      }
+      for (j = 0; j < first.length; j++) queue.push({ topic: first[j], pass: 1 });
+
       state.push({
         module: mods[i],
         topics: topics,
         exam: s.exams[mods[i].id],
         queue: queue,
         at: 0,
-        nextPass: 4,
+        /* Revision starts at pass 2 and is added a round at a time, only while
+           the exam is still ahead. */
+        nextPass: 2,
         placed: 0,
         overflow: 0,
         lastSlot: -1
@@ -626,7 +646,9 @@ var Schedule = (function () {
         }
         st.at++;
         st.placed++;
-        if (late && item.pass <= 3) st.overflow++;
+        /* Only the first pass counts as work she has missed. Revision that
+           falls past the exam is revision she was never owed. */
+        if (late && item.pass === 1) st.overflow++;
 
         out.push({
           key: markKey(item.topic.id, item.pass),
@@ -708,23 +730,21 @@ var Schedule = (function () {
     for (i = 0; i < state.length; i++) {
       var st = state[i];
       var left = 0;
-      for (j = st.at; j < st.queue.length; j++) if (st.queue[j].pass <= 3) left++;
+      for (j = st.at; j < st.queue.length; j++) if (st.queue[j].pass === 1) left++;
       var short = left + st.overflow;
       if (short > 0) {
-        /* Counted in TOPIC SITTINGS, not sessions — a topic appears once per
-           pass, and one session may hold several of them. Calling these
-           "sessions" was true only back when a session was always one topic,
-           and it badly overstated the problem the moment she set a session to
-           hold a whole lesson. */
+        /* Only ever about the FIRST PASS. Missing revision is not a shortfall
+           — it is simply revision she did not have room for, and warning about
+           it would mean the calendar cried wolf from the day she set it up. */
         warnings.push({
           moduleId: st.module.id,
           moduleCode: st.module.code,
           exam: st.exam,
           short: short,
-          text: short + ' ' + (short === 1 ? 'topic' : 'topics') +
-                ' will not be covered before the ' + st.module.code + ' exam' +
+          text: short + ' ' + (short === 1 ? 'topic has' : 'topics have') +
+                ' no room before the ' + st.module.code + ' exam' +
                 (st.exam ? ' on ' + pretty(st.exam) : '') +
-                ', counting each pass separately.'
+                ' — that is the first pass, before any revision.'
         });
       }
     }

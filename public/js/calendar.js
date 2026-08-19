@@ -49,6 +49,7 @@ var Calendar = (function () {
   /* Kept across redraws — see the header. */
   var optsOpen = false;
   var focusOpen = {};
+  var focusWeekOpen = {};
   var keepScroll = -1;
 
   function esc(s) {
@@ -451,13 +452,37 @@ var Calendar = (function () {
         '<span class="cal-opts-caret">▾</span>' +
       '</summary>' +
       '<div class="cal-opts-body">' +
+        examsHtml(s, plan) +
         daysHtml(s) +
         dayBlockHtml('weekday', 'Weekdays', s.weekday, plan.modules) +
         dayBlockHtml('weekend', 'Weekends', s.weekend, plan.modules) +
-        examsHtml(s, plan) +
         focusHtml(plan) +
       '</div>' +
     '</details>';
+  }
+
+  /* Every setting lives in one of these. The panel used to be a single run of
+     headings and controls, which read as one long list of unrelated things —
+     giving each group a card, an icon and its own white background turns it
+     into five small decisions instead of one big one. */
+  function sectionHtml(emoji, title, hint, body, wide) {
+    return '<section class="cal-sec' + (wide ? ' cal-sec-wide' : '') + '">' +
+      '<h4 class="cal-sec-head"><span class="cal-sec-emoji">' + emoji + '</span>' +
+        esc(title) + '</h4>' +
+      (hint ? '<p class="cal-hint">' + hint + '</p>' : '') +
+      body +
+    '</section>';
+  }
+
+  /* A label sitting directly above its own control. The date pickers used to
+     be pushed to the far right of a wide row with their label stranded on the
+     left, so on a laptop you were reading one thing and clicking another a
+     hand-span away. */
+  function fieldHtml(label, control) {
+    return '<label class="cal-field">' +
+      '<span class="cal-field-label">' + esc(label) + '</span>' +
+      control +
+    '</label>';
   }
 
   function daysHtml(s) {
@@ -470,10 +495,8 @@ var Calendar = (function () {
         ' data-day-toggle="' + dow + '" aria-pressed="' + (on ? 'true' : 'false') + '">' +
         DAY_SHORT[dow] + '</button>';
     }
-    return '<div class="cal-opt cal-opt-wide">' +
-      '<h4>Which days do you study?</h4>' +
-      '<div class="cal-chips">' + chips + '</div>' +
-    '</div>';
+    return sectionHtml('🗓️', 'Study days', 'Tap a day to switch it on or off.',
+      '<div class="cal-chips">' + chips + '</div>', true);
   }
 
   function dayBlockHtml(which, label, cfg, mods) {
@@ -491,21 +514,20 @@ var Calendar = (function () {
           '<input class="cal-time-in" type="time" value="' + esc(cfg.times[t]) + '"' +
             ' data-time="' + which + ':' + t + '" aria-label="Session ' + (t + 1) + ' start time">' +
         '</div>' +
+        '<span class="cal-sesslabel">Subject</span>' +
         modPickHtml(which, t, (cfg.mods && cfg.mods[t]) || '', mods) +
       '</div>';
     }
 
-    return '<div class="cal-opt">' +
-      '<h4>' + esc(label) + '</h4>' +
+    return sectionHtml('⏰', label, '',
       stepperHtml('Sessions a day', which, 'count', cfg.count) +
       stepperHtml('Topics per session', which, 'topics', cfg.topics) +
-      '<p class="cal-hint">Some topics are short — two or three can share one session.</p>' +
-      '<div class="cal-row cal-row-wrap">' +
-        '<span class="cal-row-label">How long each</span>' +
+      '<p class="cal-hint cal-hint-tight">Some topics are short — two or three can share one session.</p>' +
+      '<div class="cal-subrow">' +
+        '<span class="cal-row-label">How long is each session?</span>' +
         '<div class="cal-chips">' + lens + '</div>' +
       '</div>' +
-      '<div class="cal-times">' + times + '</div>' +
-    '</div>';
+      '<div class="cal-times">' + times + '</div>');
   }
 
   /* Which subject a given session is for. "Any" is the default and hands the
@@ -536,33 +558,27 @@ var Calendar = (function () {
   }
 
   function examsHtml(s, plan) {
-    var rows = '';
-    for (var i = 0; i < plan.modules.length; i++) {
-      var m = plan.modules[i];
-      rows += '<label class="cal-timerow">' +
-        '<span>' + esc(m.code) + '</span>' +
-        '<input class="cal-time-in" type="date" value="' + esc(s.exams[m.id] || '') + '"' +
-          ' data-exam="' + esc(m.id) + '">' +
-      '</label>';
-    }
-
     /* A start date in the past is ignored by the engine, which always begins
        at today. Showing it back to her anyway is the honest thing: it is what
        she typed, and clearing it is one tap. */
-    var startRow = '<label class="cal-timerow">' +
-      '<span>Start studying on</span>' +
+    var fields = fieldHtml('Start studying on',
       '<input class="cal-time-in" type="date" value="' + esc(s.start || '') + '"' +
         ' data-start="1" min="' + esc(Schedule.todayYmd()) + '">' +
-    '</label>';
+      '<span class="cal-field-note">Leave blank to begin today.</span>');
 
-    return '<div class="cal-opt cal-opt-wide">' +
-      '<h4>Dates</h4>' +
-      '<p class="cal-hint">Nothing is scheduled for a module until you say when its exam is. ' +
-      'Sessions are packed in before that date, and the exam day itself is left clear.</p>' +
-      startRow +
-      '<p class="cal-hint">Leave the start blank to begin today.</p>' +
-      rows +
-    '</div>';
+    for (var i = 0; i < plan.modules.length; i++) {
+      var m = plan.modules[i];
+      var set = !!s.exams[m.id];
+      fields += fieldHtml(m.code + ' exam',
+        '<input class="cal-time-in' + (set ? '' : ' is-empty') + '" type="date" value="' +
+          esc(s.exams[m.id] || '') + '" data-exam="' + esc(m.id) + '">' +
+        (set ? '' : '<span class="cal-field-note is-warn">Not set — nothing is scheduled for this module.</span>'));
+    }
+
+    return sectionHtml('📅', 'Dates',
+      'Nothing is scheduled for a module until you say when its exam is. Sessions are packed ' +
+      'in before that date, and the exam day itself is left clear.',
+      '<div class="cal-fields">' + fields + '</div>', true);
   }
 
   /* Shown when there is nothing on the calendar because she has not said when
@@ -602,29 +618,62 @@ var Calendar = (function () {
      already behind her rather than in the sessions that got cut. */
   function focusHtml(plan) {
     var groups = '';
+
     for (var i = 0; i < plan.modules.length; i++) {
       var m = plan.modules[i];
       var topics = Schedule.topicsFor(m.id);
-      var chips = '', on = 0;
+
+      /* Grouped by week rather than listed flat. Sixty-one business topics in
+         one column is not a list anybody reads — and she thinks about her
+         course a week at a time, which is how the notes are organised too. */
+      var weeks = [], byWeek = {};
       for (var t = 0; t < topics.length; t++) {
-        var isOn = Schedule.isFocus(topics[t].id);
-        if (isOn) on++;
-        chips += '<button class="cal-chip cal-chip-wide' + (isOn ? ' is-on' : '') + '" type="button"' +
-          ' data-focus="' + esc(topics[t].id) + '" aria-pressed="' + (isOn ? 'true' : 'false') + '">' +
-          esc(topics[t].emoji || '') + ' ' + esc(topics[t].title) + '</button>';
+        var wn = topics[t].weekNumber;
+        if (!byWeek[wn]) {
+          byWeek[wn] = { number: wn, title: topics[t].weekTitle || '', topics: [] };
+          weeks.push(byWeek[wn]);
+        }
+        byWeek[wn].topics.push(topics[t]);
       }
+
+      var weekHtml2 = '', modOn = 0;
+      for (var w = 0; w < weeks.length; w++) {
+        var wk = weeks[w], chips = '', weekOn = 0;
+        for (var k = 0; k < wk.topics.length; k++) {
+          var tp = wk.topics[k], isOn = Schedule.isFocus(tp.id);
+          if (isOn) { weekOn++; modOn++; }
+          chips += '<button class="cal-chip cal-chip-wide' + (isOn ? ' is-on' : '') + '" type="button"' +
+            ' data-focus="' + esc(tp.id) + '" aria-pressed="' + (isOn ? 'true' : 'false') + '">' +
+            esc(tp.emoji || '') + ' ' + esc(tp.title) + '</button>';
+        }
+
+        var wkKey = m.id + ':' + wk.number;
+        weekHtml2 += '<details class="cal-focusweek"' + (focusWeekOpen[wkKey] ? ' open' : '') +
+          ' data-focusweek="' + esc(wkKey) + '">' +
+          '<summary>' +
+            '<span class="cal-focusweek-no">Week ' + wk.number + '</span>' +
+            '<span class="cal-focusweek-title">' + esc(wk.title) + '</span>' +
+            (weekOn ? '<span class="chip chip-pink">' + weekOn + '</span>' : '') +
+          '</summary>' +
+          '<div class="cal-chips cal-chips-col">' + chips + '</div>' +
+        '</details>';
+      }
+
       groups += '<details class="cal-focusmod"' + (focusOpen[m.id] ? ' open' : '') +
         ' data-focusmod="' + esc(m.id) + '">' +
-        '<summary>' + esc(m.code) + ' <span class="chip">' + on + ' picked</span></summary>' +
-        '<div class="cal-chips cal-chips-col">' + chips + '</div>' +
+        '<summary>' +
+          '<span class="cal-focusmod-dot" style="background:' + hue(m.id).ink + '"></span>' +
+          esc(m.code) +
+          '<span class="chip">' + modOn + ' picked</span>' +
+        '</summary>' +
+        '<div class="cal-focusweeks">' + weekHtml2 + '</div>' +
       '</details>';
     }
 
-    return '<div class="cal-opt cal-opt-wide">' +
-      '<h4>Revise these first</h4>' +
-      '<p class="cal-hint">Anything you pick here comes first in every revision round.</p>' +
-      groups +
-    '</div>';
+    return sectionHtml('⭐', 'Revise these first',
+      'Anything you pick here comes first in every revision round, so if time runs short ' +
+      'they are already behind you.',
+      groups, true);
   }
 
   /* ───────────────────────── events ─────────────────────────
@@ -647,6 +696,9 @@ var Calendar = (function () {
     });
     each('[data-focusmod]', function (d) {
       d.addEventListener('toggle', function () { focusOpen[d.getAttribute('data-focusmod')] = d.open; });
+    });
+    each('[data-focusweek]', function (d) {
+      d.addEventListener('toggle', function () { focusWeekOpen[d.getAttribute('data-focusweek')] = d.open; });
     });
 
     each('[data-step]', function (b) {

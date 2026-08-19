@@ -227,24 +227,6 @@ body.reduce-motion .pip-msg { animation: none; }
 }
 body.reduce-motion .pip-dots i { animation: none; opacity: .6; }
 
-/* Tappable openers while the conversation is empty. A blank text box is the
-   quickest way to close a chat panel and never open it again. */
-.pip-chips { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0 .9rem .2rem; }
-.pip-chips:empty { display: none; }
-.pip-chip {
-  border: 1.5px solid var(--lilac-200, var(--lilac-100));
-  background: #fff;
-  color: var(--lilac-700);
-  border-radius: 999px;
-  padding: .35rem .75rem;
-  font: inherit;
-  font-size: .8rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: transform .16s var(--ease-bounce, ease-out), background .16s;
-}
-.pip-chip:hover { background: var(--lilac-50); transform: translateY(-2px); }
-
 .pip-ask {
   display: flex;
   gap: .5rem;

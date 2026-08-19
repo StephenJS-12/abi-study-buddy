@@ -24,21 +24,14 @@ var Buddy = (function () {
   /* Openers, so she is not greeted by an empty box. Kept short — the point is
      to make starting easy, not to fill the panel with chatter. */
   var HELLOS = {
-    app: 'Hallo hallo! 🥑 Ask me anything — the maths, or how this whole place works.',
+    /* Deliberately does not name a subject. This started as a maths site and
+       the greeting said so, which was quietly wrong from the day the business
+       module went in — and would be wrong again for whatever comes next. */
+    app: 'Hallo hallo! 🥑 Ask me anything — whatever you are studying, or how this whole place works.',
     notes: 'Ooh, reading time. Poke me about any bit that refuses to stick.',
-    practise: 'I can talk you through how to tackle this one. Not the actual sum though — that bit is yours.',
+    practise: 'I can talk you through how to tackle this one. Not the actual answer though — that bit is yours.',
     test: 'Test mode! I can only nudge here. Where to start, what it is really asking. Go on then.',
     exam: 'Exam question — the proper stuff. I will help you find your first move and then get out of your way.'
-  };
-
-  /* Something to tap when the box is empty. Staring at a blank text field is the
-     quickest way to close a chat panel and never open it again. */
-  var STARTERS = {
-    app: ['How do I get more points?', 'What should I revise?', 'How does this site work?'],
-    notes: ['Explain this simply', 'Why does that work?', 'When would I use this?'],
-    practise: ['How do I start this one?', 'Which method is this?', 'I do not get the question'],
-    test: ['Where do I start?', 'What is it actually asking?', 'Which bit matters here?'],
-    exam: ['Where do I start?', 'What is it actually asking?', 'Break the question down']
   };
 
   function esc(s) {
@@ -137,7 +130,6 @@ var Buddy = (function () {
           '<button class="pip-close" type="button" id="pipClose" aria-label="Close">×</button>' +
         '</div>' +
         '<div class="pip-thread" id="pipThread"></div>' +
-        '<div class="pip-chips" id="pipChips"></div>' +
         '<form class="pip-ask" id="pipForm">' +
           '<input id="pipInput" type="text" autocomplete="off" placeholder="Ask me anything…">' +
           '<button type="submit" id="pipSend" aria-label="Send">' +
@@ -175,34 +167,9 @@ var Buddy = (function () {
     if (open) {
       if (!thread.childNodes.length) {
         say(HELLOS[context.mode] || HELLOS.app);
-        showChips();
       }
       setTimeout(function () { document.getElementById('pipInput').focus(); }, 60);
     }
-  }
-
-  /* Tappable openers, shown only while the conversation is empty — once she is
-     talking they are clutter. */
-  function showChips() {
-    var box = document.getElementById('pipChips');
-    if (!box) return;
-
-    var list = STARTERS[context.mode] || STARTERS.app;
-    box.innerHTML = list.map(function (text) {
-      return '<button class="pip-chip" type="button">' + esc(text) + '</button>';
-    }).join('');
-
-    Array.prototype.forEach.call(box.querySelectorAll('.pip-chip'), function (b) {
-      b.addEventListener('click', function () {
-        document.getElementById('pipInput').value = b.textContent;
-        document.getElementById('pipForm').dispatchEvent(new Event('submit', { cancelable: true }));
-      });
-    });
-  }
-
-  function hideChips() {
-    var box = document.getElementById('pipChips');
-    if (box) box.innerHTML = '';
   }
 
   function bubble(who, html) {
@@ -231,7 +198,6 @@ var Buddy = (function () {
 
     busy = true;
     input.value = '';
-    hideChips();
     document.getElementById('pipSend').disabled = true;
     root.classList.add('is-thinking');
     setStatus('thinking…');

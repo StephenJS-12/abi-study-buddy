@@ -31,10 +31,9 @@ var Calendar = (function () {
   var DAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   var DAY_LETTER = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-  /* Session lengths offered as buttons. Anything else she can reach by
-     changing the number of sessions instead — these are the ones people
-     actually pick. */
-  var LENGTHS = [30, 45, 60, 90, 120];
+  /* Session lengths offered in the dropdown. Quarter-hour steps up to two
+     hours, then coarser, because nobody plans a 155-minute study session. */
+  var LENGTHS = [15, 30, 45, 60, 75, 90, 105, 120, 150, 180];
 
   /* How many topic labels fit in a month cell before it turns into "+3". */
   var MONTH_LABELS = 3;
@@ -500,22 +499,21 @@ var Calendar = (function () {
   }
 
   function dayBlockHtml(which, label, cfg, mods) {
-    var lens = '';
-    for (var i = 0; i < LENGTHS.length; i++) {
-      lens += '<button class="cal-chip' + (cfg.minutes === LENGTHS[i] ? ' is-on' : '') + '" type="button"' +
-        ' data-len="' + which + ':' + LENGTHS[i] + '">' + LENGTHS[i] + 'm</button>';
-    }
-
     var times = '';
     for (var t = 0; t < cfg.count; t++) {
-      times += '<div class="cal-sessrow">' +
-        '<div class="cal-sessrow-top">' +
-          '<span class="cal-sessno">Session ' + (t + 1) + '</span>' +
-          '<input class="cal-time-in" type="time" value="' + esc(cfg.times[t]) + '"' +
-            ' data-time="' + which + ':' + t + '" aria-label="Session ' + (t + 1) + ' start time">' +
+      var c = hue((cfg.mods && cfg.mods[t]) || '');
+      var pinned = !!(cfg.mods && cfg.mods[t]);
+
+      times += '<div class="cal-sessrow' + (pinned ? ' is-pinned' : '') + '"' +
+        (pinned ? ' style="' + vars(c) + '"' : '') + '>' +
+        '<div class="cal-sessno">Session ' + (t + 1) + '</div>' +
+        '<div class="cal-sessgrid">' +
+          fieldHtml('Starts at',
+            '<input class="cal-time-in" type="time" value="' + esc(cfg.times[t]) + '"' +
+              ' data-time="' + which + ':' + t + '">') +
+          fieldHtml('Length', lengthSelectHtml(which, t, cfg.mins[t])) +
+          fieldHtml('Module', modSelectHtml(which, t, (cfg.mods && cfg.mods[t]) || '', mods)) +
         '</div>' +
-        '<span class="cal-sesslabel">Subject</span>' +
-        modPickHtml(which, t, (cfg.mods && cfg.mods[t]) || '', mods) +
       '</div>';
     }
 
@@ -523,27 +521,40 @@ var Calendar = (function () {
       stepperHtml('Sessions a day', which, 'count', cfg.count) +
       stepperHtml('Topics per session', which, 'topics', cfg.topics) +
       '<p class="cal-hint cal-hint-tight">Some topics are short — two or three can share one session.</p>' +
-      '<div class="cal-subrow">' +
-        '<span class="cal-row-label">How long is each session?</span>' +
-        '<div class="cal-chips">' + lens + '</div>' +
-      '</div>' +
       '<div class="cal-times">' + times + '</div>');
+  }
+
+  /* Length is set per session, not per day. Three quarters of an hour after
+     work and two hours later on is a normal evening, and one figure for the
+     whole day cannot describe it. */
+  function lengthSelectHtml(which, index, current) {
+    var out = '';
+    for (var i = 0; i < LENGTHS.length; i++) {
+      out += '<option value="' + LENGTHS[i] + '"' +
+        (Number(current) === LENGTHS[i] ? ' selected' : '') + '>' +
+        esc(lengthLabel(LENGTHS[i])) + '</option>';
+    }
+    return '<select class="cal-select" data-mins="' + which + ':' + index + '">' + out + '</select>';
+  }
+
+  function lengthLabel(m) {
+    if (m < 60) return m + ' min';
+    var h = Math.floor(m / 60), r = m % 60;
+    if (!r) return h + (h === 1 ? ' hour' : ' hours');
+    return h + 'h ' + r + 'm';
   }
 
   /* Which subject a given session is for. "Any" is the default and hands the
      slot to whichever module is furthest behind; picking one pins it, so she
      can put business at five and maths at seven and have it stay that way. */
-  function modPickHtml(which, index, current, mods) {
-    var out = '<button class="cal-modchip' + (!current ? ' is-on' : '') + '" type="button"' +
-      ' data-mod-set="' + which + ':' + index + ':">Any</button>';
-
+  function modSelectHtml(which, index, current, mods) {
+    var out = '<option value=""' + (!current ? ' selected' : '') + '>Any subject</option>';
     for (var i = 0; i < mods.length; i++) {
-      var m = mods[i], c = hue(m.id), on = current === m.id;
-      out += '<button class="cal-modchip' + (on ? ' is-on' : '') + '" type="button"' +
-        ' style="' + vars(c) + '" data-mod-set="' + which + ':' + index + ':' + esc(m.id) + '">' +
-        esc(m.code) + '</button>';
+      var m = mods[i];
+      out += '<option value="' + esc(m.id) + '"' + (current === m.id ? ' selected' : '') + '>' +
+        esc(m.code) + '</option>';
     }
-    return '<div class="cal-modpick">' + out + '</div>';
+    return '<select class="cal-select" data-mod-set="' + which + ':' + index + '">' + out + '</select>';
   }
 
   function stepperHtml(label, which, field, value) {
@@ -798,33 +809,26 @@ var Calendar = (function () {
       });
     });
 
-    /* "weekday:1:inba" — pin the second weekday session to business. An empty
-       third part means Any, which hands the slot back to the scheduler. */
-    each('[data-mod-set]', function (b) {
-      b.addEventListener('click', function () {
-        var bits = b.getAttribute('data-mod-set').split(':');
-        var s = Schedule.settings(), blk = s[bits[0]];
-        if (!blk.mods) blk.mods = [];
-        while (blk.mods.length < blk.count) blk.mods.push('');
-        blk.mods[Number(bits[1])] = bits[2] || '';
-        var patch = {};
-        patch[bits[0]] = blk;
-        Schedule.update(patch);
-        again();
+    /* One writer for every per-session field: which block, which session,
+       which array. The three of them are kept the same length by the engine,
+       so nothing here has to think about holes. */
+    function setSession(attr, field, cast) {
+      each('[' + attr + ']', function (inp) {
+        inp.addEventListener('change', function () {
+          var bits = inp.getAttribute(attr).split(':');
+          var s = Schedule.settings(), blk = s[bits[0]];
+          if (!blk[field]) blk[field] = [];
+          blk[field][Number(bits[1])] = cast(inp.value);
+          var patch = {};
+          patch[bits[0]] = blk;
+          Schedule.update(patch);
+          again();
+        });
       });
-    });
+    }
 
-    each('[data-len]', function (b) {
-      b.addEventListener('click', function () {
-        var bits = b.getAttribute('data-len').split(':');
-        var s = Schedule.settings(), blk = s[bits[0]];
-        blk.minutes = Number(bits[1]);
-        var patch = {};
-        patch[bits[0]] = blk;
-        Schedule.update(patch);
-        again();
-      });
-    });
+    setSession('data-mins', 'mins', function (v) { return Number(v); });
+    setSession('data-mod-set', 'mods', function (v) { return v || ''; });
 
     each('[data-time]', function (inp) {
       inp.addEventListener('change', function () {

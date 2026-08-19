@@ -592,52 +592,54 @@ body.reduce-motion .cal-sum-fill { transition: none; }
 
 .cal-times { display: grid; gap: .7rem; }
 
-/* One session: its start time, and which subject it is for. */
+/* One session: when it starts, how long it runs, and which subject it is for.
+   All three sit in the container so a session is a single thing she edits,
+   rather than a time here and a length shared with the rest of the day. */
 .cal-sessrow {
   border: 1px solid var(--line);
+  border-left: 4px solid var(--lilac-200);
   border-radius: var(--r-md);
-  padding: .55rem .65rem;
+  padding: .7rem .8rem .8rem;
   background: var(--lilac-50);
 }
-.cal-sessrow-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: .8rem;
-  margin-bottom: .5rem;
-}
-.cal-sessno { font-size: .92rem; font-weight: 700; color: var(--ink); }
-.cal-sessrow .cal-time-in { background: var(--surface); }
 
-.cal-sesslabel {
-  display: block;
-  font-size: .8rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-  margin-bottom: .3rem;
+/* Pinned to a subject: the container wears that module's colour, so the
+   settings and the calendar agree at a glance about which is which. */
+.cal-sessrow.is-pinned {
+  border-left-color: var(--card-ink);
+  background: var(--card-tint);
 }
 
-.cal-modpick { display: flex; flex-wrap: wrap; gap: .3rem; }
-
-/* Each chip wears its module's colour when chosen, so the settings and the
-   calendar agree at a glance about which subject is which. */
-.cal-modchip {
-  border: 1px solid var(--lilac-200);
-  background: var(--surface);
-  color: var(--ink-soft);
-  border-radius: var(--r-pill);
-  padding: .3rem .7rem;
-  font-size: .78rem;
+.cal-sessno {
+  font-size: .92rem;
   font-weight: 700;
+  color: var(--ink);
+  margin-bottom: .55rem;
+}
+
+.cal-sessgrid {
+  display: grid;
+  gap: .6rem;
+  grid-template-columns: repeat(auto-fit, minmax(7.5rem, 1fr));
+}
+.cal-sessgrid .cal-time-in,
+.cal-sessgrid .cal-select { background: var(--surface); width: 100%; min-width: 0; }
+
+/* A native select is the right control here: on a phone and on an iPad it
+   opens the system wheel, which is the dial her thumb already knows and
+   handles far more values than a row of chips ever could. */
+.cal-select {
+  border: 2px solid var(--lilac-100);
+  border-radius: var(--r-md);
+  background: var(--lilac-50);
+  padding: .5rem .6rem;
+  font-size: .95rem;
+  color: var(--ink);
   cursor: pointer;
-  transition: background .14s, border-color .14s, color .14s;
+  /* Room for the native arrow without the text running under it. */
+  padding-right: 1.8rem;
 }
-.cal-modchip:hover { background: var(--lilac-50); }
-.cal-modchip.is-on {
-  background: var(--card-ink, var(--lilac-600));
-  border-color: var(--card-ink, var(--lilac-600));
-  color: #fff;
-}
+.cal-select:focus { outline: none; border-color: var(--lilac-400); background: var(--surface); }
 
 /* type="time" and type="date" give the device's own wheel picker, which beats
    any dial that could be built here — it is the control her thumb already

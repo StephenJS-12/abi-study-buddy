@@ -210,7 +210,10 @@ ok(!dows[0] && !dows[2] && !dows[4] && !dows[5] && !dows[6],
 ok(dows[1] && dows[3], "slots: missed a day she did select");
 ok(slots.length === 8, "slots: expected 4 selected days x 2 sessions = 8, got " + slots.length);
 
-// Weekend days use the weekend block, not the weekday one.
+// Weekend days use the weekend block, not the weekday one. This also covers
+// the migration: a save from before per-session lengths carries `minutes` for
+// the whole block, and every session must inherit it rather than snapping
+// back to an hour.
 set({
     days: [0, 6],
     weekday: { count: 1, minutes: 60, topics: 1, times: ['17:00'] },
@@ -218,7 +221,41 @@ set({
 });
 var wk = Schedule.buildSlots('2025-12-06', '2025-12-07');       // Sat + Sun
 ok(wk.length === 6, "slots: weekend should use the weekend count, got " + wk.length);
-ok(wk[0].minutes === 45, "slots: weekend session length not applied");
+for (i = 0; i < wk.length; i++) {
+    if (wk[i].minutes !== 45) {
+        fail("slots: an old block-wide length of 45 did not carry to every session, got " + wk[i].minutes);
+        break;
+    }
+}
+
+// Sessions can now be different lengths on the same day.
+set({
+    days: [1],
+    weekday: { count: 3, topics: 1,
+               times: ['17:00', '19:00', '21:00'], mins: [45, 120, 30], mods: ['', '', ''] },
+    weekend: { count: 1, topics: 1, times: ['09:00'], mins: [60], mods: [''] }
+});
+var mixed = Schedule.buildSlots('2025-12-01', '2025-12-01');
+ok(mixed.length === 3, "per-session length: expected 3 slots, got " + mixed.length);
+ok(mixed[0].minutes === 45 && mixed[1].minutes === 120 && mixed[2].minutes === 30,
+   "per-session length: lengths did not follow their own sessions, got " +
+   mixed[0].minutes + '/' + mixed[1].minutes + '/' + mixed[2].minutes);
+
+// Editing a time re-sorts the day. The length and the pinned module have to
+// travel with it, or a session would keep someone else's length.
+set({
+    days: [1],
+    weekday: { count: 3, topics: 1,
+               times: ['21:00', '17:00', '19:00'], mins: [30, 45, 120], mods: ['aaa', 'bbb', ''] },
+    weekend: { count: 1, topics: 1, times: ['09:00'], mins: [60], mods: [''] }
+});
+var sorted = Schedule.buildSlots('2025-12-01', '2025-12-01');
+ok(sorted[0].time === '17:00' && sorted[0].minutes === 45 && sorted[0].mod === 'bbb',
+   "per-session length: the 17:00 session lost its own length or module after sorting");
+ok(sorted[1].time === '19:00' && sorted[1].minutes === 120 && sorted[1].mod === '',
+   "per-session length: the 19:00 session lost its own length after sorting");
+ok(sorted[2].time === '21:00' && sorted[2].minutes === 30 && sorted[2].mod === 'aaa',
+   "per-session length: the 21:00 session lost its own length or module after sorting");
 
 // Sessions inside a day come out in time order even if she entered them jumbled.
 set({
@@ -243,9 +280,30 @@ var s = Schedule.settings();
 ok(s.days.length > 0, "settings: no study days at all should fall back, not produce an empty plan");
 ok(s.weekday.count >= 1, "settings: a session count of zero should fall back");
 ok(s.weekday.topics >= 1, "settings: zero topics per session should fall back");
+/* The UI renders one row per session and reads times[t], mins[t] and mods[t]
+   without checking for holes, so all three must always match the count. */
 ok(s.weekday.times.length === s.weekday.count,
    "settings: there must be exactly one time per session, got " +
    s.weekday.times.length + " for " + s.weekday.count);
+ok(s.weekday.mins.length === s.weekday.count,
+   "settings: there must be exactly one length per session, got " +
+   s.weekday.mins.length + " for " + s.weekday.count);
+ok(s.weekday.mods.length === s.weekday.count,
+   "settings: there must be exactly one module choice per session, got " +
+   s.weekday.mods.length + " for " + s.weekday.count);
+
+/* Growing the session count must not leave the new rows without a length. */
+set({ weekday: { count: 5, topics: 1, times: ['09:00'], mins: [90], mods: [''] } });
+var grown = Schedule.settings().weekday;
+ok(grown.times.length === 5 && grown.mins.length === 5 && grown.mods.length === 5,
+   "settings: adding sessions left one of the per-session arrays short");
+for (i = 0; i < grown.mins.length; i++) {
+    if (!isFinite(grown.mins[i]) || grown.mins[i] < 10) {
+        fail("settings: a session was added with no usable length (" + grown.mins[i] + ")");
+        break;
+    }
+}
+ok(grown.mins[0] === 90, "settings: adding sessions changed the length of an existing one");
 
 set({ weekday: { count: 4, minutes: 60, topics: 1, times: ['09:00'] } });
 ok(Schedule.settings().weekday.times.length === 4,

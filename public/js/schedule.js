@@ -54,12 +54,23 @@ var Schedule = (function () {
        enough to double up, and being forced to spend a whole hour on a small
        one is how a schedule starts feeling like a waste of an evening.
 
+       `times`, `mins` and `mods` are per session and always the same length as
+       `count`. A day is rarely made of equal blocks — three quarters of an hour
+       after work and two hours later on is a normal evening, and a single
+       length for the whole day cannot describe it.
+
        `mods` pins a session to a subject — mods[1] = 'inba' means the second
        session of a weekday is always business. An empty string leaves it to
        the scheduler, which is the default and gives whichever module is
        furthest behind. */
-    weekday: { count: 2, minutes: 60, topics: 1, times: ['17:00', '19:30'], mods: ['', ''] },
-    weekend: { count: 3, minutes: 60, topics: 1, times: ['09:00', '11:30', '14:00'], mods: ['', '', ''] },
+    weekday: {
+      count: 2, topics: 1,
+      times: ['17:00', '19:30'], mins: [60, 60], mods: ['', '']
+    },
+    weekend: {
+      count: 3, topics: 1,
+      times: ['09:00', '11:30', '14:00'], mins: [60, 60, 60], mods: ['', '', '']
+    },
     exams: {},          // moduleId -> 'YYYY-MM-DD'
     marks: {},          // 'topicId|pass' -> 'YYYY-MM-DD' when done, false when explicitly not
     focus: {},          // topicId -> true, revised first
@@ -183,31 +194,59 @@ var Schedule = (function () {
   function sanitiseBlock(b, fallback) {
     var out = copy(fallback);
     if (!b || typeof b !== 'object') return out;
+    var i;
+
     var c = Math.floor(Number(b.count));
     if (isFinite(c) && c >= 1 && c <= 8) out.count = c;
-    var m = Math.floor(Number(b.minutes));
-    if (isFinite(m) && m >= 10 && m <= 240) out.minutes = m;
     var tp = Math.floor(Number(b.topics));
     if (isFinite(tp) && tp >= 1 && tp <= 4) out.topics = tp;
+
     if (Object.prototype.toString.call(b.times) === '[object Array]') {
       out.times = [];
-      for (var i = 0; i < b.times.length; i++) out.times.push(cleanTime(b.times[i], i));
+      for (i = 0; i < b.times.length; i++) out.times.push(cleanTime(b.times[i], i));
     }
     if (Object.prototype.toString.call(b.mods) === '[object Array]') {
       out.mods = [];
-      for (var j = 0; j < b.mods.length; j++) out.mods.push(String(b.mods[j] || ''));
+      for (i = 0; i < b.mods.length; i++) out.mods.push(String(b.mods[i] || ''));
     }
 
-    /* Always exactly `count` times and `count` module choices, so the UI can
-       render one row per session without checking for holes. Sorting the times
-       has to carry the module pinned to each one along with it, or raising the
-       session count would silently reshuffle which subject sits where. */
+    /* Session length used to be one figure for the whole block. A save from
+       before that changed carries `minutes` and no `mins`, so it seeds every
+       session with what it used to mean — she keeps the lengths she set. */
+    var seed = Math.floor(Number(b.minutes));
+    if (!isFinite(seed) || seed < 10 || seed > 240) seed = 60;
+
+    if (Object.prototype.toString.call(b.mins) === '[object Array]') {
+      out.mins = [];
+      for (i = 0; i < b.mins.length; i++) out.mins.push(cleanMinutes(b.mins[i], seed));
+    } else if (b.minutes !== undefined) {
+      out.mins = [];
+      for (i = 0; i < out.count; i++) out.mins.push(seed);
+    }
+
+    /* Always exactly `count` of each, so the UI can render one row per session
+       without checking for holes. Sorting the times has to carry the length and
+       the pinned module along with it, or editing a time would silently
+       reshuffle which subject and which length sat where. */
     if (!out.mods) out.mods = [];
-    while (out.times.length < out.count) out.times.push(nextTime(out.times, out.minutes));
+    if (!out.mins) out.mins = [];
+    while (out.times.length < out.count) {
+      out.times.push(nextTime(out.times, out.mins[out.times.length - 1] || seed));
+    }
+    while (out.mins.length < out.times.length) {
+      out.mins.push(out.mins.length ? out.mins[out.mins.length - 1] : seed);
+    }
     while (out.mods.length < out.times.length) out.mods.push('');
+
     out.times.length = out.count;
+    out.mins.length = out.count;
     out.mods.length = out.count;
     return out;
+  }
+
+  function cleanMinutes(v, fallback) {
+    var n = Math.floor(Number(v));
+    return (isFinite(n) && n >= 10 && n <= 240) ? n : fallback;
   }
 
   function cleanTime(v, i) {
@@ -331,12 +370,16 @@ var Schedule = (function () {
            session every time she edited a time. */
         var pairs = [], i;
         for (i = 0; i < cfg.count; i++) {
-          pairs.push({ time: cfg.times[i], mod: (cfg.mods && cfg.mods[i]) || '' });
+          pairs.push({
+            time: cfg.times[i],
+            mins: (cfg.mins && cfg.mins[i]) || 60,
+            mod: (cfg.mods && cfg.mods[i]) || ''
+          });
         }
         pairs.sort(function (a, b) { return a.time < b.time ? -1 : (a.time > b.time ? 1 : 0); });
         for (i = 0; i < pairs.length; i++) {
           out.push({
-            date: key, time: pairs[i].time, minutes: cfg.minutes,
+            date: key, time: pairs[i].time, minutes: pairs[i].mins,
             topics: cfg.topics, mod: pairs[i].mod
           });
         }

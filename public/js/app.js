@@ -119,9 +119,21 @@ var App = (function () {
     }
 
     if (cancel) cancel.addEventListener('click', closeModal);
+
+    /* onConfirm runs BEFORE the body is thrown away, so a handler can still
+       read its own form. It used to run after, which meant every field in the
+       modal was already destroyed and any dialog that asked a question got
+       nothing back — silently, because reading a property off null throws
+       inside a click handler and goes nowhere.
+
+       The close is in a finally so a handler that fails cannot leave her
+       staring at a modal with a dead button. */
     ok.addEventListener('click', function () {
-      closeModal();
-      if (cfg.onConfirm) cfg.onConfirm();
+      try {
+        if (cfg.onConfirm) cfg.onConfirm();
+      } finally {
+        closeModal();
+      }
     });
   }
 
@@ -1426,8 +1438,9 @@ var App = (function () {
         setTimeout(function () { ta.focus(); }, 80);
       },
       onConfirm: function () {
-        /* The textarea is detached by now, but `reading` was captured on the last
-           keystroke, so there is nothing left to read out of the DOM. */
+        /* `reading` was captured on the last keystroke rather than read from the
+           textarea here, which is what it needs to be anyway: the code has
+           already been parsed and checked by the time she can press this. */
         if (!reading || !reading.ok || !Transfer.apply(reading)) return;
 
         applyMotion();

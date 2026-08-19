@@ -208,7 +208,7 @@ var Dashboard = (function () {
 
   function openAdd(scope, onSaved) {
     var mods = typeof Modules !== 'undefined' ? Modules.ready() : [];
-    var preset = (scope === null || scope === undefined) ? '' : scope;
+    var locked = !(scope === null || scope === undefined);
 
     var typeOpts = '';
     for (var i = 0; i < Planner.TYPES.length; i++) {
@@ -216,10 +216,22 @@ var Dashboard = (function () {
       typeOpts += '<option value="' + esc(t.id) + '">' + t.emoji + ' ' + esc(t.name) + '</option>';
     }
 
-    var modOpts = '<option value="">No module</option>';
-    for (var m = 0; m < mods.length; m++) {
-      modOpts += '<option value="' + esc(mods[m].id) + '"' +
-        (mods[m].id === preset ? ' selected' : '') + '>' + esc(mods[m].code) + '</option>';
+    /* Adding from inside a module, the module is already decided — offering a
+       list she could pick the wrong entry from is a way to file an assignment
+       under the wrong subject and not notice. It is shown, not editable, so
+       she can still see where it is going. */
+    var modField;
+    if (locked) {
+      var m = typeof Modules !== 'undefined' ? Modules.get(scope) : null;
+      modField = '<label class="ev-field"><span>Module</span>' +
+        '<span class="ev-fixed">' + esc(m ? m.code : scope) + '</span></label>';
+    } else {
+      var modOpts = '<option value="">No module</option>';
+      for (var k = 0; k < mods.length; k++) {
+        modOpts += '<option value="' + esc(mods[k].id) + '">' + esc(mods[k].code) + '</option>';
+      }
+      modField = '<label class="ev-field"><span>Module</span>' +
+        '<select id="evMod">' + modOpts + '</select></label>';
     }
 
     App.modal({
@@ -237,8 +249,7 @@ var Dashboard = (function () {
             '<input id="evTime" type="time"></label>' +
           '<label class="ev-field"><span>Type</span>' +
             '<select id="evType">' + typeOpts + '</select></label>' +
-          '<label class="ev-field"><span>Module</span>' +
-            '<select id="evMod">' + modOpts + '</select></label>' +
+          modField +
         '</div>',
       confirmLabel: 'Add it',
       confirmClass: 'btn-primary',
@@ -255,12 +266,15 @@ var Dashboard = (function () {
         check();
       },
       onConfirm: function () {
+        var pick = document.getElementById('evMod');
         Planner.addEvent({
           name: document.getElementById('evName').value,
           date: document.getElementById('evDate').value,
           time: document.getElementById('evTime').value,
           type: document.getElementById('evType').value,
-          moduleId: document.getElementById('evMod').value
+          /* No picker when it was opened from inside a module: the scope IS
+             the answer. */
+          moduleId: locked ? scope : (pick ? pick.value : '')
         });
         if (onSaved) onSaved();
       }

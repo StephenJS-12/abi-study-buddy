@@ -71,6 +71,23 @@ body.at-schedule .screen { max-width: 1400px; }
 }
 .cal-today:hover { background: var(--lilac-50); }
 
+/* The one button here that does something rather than moving the view, so it
+   is filled where Today and the view switch are outlined. */
+.cal-addev {
+  border: 0;
+  border-radius: var(--r-pill);
+  background: var(--lilac-600);
+  color: #fff;
+  padding: .4rem .9rem;
+  font-size: .85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: background .16s, transform .16s var(--ease-out, ease);
+}
+.cal-addev:hover { background: var(--lilac-700); transform: translateY(-1px); }
+body.reduce-motion .cal-addev:hover { transform: none; }
+
 .cal-views { display: flex; background: var(--lilac-50); border-radius: var(--r-pill); padding: 2px; }
 .cal-view {
   border: 0; background: none;

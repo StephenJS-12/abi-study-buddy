@@ -253,6 +253,80 @@ for (i = 0; i < Planner.TYPES.length; i++) {
     if (Planner.typeOf(ty.id).id !== ty.id) fail("types: typeOf lost '" + ty.id + "'");
 }
 
+// ── 9. the add box ───────────────────────────────────────────────
+// Driven through a stubbed modal, because two things went wrong here that the
+// model alone cannot catch: the box offered a module picker even when she was
+// already inside a module, and its confirm handler read fields that the modal
+// had already destroyed, so pressing "Add it" did nothing at all and said
+// nothing about why.
+
+var fields = {};
+var document = {
+    getElementById: function (id) { return fields[id] || null; }
+};
+var lastModal = null;
+var App = { modal: function (cfg) { lastModal = cfg; } };
+
+eval(read(REPO + "\\public\\js\\dashboard.js"));
+
+function fillForm(name, date, time, type, mod) {
+    fields = {
+        evName: { value: name, addEventListener: function () {} },
+        evDate: { value: date, addEventListener: function () {} },
+        evTime: { value: time },
+        evType: { value: type }
+    };
+    if (mod !== null) fields.evMod = { value: mod };
+}
+
+// Opened from inside a module: no picker, and the event lands on that module.
+reset();
+Dashboard.openAdd('aaa', function () {});
+ok(lastModal !== null, "addbox: the dialog was never opened");
+ok(String(lastModal.body).indexOf('id="evMod"') < 0,
+   "addbox: a module picker is offered even though she is already inside a module");
+ok(String(lastModal.body).indexOf('AAA01') >= 0,
+   "addbox: the module she is in is not shown at all");
+
+fillForm('Assignment 2', day(4), '14:00', 'assignment', null);
+lastModal.onConfirm();
+ok(saved.events.length === 1, "addbox: pressing Add it created nothing");
+ok(saved.events[0].moduleId === 'aaa',
+   "addbox: the event did not land on the module she was in, got '" + saved.events[0].moduleId + "'");
+ok(saved.events[0].name === 'Assignment 2', "addbox: the name was not read");
+ok(saved.events[0].time === '14:00', "addbox: the time was not read");
+
+// Opened from the home screen: the picker is there, and it is obeyed.
+reset();
+Dashboard.openAdd(null, function () {});
+ok(String(lastModal.body).indexOf('id="evMod"') >= 0,
+   "addbox: the home screen must offer a module picker");
+ok(String(lastModal.body).indexOf('No module') >= 0,
+   "addbox: the home picker must allow an event that belongs to no module");
+
+fillForm('Pay fees', day(2), '', 'deadline', '');
+lastModal.onConfirm();
+ok(saved.events.length === 1 && saved.events[0].moduleId === '',
+   "addbox: 'No module' was not honoured");
+
+reset();
+Dashboard.openAdd(null, function () {});
+fillForm('Class test', day(5), '09:00', 'test', 'aaa');
+lastModal.onConfirm();
+ok(saved.events.length === 1 && saved.events[0].moduleId === 'aaa',
+   "addbox: the chosen module was not used");
+
+/* The confirm handler must be given a form it can still read. This is the
+   shape of the bug that made the button do nothing: if it ever reads a field
+   after the modal has been emptied, every value comes back null. */
+reset();
+Dashboard.openAdd('aaa', function () {});
+fields = {};
+var threw = false;
+try { lastModal.onConfirm(); } catch (e) { threw = true; }
+ok(threw || saved.events.length === 0,
+   "addbox: confirming with no form should fail loudly or do nothing, not save junk");
+
 // ── report ───────────────────────────────────────────────────────
 
 WScript.Echo("Dashboard model checked:");

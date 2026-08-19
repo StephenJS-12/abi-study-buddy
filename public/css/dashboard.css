@@ -307,6 +307,21 @@
   outline: none; border-color: var(--lilac-400); background: var(--surface);
 }
 
+/* Adding from inside a module: the module is already decided, so it is shown
+   rather than offered. Styled as a field so the row still reads as one. */
+.ev-fixed {
+  display: flex;
+  align-items: center;
+  border: 2px solid transparent;
+  border-radius: var(--r-md);
+  background: var(--lilac-100);
+  color: var(--lilac-700);
+  padding: .5rem .7rem;
+  font-size: .95rem;
+  font-weight: 700;
+  min-height: 2.6rem;
+}
+
 /* An event on the main calendar. Dashed, so a fixed date never looks like a
    study session the scheduler could move. */
 .cal-card-event { border-style: dashed; }

@@ -343,11 +343,26 @@
   border-radius: var(--r-md);
   padding: .75rem 1rem;
   font-size: 1rem;
-  margin: .5rem 0 1rem;
+  /* No bottom margin: the gap before the buttons comes from .modal-actions
+     now, and an input's margin does not collapse with a block sibling's, so
+     keeping both would have made this one modal spacing twice everyone
+     else's. */
+  margin: .5rem 0 0;
   background: var(--lilac-50);
 }
 .modal .field:focus { outline: none; border-color: var(--lilac-400); background: #fff; }
-.modal-actions { display: flex; gap: .7rem; justify-content: flex-end; flex-wrap: wrap; }
+/* The gap above the buttons belongs here rather than under whatever happens to
+   be last in the body. Every modal ends with `p:last-child`, which theme.css
+   gives no bottom margin, so the buttons were sitting flush against the
+   content in all of them — it only became obvious once a modal ended in a
+   form field instead of a sentence. */
+.modal-actions {
+  display: flex;
+  gap: .7rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
 
 /* Shown across the top only when the browser refuses to save. Loud on purpose:
    everything still works while it is up, so nothing else would give the game away

@@ -63,12 +63,16 @@ var Schedule = (function () {
        session of a weekday is always business. An empty string leaves it to
        the scheduler, which is the default and gives whichever module is
        furthest behind. */
+    /* `unit` is what a session is measured in — 'topics' or 'lessons' — and
+       `topics` / `lessons` is how many of them fit. A confident hour can be a
+       whole lesson rather than three loose topics, and the module is taught in
+       lessons, so covering one end to end is a more natural sitting. */
     weekday: {
-      count: 2, topics: 1,
+      count: 2, unit: 'topics', topics: 1, lessons: 1,
       times: ['17:00', '19:30'], mins: [60, 60], mods: ['', '']
     },
     weekend: {
-      count: 3, topics: 1,
+      count: 3, unit: 'topics', topics: 1, lessons: 1,
       times: ['09:00', '11:30', '14:00'], mins: [60, 60, 60], mods: ['', '', '']
     },
     exams: {},          // moduleId -> 'YYYY-MM-DD'
@@ -200,6 +204,9 @@ var Schedule = (function () {
     if (isFinite(c) && c >= 1 && c <= 8) out.count = c;
     var tp = Math.floor(Number(b.topics));
     if (isFinite(tp) && tp >= 1 && tp <= 4) out.topics = tp;
+    var ls = Math.floor(Number(b.lessons));
+    if (isFinite(ls) && ls >= 1 && ls <= 4) out.lessons = ls;
+    if (b.unit === 'lessons' || b.unit === 'topics') out.unit = b.unit;
 
     if (Object.prototype.toString.call(b.times) === '[object Array]') {
       out.times = [];
@@ -377,7 +384,15 @@ var Schedule = (function () {
           title: topics[t].title,
           emoji: topics[t].emoji,
           weekNumber: weeks[w].number,
-          weekTitle: weeks[w].title
+          weekTitle: weeks[w].title,
+          lesson: topics[t].lesson || 0,
+          /* Lesson numbers restart every week, so a session built out of whole
+             lessons has to compare week AND lesson. A module with no lessons
+             at all (maths) gives every topic its own key, which makes "one
+             lesson per session" behave exactly like "one topic". */
+          lessonKey: topics[t].lesson
+            ? ('w' + weeks[w].number + 'l' + topics[t].lesson)
+            : ('t' + topics[t].id)
         });
       }
     }
@@ -427,6 +442,11 @@ var Schedule = (function () {
             date: key,
             time: cfg.times[i],
             minutes: (cfg.mins && cfg.mins[i]) || 60,
+            unit: cfg.unit || 'topics',
+            /* How many of whatever `unit` says. Topic capacity for a
+               lessons-based slot is not known until a module is chosen, since
+               lessons differ in size — see capacityFor(). */
+            room: cfg.unit === 'lessons' ? (cfg.lessons || 1) : (cfg.topics || 1),
             topics: cfg.topics,
             mod: (cfg.mods && cfg.mods[i]) || ''
           });
@@ -501,12 +521,26 @@ var Schedule = (function () {
        Worked out per module, because a slot pinned to another subject is not
        capacity this one can use. Without that, pinning every weekday evening
        to business would leave maths thinking it had the whole calendar. */
-    function capacityFor(moduleId) {
+    function capacityFor(moduleId, topicList) {
+      /* A lessons-based slot holds however many topics those lessons contain,
+         which varies — one lesson here is nine topics and another is one. For
+         choosing WHICH module gets a slot, the module's own average is close
+         enough; the shortfall warning does not rely on this at all, because it
+         counts what is actually left in the queue afterwards. */
+      var perLesson = 1, seen = {}, lessons = 0, i;
+      for (i = 0; i < topicList.length; i++) {
+        if (!seen[topicList[i].lessonKey]) { seen[topicList[i].lessonKey] = 1; lessons++; }
+      }
+      if (lessons > 0) perLesson = topicList.length / lessons;
+
       var arr = new Array(slots.length + 1);
       arr[slots.length] = 0;
       for (var k = slots.length - 1; k >= 0; k--) {
         var mine = !slots[k].mod || slots[k].mod === moduleId;
-        arr[k] = arr[k + 1] + (mine ? (slots[k].topics || 1) : 0);
+        var holds = slots[k].unit === 'lessons'
+          ? Math.max(1, Math.round((slots[k].room || 1) * perLesson))
+          : (slots[k].topics || 1);
+        arr[k] = arr[k + 1] + (mine ? holds : 0);
       }
       return arr;
     }
@@ -544,7 +578,7 @@ var Schedule = (function () {
        below stays O(1) per slot. */
     for (i = 0; i < state.length; i++) {
       state[i].lastSlot = lastSlotOnOrBefore(slots, state[i].exam);
-      state[i].cap = capacityFor(state[i].module.id);
+      state[i].cap = capacityFor(state[i].module.id, state[i].topics);
     }
 
     /* Pulls up to `room` topics off one module's queue for one slot. Kept
@@ -552,7 +586,12 @@ var Schedule = (function () {
        left can fall back to whoever does need it, rather than sitting empty. */
     function fill(st, slot, room) {
       var out = [], late = st.exam && slot.date > st.exam;
-      while (out.length < room) {
+      var byLessons = slot.unit === 'lessons';
+      var seenLesson = {}, lessonsTaken = 0;
+
+      while (true) {
+        if (!byLessons && out.length >= room) break;
+
         var item = st.queue[st.at];
         if (!item) {
           /* Required work is finished and the exam is still ahead: fill the
@@ -560,6 +599,21 @@ var Schedule = (function () {
           if (!extendRevision(st, s.focus)) break;
           item = st.queue[st.at];
           if (!item) break;
+        }
+
+        /* Measured in lessons: keep taking topics while they belong to a
+           lesson this session has already started, and stop at the point where
+           one more would mean starting a lesson too many.
+
+           A lesson part-finished still counts as a whole one — she has ticked
+           some of it off, and the session is what remains. */
+        if (byLessons) {
+          var key = item.topic.lessonKey + '|' + item.pass;
+          if (!seenLesson[key]) {
+            if (lessonsTaken >= room) break;
+            seenLesson[key] = 1;
+            lessonsTaken++;
+          }
         }
         st.at++;
         st.placed++;
@@ -582,7 +636,7 @@ var Schedule = (function () {
     var sessions = [];
     for (i = 0; i < slots.length; i++) {
       var slot = slots[i];
-      var room = slot.topics || 1;
+      var room = slot.room || slot.topics || 1;
       var items = [], pick = null, skip = null;
 
       /* A session pinned to a subject goes to that subject. If it has nothing

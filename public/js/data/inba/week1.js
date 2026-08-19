@@ -413,6 +413,214 @@ window.MODULE_CONTENT.inba.weeks.push({
 
   /* ═══════════════════════ ENTREPRENEURSHIP ═══════════════════════ */
   {
+    id: 'i1-traits',
+    title: 'Characteristics of Entrepreneurs',
+    emoji: '🧗',
+    summary: 'The four traits successful entrepreneurs tend to share — and what they are not.',
+    notes: [
+      {
+        heading: 'Born or made?',
+        emoji: '❓',
+        html:
+          '<p>What makes an entrepreneur different — is it something you are born with, or something you can ' +
+          'learn? There is <b>no single formula</b>. Erasmus et al. (2013) suggest that successful ' +
+          'entrepreneurs often share a <b>mix</b> of the following characteristics.</p>'
+      },
+      {
+        heading: 'The four characteristics',
+        emoji: '4️⃣',
+        html:
+          '<div class="keybox"><b>1. Achievement motivation</b> · the need to achieve something important ' +
+          'for <b>personal satisfaction, over financial reward</b>. People with this trait:' +
+          '<br>· thrive on challenge and love a good competition' +
+          '<br>· prefer goals that are tough but <b>achievable through their own effort</b>' +
+          '<br>· need to be personally responsible, and to get feedback on their progress' +
+          '<br>· want independence and control over their own time and destiny</div>' +
+          '<div class="keybox"><b>2. Internal locus of control</b> · do you believe you control your ' +
+          'destiny, or is it luck? Entrepreneurs have a strong <b>internal</b> locus of control: they believe ' +
+          'their <b>own actions and hard work</b> determine their success.</div>' +
+          '<div class="keybox"><b>3. Innovation and creativity</b> · entrepreneurs see the world differently ' +
+          'and find opportunities in <b>everyday problems</b>, often through <b>adaptation or refinement</b> ' +
+          'rather than invention — though it may involve inventing too.</div>' +
+          '<div class="keybox"><b>4. Risk tolerance</b> · starting a business is risky, but entrepreneurs ' +
+          'are <b>not reckless</b>. They are <b>calculated risk-takers</b>: they research, plan, and find ' +
+          'ways to minimise potential losses before they jump.</div>'
+      },
+      {
+        heading: 'And the rest',
+        emoji: '⚡',
+        html:
+          '<p>Those four are only some of the traits. Entrepreneurs also often have high levels of ' +
+          '<b>energy, optimism, passion</b> and a <b>relentless work ethic</b>. They are <b>adaptable</b>, ' +
+          'can <b>handle uncertainty</b>, and are always oriented towards finding the <b>next ' +
+          'opportunity</b>.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'i1ch-1', type: 'multi', marks: 4,
+        prompt: 'Which of these are the four characteristics of successful entrepreneurs? ' +
+                '<b>Select all that apply.</b>',
+        options: [
+          'Achievement motivation',
+          'Internal locus of control',
+          'Innovation and creativity',
+          'Risk tolerance',
+          'Formal business qualifications',
+          'Access to family money'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'The four', val: 'Achievement motivation, internal locus of control, innovation and creativity, risk tolerance' },
+          { lab: 'Not listed', val: 'Qualifications and family money are circumstances, not characteristics' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'All four are things about the person. The two wrong options are things a person happens to ' +
+             'have, which is a different kind of advantage entirely.'
+      },
+      {
+        id: 'i1ch-2', type: 'mcq', marks: 3,
+        prompt: '<b>Achievement motivation</b> is the need to achieve something important — but for what?',
+        options: [
+          'For personal satisfaction, over financial reward',
+          'For financial reward, over personal satisfaction',
+          'For the recognition of other people in the industry',
+          'For the security of a steady income'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Achievement motivation', val: 'Personal satisfaction ahead of financial reward' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The order matters and it is the opposite of what most people assume about business. Money is ' +
+             'not what this trait is reaching for.'
+      },
+      {
+        id: 'i1ch-3', type: 'multi', marks: 4,
+        prompt: 'Which of these describe someone with strong <b>achievement motivation</b>? ' +
+                '<b>Select all that apply.</b>',
+        options: [
+          'They thrive on challenge and love a good competition',
+          'They prefer goals that are tough but achievable through their own effort',
+          'They need to be personally responsible, and to get feedback on their progress',
+          'They want independence and control over their own time and destiny',
+          'They prefer goals that are easy, so they can be certain of succeeding',
+          'They prefer to share responsibility so that no single person is blamed'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'Challenge', val: 'Tough goals, and competition' },
+          { lab: 'Own effort', val: 'Achievable through what they themselves do' },
+          { lab: 'Responsibility', val: 'Personally accountable, and wanting feedback' },
+          { lab: 'Independence', val: 'Control over their own time and destiny' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: '"Tough but achievable through their own effort" is doing two jobs at once — it rules out goals ' +
+             'that are too easy AND goals that depend on luck or on somebody else.'
+      },
+      {
+        id: 'i1ch-4', type: 'mcq', marks: 3,
+        prompt: 'A founder’s premises burn down. She rebuilds, saying she has never allowed circumstances to ' +
+                'determine her fate. Which characteristic is this, and what does it mean?',
+        options: [
+          'A strong internal locus of control — the belief that her own actions and hard work determine her success',
+          'A strong external locus of control — the belief that outcomes are mostly down to luck',
+          'Risk tolerance — she accepted the possibility of the fire when she started',
+          'Achievement motivation — she wants to succeed for personal satisfaction'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Internal locus of control', val: 'My actions determine my success' },
+          { lab: 'External locus of control', val: 'Luck and circumstance determine it' },
+          { lab: 'Answer', val: 'Internal locus of control', final: true }
+        ],
+        why: 'The word "internal" is the whole idea: the cause of what happens to me is inside me. Believing ' +
+             'the opposite is not a character flaw, but it is not this trait.'
+      },
+      {
+        id: 'i1ch-5', type: 'mcq', marks: 3,
+        prompt: 'The module says entrepreneurs are <b>calculated risk-takers</b> rather than reckless. What ' +
+                'is the difference?',
+        options: [
+          'They research, plan, and find ways to minimise potential losses before they jump',
+          'They take smaller risks than other people do',
+          'They avoid risk altogether and wait until an outcome is certain',
+          'They take risks only with other people’s money rather than their own'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Reckless', val: 'Jumping without looking' },
+          { lab: 'Calculated', val: 'Research, planning, and minimising the possible loss first' },
+          { lab: 'The risk itself', val: 'Still real — it is the preparation that differs' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The second option is the common misreading. A calculated risk is not a small risk — it is a ' +
+             'risk somebody has done the work on.'
+      },
+      {
+        id: 'i1ch-6', type: 'mcq', marks: 3,
+        prompt: 'Where does the module say entrepreneurs find opportunities, and how do they usually create ' +
+                'something from them?',
+        options: [
+          'In everyday problems, often through adaptation or refinement rather than pure invention',
+          'In laboratories, through inventing something that has never existed',
+          'In competitors’ published accounts, by copying what already sells',
+          'In government policy documents, by following stated priorities'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Where', val: 'Everyday problems — they see the world differently' },
+          { lab: 'How', val: 'Adaptation or refinement, though it may involve inventing too' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'Innovation and invention are not the same word. Most entrepreneurship is improving something ' +
+             'that already exists for people it was not serving.'
+      },
+      {
+        id: 'i1ch-7', type: 'multi', marks: 4,
+        prompt: 'Beyond the four main characteristics, which other traits does the module say entrepreneurs ' +
+                'often have? <b>Select all that apply.</b>',
+        options: [
+          'High levels of energy, optimism and passion',
+          'A relentless work ethic',
+          'Adaptability, and the ability to handle uncertainty',
+          'An orientation towards finding the next opportunity',
+          'A preference for stable, predictable working conditions'
+        ],
+        answers: [0, 1, 2, 3],
+        solution: [
+          { lab: 'Energy and passion', val: 'Plus optimism' },
+          { lab: 'Work ethic', val: 'Described as relentless' },
+          { lab: 'Adaptable', val: 'And able to handle uncertainty' },
+          { lab: 'Next opportunity', val: 'Always oriented towards the one after this' },
+          { lab: 'Answer', val: 'The first four', final: true }
+        ],
+        why: 'The wrong option is the exact opposite of "can handle uncertainty", which is the trait that ' +
+             'makes the rest of them survivable.'
+      },
+      {
+        id: 'i1ch-8', type: 'mcq', marks: 3,
+        prompt: 'What does the module say about whether there is a formula for being a successful ' +
+                'entrepreneur?',
+        options: [
+          'There is no single formula — successful entrepreneurs share a mix of these characteristics',
+          'There is a fixed formula, and all four characteristics are required',
+          'Only achievement motivation is genuinely required; the rest are optional',
+          'The characteristics are entirely inherited and cannot be developed'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'No single formula', val: 'Stated directly' },
+          { lab: 'A mix', val: 'Successful entrepreneurs often share a combination of them' },
+          { lab: 'Answer', val: 'The first option', final: true }
+        ],
+        why: 'The opening question of the topic — born with it or learn it — is deliberately left open. A ' +
+             'question expecting one right answer to that is testing something the module does not claim.'
+      }
+    ]
+  },
+
+  {
     id: 'i1-entre',
     title: 'Entrepreneurship',
     emoji: '🚀',

@@ -601,11 +601,34 @@ var Calendar = (function () {
         'the last one runs past midnight. Shorten one, or drop a session.</p>'
       : '';
 
+    /* A session can be measured in topics or in whole lessons. Only one of the
+       two steppers is shown, because showing both invites her to set a number
+       that is quietly being ignored. */
+    var byLesson = cfg.unit === 'lessons';
+    var unitPick =
+      '<div class="cal-subrow">' +
+        '<span class="cal-row-label">Each session covers</span>' +
+        '<div class="cal-chips">' +
+          '<button class="cal-chip' + (byLesson ? '' : ' is-on') + '" type="button"' +
+            ' data-unit="' + which + ':topics">Topics</button>' +
+          '<button class="cal-chip' + (byLesson ? ' is-on' : '') + '" type="button"' +
+            ' data-unit="' + which + ':lessons">Whole lessons</button>' +
+        '</div>' +
+      '</div>';
+
+    var amount = byLesson
+      ? stepperHtml('Lessons per session', which, 'lessons', cfg.lessons) +
+        '<p class="cal-hint cal-hint-tight">A session covers a whole lesson, however many topics that ' +
+        'lesson holds — so some sessions will be longer than others.</p>'
+      : stepperHtml('Topics per session', which, 'topics', cfg.topics) +
+        '<p class="cal-hint cal-hint-tight">Some topics are short — two or three can share one session.</p>';
+
     return sectionHtml('⏰', label, '',
       stepperHtml('Sessions a day', which, 'count', cfg.count) +
-      stepperHtml('Topics per session', which, 'topics', cfg.topics) +
-      '<p class="cal-hint cal-hint-tight">Some topics are short — two or three can share one session. ' +
-      'Sessions are kept in order, and a clash pushes the later one back.</p>' +
+      unitPick +
+      amount +
+      '<p class="cal-hint cal-hint-tight">Sessions are kept in order, and a clash pushes the later one ' +
+      'back.</p>' +
       full +
       '<div class="cal-times">' + times + '</div>');
   }
@@ -909,7 +932,8 @@ var Calendar = (function () {
       });
     });
 
-    /* One handler for both steppers — sessions a day and topics per session. */
+    /* One handler for all three steppers — sessions a day, topics per session
+       and lessons per session. */
     each('[data-step-set]', function (b) {
       b.addEventListener('click', function () {
         var bits = b.getAttribute('data-step-set').split(':');
@@ -921,6 +945,18 @@ var Calendar = (function () {
         blk[field] = next;
         var patch = {};
         patch[which] = blk;
+        Schedule.update(patch);
+        again();
+      });
+    });
+
+    each('[data-unit]', function (b) {
+      b.addEventListener('click', function () {
+        var bits = b.getAttribute('data-unit').split(':');
+        var s = Schedule.settings(), blk = s[bits[0]];
+        blk.unit = bits[1];
+        var patch = {};
+        patch[bits[0]] = blk;
         Schedule.update(patch);
         again();
       });

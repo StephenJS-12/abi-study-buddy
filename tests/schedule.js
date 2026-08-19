@@ -55,10 +55,18 @@ var Store = {
     hasBadge: function (id) { return !!badges[id]; }
 };
 
+/* Ten topics, filed into lessons of 2, 3 and 5 - deliberately uneven, because
+   a session measured in lessons holds however many topics that lesson happens
+   to contain, and equal lessons would hide any mistake about that. */
 function makeTopics(prefix, n) {
     var out = [];
     for (var i = 1; i <= n; i++) {
-        out.push({ id: prefix + '-t' + i, title: 'Topic ' + i, emoji: 'T' });
+        out.push({
+            id: prefix + '-t' + i,
+            title: 'Topic ' + i,
+            emoji: 'T',
+            lesson: i <= 2 ? 1 : (i <= 5 ? 2 : 3)
+        });
     }
     return out;
 }
@@ -777,6 +785,115 @@ set({
 var pc = Schedule.plan();
 ok(pc.warnings.length === 0,
    "capacity: 20 Mondays x 4 topics is 80 slots of room for 60 topics, but it reported a shortfall");
+
+// ── 18b. sessions measured in whole lessons ──────────────────────
+// A session can be one or more LESSONS instead of a fixed number of topics.
+// The module is taught in lessons, so covering one end to end is a more
+// natural sitting than three topics that happen to sit next to each other.
+//
+// The stub's lessons are 2, 3 and 5 topics long on purpose: a session holding
+// "one lesson" must hold two topics sometimes and five at others.
+
+set({
+    days: [1, 2, 3, 4, 5],
+    weekday: { count: 1, unit: 'lessons', lessons: 1, topics: 1,
+               times: ['17:00'], mins: [60], mods: ['aaa'] },
+    weekend: { count: 1, unit: 'topics', topics: 1,
+               times: ['09:00'], mins: [60], mods: [''] },
+    exams: { aaa: daysFromToday(200), bbb: daysFromToday(200) }
+});
+
+var pls = Schedule.plan();
+var aaaSessions = [];
+for (i = 0; i < pls.sessions.length; i++) {
+    if (pls.sessions[i].moduleId === 'aaa' && pls.sessions[i].time === '17:00') {
+        aaaSessions.push(pls.sessions[i]);
+    }
+}
+ok(aaaSessions.length > 2, "lessons: too few sessions generated to check anything");
+
+/* Every session must hold exactly one lesson's worth - and never topics from
+   two different lessons. */
+var sizes = {};
+for (i = 0; i < aaaSessions.length; i++) {
+    var ses = aaaSessions[i], firstLesson = null, mixed = false;
+    for (var z = 0; z < ses.items.length; z++) {
+        var tid = ses.items[z].topicId;
+        var num = Number(tid.replace('aaa-t', ''));
+        var lesson = num <= 2 ? 1 : (num <= 5 ? 2 : 3);
+        if (firstLesson === null) firstLesson = lesson;
+        else if (lesson !== firstLesson) mixed = true;
+    }
+    if (mixed) { fail("lessons: a one-lesson session mixed topics from two lessons"); break; }
+    sizes[ses.items.length] = 1;
+}
+
+/* Sessions of different sizes are the proof it is following the lessons and
+   not just counting to a fixed number. */
+ok(sizes[2] && sizes[3] && sizes[5],
+   "lessons: expected sessions of 2, 3 and 5 topics to match the lesson sizes, got " +
+   Object.keys(sizes).join('/'));
+
+/* Two lessons per session should roughly halve the number of sessions the
+   first pass needs. */
+set({
+    days: [1, 2, 3, 4, 5],
+    weekday: { count: 1, unit: 'lessons', lessons: 2, topics: 1,
+               times: ['17:00'], mins: [60], mods: ['aaa'] },
+    weekend: { count: 1, unit: 'topics', topics: 1, times: ['09:00'], mins: [60], mods: [''] },
+    exams: { aaa: daysFromToday(200), bbb: daysFromToday(200) }
+});
+var pTwo = Schedule.plan();
+var firstPassSessions = 0;
+for (i = 0; i < pTwo.sessions.length; i++) {
+    if (pTwo.sessions[i].moduleId !== 'aaa') continue;
+    var anyFirst = false;
+    for (z = 0; z < pTwo.sessions[i].items.length; z++) {
+        if (pTwo.sessions[i].items[z].pass === 1) anyFirst = true;
+    }
+    if (anyFirst) firstPassSessions++;
+}
+/* Three lessons, two per session, so two sessions cover the first pass. */
+ok(firstPassSessions === 2,
+   "lessons: two lessons a session should cover three lessons in two sessions, got " +
+   firstPassSessions);
+
+/* All ten topics still get planned - nothing may be lost to the grouping. */
+ok(requiredCount(pTwo.sessions, 'aaa') === 30,
+   "lessons: expected all 30 aaa topics, got " + requiredCount(pTwo.sessions, 'aaa'));
+
+/* A module with no lessons at all - which is maths - must still work, with
+   each topic behaving as its own lesson rather than the whole module
+   collapsing into one session. */
+var savedLessons = [];
+for (i = 0; i < CONTENT.bbb.weeks[0].topics.length; i++) {
+    savedLessons.push(CONTENT.bbb.weeks[0].topics[i].lesson);
+    delete CONTENT.bbb.weeks[0].topics[i].lesson;
+}
+set({
+    days: [1, 2, 3, 4, 5],
+    weekday: { count: 1, unit: 'lessons', lessons: 1, topics: 1,
+               times: ['17:00'], mins: [60], mods: ['bbb'] },
+    weekend: { count: 1, unit: 'topics', topics: 1, times: ['09:00'], mins: [60], mods: [''] },
+    exams: { bbb: daysFromToday(200) }
+});
+var pNo = Schedule.plan();
+var biggest = 0;
+for (i = 0; i < pNo.sessions.length; i++) {
+    if (pNo.sessions[i].items.length > biggest) biggest = pNo.sessions[i].items.length;
+}
+ok(biggest === 1,
+   "lessons: a module with no lessons should give one topic per session, got a session of " + biggest);
+for (i = 0; i < CONTENT.bbb.weeks[0].topics.length; i++) {
+    CONTENT.bbb.weeks[0].topics[i].lesson = savedLessons[i];
+}
+
+/* A nonsense unit falls back rather than producing an empty plan. */
+set({ weekday: { count: 1, unit: 'chapters', topics: 2, times: ['09:00'], mins: [60], mods: [''] } });
+ok(Schedule.settings().weekday.unit === 'topics',
+   "lessons: an unknown unit should fall back to topics, got " + Schedule.settings().weekday.unit);
+set({ weekday: { count: 1, unit: 'lessons', lessons: 99, times: ['09:00'], mins: [60], mods: [''] } });
+ok(Schedule.settings().weekday.lessons <= 4, "lessons: an absurd lesson count should be capped");
 
 // ── 19. pinning a session to a module ────────────────────────────
 // She wants business at 17:00 and maths at 19:00. Nothing else may take

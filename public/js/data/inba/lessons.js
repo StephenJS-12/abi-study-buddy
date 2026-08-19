@@ -31,7 +31,7 @@
       { number: 1, title: 'The nature and role of business',
         topics: ['i1-business', 'i1-transform', 'i1-resources'] },
       { number: 2, title: 'Entrepreneurship',
-        topics: ['i1-entre', 'i1-process', 'i1-plan'] },
+        topics: ['i1-entre', 'i1-traits', 'i1-process', 'i1-plan'] },
       { number: 3, title: 'Ethics and sustainability',
         topics: ['i1-ethics', 'i1-csr', 'i1-tbl', 'i1-govern'] },
       { number: 4, title: 'The micro, market and macro environments',

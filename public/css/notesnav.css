@@ -1,0 +1,170 @@
+/* The contents sidebar in the notes.
+
+   Two shapes. On a phone and an iPad in portrait it is a strip above the
+   notes, collapsed by default reading-width; on anything wider it is a real
+   column beside them that stays put while the notes scroll.
+
+   It inherits the module colour like everything else, because it is built out
+   of --lilac-* and --pink-*. */
+
+.noteswrap { display: block; }
+.noteswrap-main { min-width: 0; }
+
+@media (min-width: 60rem) {
+  .noteswrap {
+    display: grid;
+    grid-template-columns: 17rem minmax(0, 1fr);
+    gap: 1.6rem;
+    align-items: start;
+  }
+  /* Collapsing the sidebar hands its column back to the notes rather than
+     leaving a gap where it used to be. Driven by a class on the wrapper
+     rather than :has(), which is newer than the iPad this runs on. */
+  .noteswrap.is-navshut { grid-template-columns: auto minmax(0, 1fr); gap: 1rem; }
+}
+
+.nnav {
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 1.2rem;
+}
+
+@media (min-width: 60rem) {
+  .nnav {
+    position: sticky;
+    top: 1rem;
+    margin-bottom: 0;
+    max-height: calc(100vh - 2rem);
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.nnav-handle {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  width: 100%;
+  border: 0;
+  background: var(--lilac-50);
+  color: var(--lilac-700);
+  padding: .7rem .9rem;
+  font: inherit;
+  font-weight: 700;
+  font-size: .9rem;
+  cursor: pointer;
+  flex: none;
+}
+.nnav-handle:hover { background: var(--lilac-100); }
+.nnav-handle-icon {
+  width: 1.4rem;
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.nnav-body {
+  padding: .5rem;
+  overflow-y: auto;
+  /* Above the notes on a narrow screen, so it must not become the page. It
+     scrolls inside itself instead of pushing the reading off the bottom. */
+  max-height: 55vh;
+}
+@media (min-width: 60rem) {
+  .nnav-body { flex: 1; max-height: none; }
+}
+
+/* Shut: the handle only. On a wide screen it turns into a narrow tab so the
+   notes get the whole width back but the way in is still visible. */
+.nnav.is-shut .nnav-body { display: none; }
+@media (min-width: 60rem) {
+  .nnav.is-shut { width: 3rem; }
+  .nnav.is-shut .nnav-handle-text { display: none; }
+  .nnav.is-shut .nnav-handle { justify-content: center; padding: .7rem .3rem; }
+}
+
+/* ── weeks and lessons ──────────────────────────────────────── */
+
+.nnav-week { border-radius: var(--r-sm); }
+.nnav-week + .nnav-week { margin-top: 2px; }
+
+.nnav-week > summary,
+.nnav-lesson > summary {
+  display: flex;
+  align-items: baseline;
+  gap: .4rem;
+  padding: .45rem .5rem;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  list-style: none;
+  font-size: .84rem;
+  line-height: 1.35;
+}
+.nnav-week > summary::-webkit-details-marker,
+.nnav-lesson > summary::-webkit-details-marker { display: none; }
+.nnav-week > summary::marker,
+.nnav-lesson > summary::marker { content: ""; }
+
+.nnav-week > summary { font-weight: 700; background: var(--lilac-50); }
+.nnav-week > summary:hover { background: var(--lilac-100); }
+.nnav-lesson > summary { font-weight: 600; color: var(--ink-soft); }
+.nnav-lesson > summary:hover { background: var(--lilac-50); }
+
+.nnav-caret {
+  flex: none;
+  font-size: .7rem;
+  color: var(--lilac-600);
+  transition: transform .16s var(--ease-out, ease);
+}
+details[open] > summary > .nnav-caret { transform: rotate(90deg); }
+
+.nnav-week-no, .nnav-lesson-no {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+  color: var(--lilac-700);
+  font-size: .74rem;
+  font-weight: 800;
+}
+.nnav-label { min-width: 0; overflow-wrap: break-word; }
+
+.nnav-lesson { margin: 2px 0 2px .55rem; }
+.nnav-topics { padding: 2px 0 4px .5rem; display: grid; gap: 1px; }
+.nnav-week > .nnav-topics { padding-left: 1.1rem; }
+
+/* ── topics ─────────────────────────────────────────────────── */
+
+.nnav-topic {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  width: 100%;
+  border: 0;
+  border-left: 2px solid var(--line);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+  background: none;
+  padding: .35rem .5rem;
+  font: inherit;
+  font-size: .8rem;
+  line-height: 1.3;
+  color: var(--ink-soft);
+  text-align: left;
+  cursor: pointer;
+  transition: background .14s, border-color .14s, color .14s;
+}
+.nnav-topic:hover { background: var(--lilac-50); border-left-color: var(--lilac-200); color: var(--ink); }
+
+/* Where she is now. The left bar carries it rather than a background, so a
+   long list still reads as a list. */
+.nnav-topic.is-current {
+  background: var(--lilac-50);
+  border-left-color: var(--lilac-600);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.nnav-topic-emoji { flex: none; font-size: .9rem; line-height: 1; }
+.nnav-topic-title { flex: 1; min-width: 0; overflow-wrap: break-word; }
+.nnav-badge { flex: none; font-size: .7rem; }

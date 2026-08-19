@@ -1068,11 +1068,12 @@ var App = (function () {
       head = w.topics.length + ' topics';
     }
 
-    screen.innerHTML =
+    screen.innerHTML = NotesNav.wrap(NotesNav.html('', weekId, null),
       '<div class="pagehead"><span class="kicker">Week ' + w.number + ' notes · ' + head + '</span>' +
       '<h1>' + w.emoji + ' ' + esc(w.title) + '</h1></div>' +
-      '<div class="picklist">' + list + '</div>';
+      '<div class="picklist">' + list + '</div>');
 
+    NotesNav.bind(screen);
     bindNotesPicks(weekId);
   }
 
@@ -1096,13 +1097,14 @@ var App = (function () {
       list += pickRow('data-ntopic', t.id, t.emoji, t.title, t.summary, Store.hasBadge(t.id));
     }
 
-    screen.innerHTML =
+    screen.innerHTML = NotesNav.wrap(NotesNav.html('', weekId, lesson.number),
       '<div class="pagehead">' +
         '<span class="kicker">Week ' + w.number + ' · Lesson ' + lesson.number + '</span>' +
         '<h1>' + lesson.emoji + ' ' + esc(lesson.title) + '</h1>' +
       '</div>' +
-      '<div class="picklist">' + list + '</div>';
+      '<div class="picklist">' + list + '</div>');
 
+    NotesNav.bind(screen);
     bindNotesPicks(weekId);
   }
 
@@ -1124,7 +1126,7 @@ var App = (function () {
 
     crumbFromHistory();
 
-    screen.innerHTML =
+    screen.innerHTML = NotesNav.wrap(NotesNav.html(topicId, null, null),
       /* Names the lesson too where the module has them, so she always knows
          which part of the week she is standing in. */
       '<div class="pagehead"><span class="kicker">Week ' + w.number +
@@ -1135,8 +1137,9 @@ var App = (function () {
       '<div class="card" style="margin-top:1.6rem;text-align:center;background:linear-gradient(150deg,var(--lilac-50),var(--pink-50))">' +
         '<p style="font-weight:700;margin-bottom:.8rem">Feeling ready to try some questions?</p>' +
         '<button class="btn btn-pink btn-lg" type="button" id="toQuiz">Practise this topic 🌱</button>' +
-      '</div>';
+      '</div>');
 
+    NotesNav.bind(screen);
     Notes.bind(screen);
 
     /* The tutor is given the notes as rendered on this page, so it is talking
@@ -1589,6 +1592,10 @@ var App = (function () {
     /* The dashboard appears on two different screens, so it asks to be
        redrawn rather than knowing which one it is on. */
     Dashboard.init(function () { draw(); });
+
+    /* The contents sidebar jumps straight to a topic from anywhere in the
+       notes, which is a normal navigation and belongs in the history. */
+    NotesNav.init(function (topicId) { go('notesTopic', { topicId: topicId }); });
 
     applyMotion();
     showSaveWarning();

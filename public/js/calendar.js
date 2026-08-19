@@ -866,6 +866,34 @@ var Calendar = (function () {
       redraw();
     }
 
+    /* REDRAWING WHILE A PICKER IS OPEN CLOSES IT.
+     *
+     * On an iPad, a time or date input fires `change` on every notch of the
+     * wheel, not only when Done is tapped. Every one of those was rebuilding
+     * the screen, which destroyed the focused input mid-scroll — so the picker
+     * vanished and kept whatever value it happened to be passing. It looked
+     * random; it was simply however long she took to scroll past a value.
+     *
+     * The setting is still saved on every change, so nothing is lost. Only the
+     * redraw waits, until nothing is being typed into or scrolled. */
+    var pending = null;
+
+    function stillEditing() {
+      var a = document.activeElement;
+      if (!a) return false;
+      var tag = (a.tagName || '').toUpperCase();
+      return tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA';
+    }
+
+    function softAgain() {
+      if (pending) clearTimeout(pending);
+      pending = setTimeout(function () {
+        pending = null;
+        if (stillEditing()) { softAgain(); return; }
+        again();
+      }, 400);
+    }
+
     /* <details> reports its own state, which is the only reliable way to know
        it — she can open it with a click, with the keyboard, or with a find. */
     each('[data-opts]', function (d) {
@@ -1027,7 +1055,7 @@ var Calendar = (function () {
           var patch = {};
           patch[bits[0]] = blk;
           Schedule.update(patch);
-          again();
+          softAgain();
         });
       });
     }
@@ -1043,7 +1071,7 @@ var Calendar = (function () {
         var patch = {};
         patch[bits[0]] = blk;
         Schedule.update(patch);
-        again();
+        softAgain();
       });
     });
 
@@ -1052,14 +1080,14 @@ var Calendar = (function () {
         var s = Schedule.settings(), id = inp.getAttribute('data-exam');
         if (inp.value) s.exams[id] = inp.value; else delete s.exams[id];
         Schedule.update({ exams: s.exams });
-        again();
+        softAgain();
       });
     });
 
     each('[data-start]', function (inp) {
       inp.addEventListener('change', function () {
         Schedule.update({ start: inp.value || null });
-        again();
+        softAgain();
       });
     });
 

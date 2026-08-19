@@ -186,6 +186,78 @@ var Quiz = (function () {
 
   function current() { return S.questions[S.idx]; }
 
+  /* ───────────────────────── pausing ───────────────────────── */
+
+  /* Everything needed to put her back where she was. `results` drops its
+     question objects and recovers them by position on the way back in —
+     results[i] is always the answer to questions[i], because a result is
+     pushed the moment a question is finished and nothing else pushes one. */
+  function snapshot() {
+    if (!S || S.finished) return null;
+
+    /* If she has answered but not yet pressed Next she is looking at the
+       solution. Resuming into that view would mean rebuilding the verdict, the
+       working and the footer, so the pause point moves on to the next question
+       and the answer she just gave is kept. She loses the solution she was
+       reading, which is in the notes anyway. */
+    var at = S.answered ? S.idx + 1 : S.idx;
+
+    /* Nothing left to come back to. The round is effectively over and every
+       point is already banked, so offering a resume would only invite her to
+       reopen a finished paper. */
+    if (at >= S.questions.length) return null;
+
+    return {
+      moduleId: Content.moduleId(),
+      mode: S.mode,
+      weekIds: S.weekIds,
+      topicIds: S.topicIds,
+      origin: S.origin,
+      questions: S.questions,
+      idx: at,
+      streak: S.streak,
+      correct: S.correct,
+      pointsWon: S.pointsWon,
+      results: S.results.map(function (r) {
+        return { right: r.right, given: r.given };
+      })
+    };
+  }
+
+  function keep() { Resume.save(snapshot()); }
+
+  function resume(saved) {
+    if (saved.moduleId && saved.moduleId !== Content.moduleId()) {
+      Content.use(saved.moduleId);
+      Store.rememberModule(saved.moduleId);
+    }
+
+    S = {
+      weekIds: saved.weekIds || [],
+      topicIds: saved.topicIds || [],
+      mode: saved.mode,
+      origin: saved.origin,
+      questions: saved.questions,
+      idx: saved.idx,
+      streak: saved.streak || 0,
+      correct: saved.correct || 0,
+      pointsWon: saved.pointsWon || 0,
+      results: (saved.results || []).map(function (r, i) {
+        return { q: saved.questions[i], right: r.right, given: r.given };
+      }),
+      helperOpen: false,
+      answered: false,
+      stepState: null
+    };
+
+    /* The snapshot is deliberately NOT cleared here. It is already an accurate
+       description of where she is, and clearing it would mean a round she
+       resumed and then closed the tab on was gone — the one case where she
+       would most expect it to still be there. It is overwritten after the next
+       question and dropped when the round ends. */
+    render();
+  }
+
   /* ───────────────────────── rendering ───────────────────────── */
 
   /* Question prompts carry markup for fractions and emphasis. The tutor wants
@@ -647,6 +719,12 @@ var Quiz = (function () {
       });
     }
 
+    /* Saved the moment a question is done rather than only as the tab closes.
+       pagehide is the reliable unload signal, but "reliable" is not "certain" —
+       a crash, a killed tab or an iPad reclaiming memory fires nothing at all.
+       Writing here means the most she can ever lose is the question she is on. */
+    keep();
+
     document.getElementById('nextBtn').addEventListener('click', function () {
       S.idx += 1;
       S.answered = false;
@@ -734,6 +812,9 @@ var Quiz = (function () {
     var cfg = { weekIds: S.weekIds, topicIds: S.topicIds, mode: S.mode, count: total, origin: S.origin };
     var origin = S.origin;
     S.finished = true;   // the round is over, so leaving needs no confirmation
+    /* She reached the end, so there is nothing to come back to. Left in place
+       it would offer her a paper she has just seen the results of. */
+    Resume.clear();
     document.getElementById('againBtn').addEventListener('click', function () { start(cfg); });
     document.getElementById('doneBtn').addEventListener('click', function () {
       S = null;
@@ -752,14 +833,56 @@ var Quiz = (function () {
     });
   }
 
-  function confirmLeave() {
+  /* Leaving is three answers, not two: stay, go and keep it, or go and drop it.
+     Offered wherever she can walk out of a live round — the crumb here, and the
+     brand in the top bar, which asks the same question through App. */
+  function leavePrompt(cfg) {
+    var canKeep = !!snapshot();
+
     App.modal({
       title: 'Leave this ' + MODE_LOWER[S.mode] + '?',
-      body: '<p>Your progress in this round will not be saved, but any points and badges you have already ' +
-            'earned are safe.</p>',
-      confirmLabel: 'Yes, leave',
-      confirmClass: 'btn-danger',
+      body: canKeep
+        ? '<p>I can keep this ' + MODE_LOWER[S.mode] + ' for you and put it back on your home ' +
+          'screen, so you can carry on later from where you are now.</p>' +
+          '<p class="muted-note">Points and badges you have already earned are safe either way.</p>'
+        : '<p>Any points and badges you have already earned are safe.</p>',
+      confirmLabel: canKeep ? 'Save it for later' : 'Yes, leave',
+      confirmClass: canKeep ? 'btn-primary' : 'btn-danger',
       onConfirm: function () {
+        if (canKeep) {
+          keep();
+        } else {
+          /* Nothing left worth coming back to — she is on the last question
+             having already answered it. Any snapshot still on disk is from
+             earlier in THIS round, so leaving it would offer her a paper she
+             has effectively just finished. */
+          Resume.clear();
+        }
+        cfg.leave();
+      },
+      /* The third button. The modal offers a confirm and a cancel, so "leave
+         without saving" is added to its row — it is a real choice she must be
+         able to make, not a thing to hide behind Cancel. */
+      onOpen: canKeep ? function (body) {
+        var row = body.querySelector('.modal-actions');
+        if (!row) return;
+        var drop = document.createElement('button');
+        drop.className = 'btn btn-danger';
+        drop.type = 'button';
+        drop.textContent = 'Leave without saving';
+        drop.addEventListener('click', function () {
+          Resume.clear();
+          App.closeModal();
+          cfg.leave();
+        });
+        row.insertBefore(drop, row.lastChild);
+      } : null
+    });
+  }
+
+  function confirmLeave() {
+    leavePrompt({
+      leave: function () {
         var origin = S.origin;
         S = null;
         App.go(origin.name, origin.params);
@@ -767,8 +890,25 @@ var Quiz = (function () {
     });
   }
 
+  /* The tab going away. pagehide covers closing, navigating away and being
+     put to sleep; visibilitychange catches an iPad being locked or the app
+     swiped away, which on iOS Safari often fires nothing else. Both are cheap
+     and idempotent, so running both is fine. */
+  function watchUnload() {
+    function stash() { if (S && !S.finished) keep(); }
+    window.addEventListener('pagehide', stash);
+    document.addEventListener('visibilitychange', function () {
+      if (document.visibilityState === 'hidden') stash();
+    });
+  }
+
   return {
     start: start,
+    resume: resume,
+    watchUnload: watchUnload,
+    /* So the brand in the top bar can ask the same question the crumb does
+       rather than having a second, blunter version of it. */
+    leavePrompt: leavePrompt,
     active: function () { return !!S && !S.finished; },
     clear: function () { S = null; }
   };

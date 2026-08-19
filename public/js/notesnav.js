@@ -72,6 +72,11 @@ var NotesNav = (function () {
       var body = '';
 
       if (week.lessons && week.lessons.length) {
+        /* Wrapped so the whole lesson level can be indented and given one
+           continuous rail back up to its week. Indenting each lesson on its own
+           left the rail broken between them, which is most of what made the
+           three levels hard to tell apart. */
+        body += '<div class="nnav-lessons">';
         for (L = 0; L < week.lessons.length; L++) {
           var lesson = week.lessons[L];
           var lKey = week.id + '|' + lesson.number;
@@ -104,6 +109,7 @@ var NotesNav = (function () {
             '<div class="nnav-topics">' + topicRows + '</div>' +
           '</details>';
         }
+        body += '</div>';
       } else {
         /* No lessons — the topics hang straight off the week. */
         for (t = 0; t < (week.topics || []).length; t++) {

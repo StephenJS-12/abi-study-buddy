@@ -171,6 +171,9 @@ body.reduce-motion .cal-addev:hover { transform: none; }
 .cal-dot { width: .42rem; height: .42rem; border-radius: 50%; flex: none; }
 .cal-dot.is-done { background: transparent; border: 1.5px solid; opacity: .55; }
 .cal-dot.is-exam { width: .5rem; height: .5rem; border-radius: 2px; }
+/* An event. Taller than everything beside it and the only thing in the row
+   that is not roughly round, so it is found before it is read. */
+.cal-dot.is-event { width: .34rem; height: .68rem; border-radius: 2px; }
 .cal-more { font-size: .6rem; font-weight: 700; color: var(--muted); line-height: 1; }
 
 /* Wide enough for words. Cells stop being square here and grow to fit their
@@ -195,6 +198,17 @@ body.reduce-motion .cal-addev:hover { transform: none; }
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+  /* Sessions are flat tinted chips. An event is a raised one: it keeps the
+     module's colour but sits on the surface with a full border and a shadow,
+     so a cell holding three sessions and one assignment reads as three things
+     and one THING. */
+  .cal-lab.is-event {
+    background: var(--surface);
+    border: 1px solid var(--card-ink);
+    border-left-width: 4px;
+    font-weight: 800;
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), .2);
   }
   .cal-lab.is-done { opacity: .5; text-decoration: line-through; }
   .cal-lab.is-exam {
@@ -269,6 +283,57 @@ body.reduce-motion .cal-addev:hover { transform: none; }
 /* A session that could not be fitted before its exam. Still shown — hiding it
    would be worse — but it must not look like a normal plan. */
 .cal-card.is-late { border-style: dashed; }
+
+/* ── an event ───────────────────────────────────────────────────
+   An assignment, test or class is not a study session and had been drawn as
+   one: same tint, same border, same everything, so a day with both was a wall
+   of identical cards. Sessions are the rhythm of her week and stay quiet; an
+   event has a date someone else set, and should be the first thing she sees on
+   the day it falls.
+
+   Three changes, all on the event: the module colour goes solid in the header
+   instead of tinting the whole card, the left edge nearly doubles, and it
+   carries a real shadow so it sits above the cards around it. The session
+   itself is untouched — it has to stay just as readable as it was. */
+
+.cal-card-event {
+  border-width: 2px;
+  border-left-width: 7px;
+  border-color: var(--card-ink, var(--lilac-400));
+  background: var(--surface);
+  box-shadow: 0 3px 10px rgba(var(--shadow-rgb), .18);
+}
+
+.cal-card-event .cal-card-head {
+  background: var(--card-ink, var(--lilac-400));
+  color: #fff;
+  padding: .32rem .5rem;
+  font-size: .72rem;
+}
+
+/* Bigger and heavier than a topic title. What the event is called matters more
+   than which topic a session happens to cover. */
+.cal-card-event .cal-item-title { font-size: .92rem; font-weight: 800; }
+
+/* The type — Assignment, Test, Class — as a chip rather than the faint
+   uppercase caption a session's pass name uses. */
+.cal-card-event .cal-item-pass {
+  align-self: flex-start;
+  margin-top: .2rem;
+  padding: .1rem .4rem;
+  border-radius: var(--r-pill);
+  background: var(--card-tint, var(--lilac-50));
+  color: var(--card-ink, var(--lilac-700));
+  opacity: 1;
+  font-size: .64rem;
+}
+
+.cal-card-event .cal-tick { border-color: var(--card-ink, var(--lilac-400)); }
+
+/* Done, and therefore no longer something to notice. Drops back to roughly
+   where a session sits rather than shouting from the page for the rest of the
+   week. */
+.cal-card-event.is-done { box-shadow: none; opacity: .6; }
 
 .cal-card-head {
   display: flex;

@@ -375,6 +375,12 @@ var App = (function () {
         '</div>' +
       '</section>' +
 
+      /* An unfinished round, if there is one. Above the dashboard because it is
+         the one thing on this screen with a half-done job attached to it —
+         everything below is a choice, this is a loose end. Null scope: any
+         module, since this screen is not inside one. */
+      Resume.bannerHtml(null) +
+
       /* Directly under the greeting, so what is coming up and what is late is
          among the first things she sees rather than something to scroll for.
          Null scope: everything, across every module and none. */
@@ -402,8 +408,33 @@ var App = (function () {
     Array.prototype.forEach.call(screen.querySelectorAll('[data-module]'), function (b) {
       b.addEventListener('click', function () { openModule(b.getAttribute('data-module')); });
     });
+    bindResumeCard();
     Dashboard.bind(screen, null);
     bindTiles();
+  }
+
+  /* Shared by both home screens. Carrying on lands her straight in the round,
+     with the screen she is leaving recorded so Back still works. */
+  function bindResumeCard() {
+    var card = screen.querySelector('.rsm');
+    if (!card) return;
+    Resume.bind(card, function (saved) {
+      /* The module has to change BEFORE navigating, or the screen behind the
+         questions renders the wrong subject — hence fromModule, which records
+         where she actually was so Back undoes the switch too. */
+      var from = Content.moduleId() || null;
+      if (saved.moduleId && saved.moduleId !== from) {
+        Content.use(saved.moduleId);
+        Store.rememberModule(saved.moduleId);
+      }
+
+      /* The round is not a screen of its own — Quiz paints over whatever is
+         showing. Going to the round's own origin first puts the same screen
+         behind it that a fresh start would have, so leaving lands her where
+         this round always meant to return her. */
+      go(saved.origin.name, saved.origin.params, { fromModule: from });
+      Quiz.resume(saved);
+    }, draw);
   }
 
   function openModule(id) {
@@ -629,6 +660,11 @@ var App = (function () {
         '</p>' +
       '</div>' +
 
+      /* An unfinished round in THIS module. Scoped, so a paused maths test does
+         not appear on the business home screen offering to switch her subject
+         out from under her. */
+      Resume.bannerHtml(mod ? mod.id : null) +
+
       /* The same dashboard, scoped to this module: only its events, only its
          notes, only its numbers. */
       Dashboard.html(mod ? mod.id : null) +
@@ -700,6 +736,7 @@ var App = (function () {
           '</p></button>' +
       '</div>';
 
+    bindResumeCard();
     Dashboard.bind(screen, mod ? mod.id : null);
 
     var themeBox = document.getElementById('modTheme');
@@ -1605,8 +1642,19 @@ var App = (function () {
     Dashboard.init(function () { draw(); });
 
     /* The contents sidebar jumps straight to a topic from anywhere in the
-       notes, which is a normal navigation and belongs in the history. */
-    NotesNav.init(function (topicId) { go('notesTopic', { topicId: topicId }); });
+       notes. Hopping from one topic to another REPLACES the trail rather than
+       adding to it: the sidebar exists so she does not have to walk back up the
+       tree, and stacking every hop meant reading ten topics buried the way out
+       under ten Backs. The first hop off a week or lesson page still pushes, so
+       Back returns to the page she came from — after that she is browsing, and
+       Back should mean "out of the notes", not "the topic before this one". */
+    NotesNav.init(function (topicId) {
+      go('notesTopic', { topicId: topicId }, { replace: route.name === 'notesTopic' });
+    });
+
+    /* A live round is kept as the tab goes away, so closing the browser
+       mid-test is not the same as abandoning it. */
+    Quiz.watchUnload();
 
     applyMotion();
     showSaveWarning();
@@ -1629,13 +1677,15 @@ var App = (function () {
      the one thing on screen that always means "start again from the top". */
   function goHomeSafely() {
     if (Quiz.active()) {
-      modal({
-        title: 'Leave this round?',
-        body: '<p>Your progress in this round will not be saved, but any points and badges you have already ' +
-              'earned are safe.</p>',
-        confirmLabel: 'Yes, go home',
-        confirmClass: 'btn-danger',
-        onConfirm: function () { go('modules', {}, { reset: true }); }
+      /* Asked by Quiz rather than here, so the offer to keep the round is the
+         same offer whichever way out she takes. This used to be its own
+         shorter dialog, which meant leaving by the brand quietly threw away a
+         round that leaving by the crumb would have saved. */
+      Quiz.leavePrompt({
+        leave: function () {
+          Quiz.clear();
+          go('modules', {}, { reset: true });
+        }
       });
       return;
     }

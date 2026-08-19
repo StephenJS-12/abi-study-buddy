@@ -482,3 +482,80 @@ body.reduce-motion .swatch:hover { transform: none; }
 }
 
 .swatch-name { font-size: .76rem; line-height: 1.25; text-align: center; }
+
+/* ── an unfinished round ──────────────────────────────────────────
+   Sits on both home screens when she has a test paused. It has to be findable
+   at a glance among a dashboard and a grid of tiles, all of which are wearing
+   the module's colour — so this one wears the site's attention colour instead
+   of matching its surroundings, and carries a stripe down its left edge that
+   nothing else on the page has. Not a modal: it is an offer, not a question,
+   and she should be able to ignore it. */
+
+.rsm {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1.4rem;
+  padding: .95rem 1.1rem;
+  border: 2px solid var(--pink-200, #FAC7DB);
+  border-left: 6px solid var(--pink-400);
+  border-radius: var(--r-lg);
+  background: linear-gradient(105deg, var(--pink-50, #FFF2F7) 0%, var(--surface) 65%);
+  box-shadow: var(--shadow-sm);
+}
+
+.rsm-emoji { flex: none; font-size: 1.6rem; line-height: 1; }
+
+.rsm-text { flex: 1; min-width: 0; }
+
+.rsm-title {
+  font-weight: 800;
+  font-size: 1rem;
+  line-height: 1.25;
+  display: flex;
+  align-items: baseline;
+  gap: .45rem;
+  flex-wrap: wrap;
+}
+
+/* Only drawn on the module picker, where the round could belong to any of
+   them. Inside a module it would be naming the page she is standing on. */
+.rsm-mod {
+  flex: none;
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  padding: .15rem .4rem;
+  border-radius: var(--r-sm);
+  background: var(--pink-400);
+  color: #fff;
+}
+
+.rsm-line { font-size: .82rem; color: var(--ink-soft); margin-top: .15rem; }
+
+.rsm-track {
+  margin-top: .5rem;
+  height: .42rem;
+  border-radius: 999px;
+  background: var(--pink-100, #FFE0ED);
+  overflow: hidden;
+}
+.rsm-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--pink-400), var(--lilac-400));
+  transition: width .3s var(--ease-out, ease);
+}
+
+.rsm-acts { flex: none; display: flex; flex-direction: column; gap: .4rem; align-items: stretch; }
+
+/* On a phone the two columns stop fitting side by side long before the text
+   runs out, so the buttons drop under the text and go full width. */
+@media (max-width: 34rem) {
+  .rsm { flex-wrap: wrap; gap: .7rem 1rem; }
+  .rsm-acts { flex-direction: row; width: 100%; }
+  .rsm-acts .btn { flex: 1; }
+}
+
+/* A secondary line inside a modal — the reassuring part under the question. */
+.muted-note { color: var(--muted); font-size: .88rem; }

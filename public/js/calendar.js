@@ -297,7 +297,12 @@ var Calendar = (function () {
         out += '<span class="cal-lab is-exam" style="' + vars(hue(f.moduleId)) + '">' +
                esc(f.text) + '</span>';
       } else {
-        out += '<span class="cal-lab' + (f.done ? ' is-done' : '') + '" style="' +
+        /* Events carry a class of their own so they can be picked out of a cell
+           full of study sessions. A session is the rhythm of her week; an
+           assignment due on Thursday is a thing with a deadline attached, and
+           the two were drawn identically. */
+        out += '<span class="cal-lab' + (f.kind === 'event' ? ' is-event' : '') +
+               (f.done ? ' is-done' : '') + '" style="' +
                vars(hue(f.moduleId)) + '">' + esc(f.text) + '</span>';
       }
     }
@@ -366,6 +371,12 @@ var Calendar = (function () {
       var c = hue(flat[i].moduleId);
       if (flat[i].kind === 'exam') {
         out += '<span class="cal-dot is-exam" style="background:' + c.ink + '"></span>';
+      } else if (flat[i].kind === 'event') {
+        /* Drawn as an upright bar rather than a dot. At six pixels there is no
+           room for a subtler difference, and a bar among circles is the one
+           shape that reads instantly at that size without colliding with the
+           exam's square or the finished session's ring. */
+        out += '<span class="cal-dot is-event" style="background:' + c.ink + '"></span>';
       } else if (flat[i].done) {
         /* A finished session is drawn as a ring rather than a filled dot, so a
            glance separates what is left from what is behind her. The colour

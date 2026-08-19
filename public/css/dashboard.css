@@ -342,8 +342,16 @@
    row allows. It is the one action in there that cannot be undone. */
 .ev-remove { margin-right: auto; }
 
-/* An event on the main calendar. Dashed, so a fixed date never looks like a
-   study session the scheduler could move. */
-.cal-card-event { border-style: dashed; }
-.cal-card-event.is-done { opacity: .6; }
-.cal-card-event .cal-item-body:hover .cal-item-title { text-decoration: underline; }
+/* Event cards are styled in calendar.css, which is where the markup that uses
+   them is built.
+
+   This file used to make them dashed, on the reasoning that a fixed date should
+   not look like a session the scheduler could move. Two problems. It loaded
+   after calendar.css, so it quietly won any argument about how an event looks,
+   which is the wrong file to settle that in. And it did not work: a dashed
+   border reads as tentative — a draft, something not quite settled — which is
+   the opposite of what a deadline is, and at one pixel it was invisible next to
+   a wall of study sessions. Events are now solid, heavier and shadowed instead.
+
+   The hover underline that also lived here is in calendar.css too, and applied
+   to every item rather than only to events. */

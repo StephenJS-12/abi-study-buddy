@@ -108,9 +108,13 @@
 .nnav-week > summary::marker,
 .nnav-lesson > summary::marker { content: ""; }
 
-.nnav-week > summary { font-weight: 700; background: var(--lilac-50); }
+/* The three levels have to be tellable apart at a glance, so they differ on
+   three axes at once: how far in they sit, how heavy the type is, and whether
+   they carry a background. Indentation alone was not enough — at the ~8px steps
+   this used to have, a week, a lesson and a topic all read as one flat list. */
+.nnav-week > summary { font-weight: 700; font-size: .87rem; background: var(--lilac-50); }
 .nnav-week > summary:hover { background: var(--lilac-100); }
-.nnav-lesson > summary { font-weight: 600; color: var(--ink-soft); }
+.nnav-lesson > summary { font-weight: 600; font-size: .82rem; color: var(--ink-soft); }
 .nnav-lesson > summary:hover { background: var(--lilac-50); }
 
 .nnav-caret {
@@ -130,9 +134,27 @@ details[open] > summary > .nnav-caret { transform: rotate(90deg); }
 }
 .nnav-label { min-width: 0; overflow-wrap: break-word; }
 
-.nnav-lesson { margin: 2px 0 2px .55rem; }
-.nnav-topics { padding: 2px 0 4px .5rem; display: grid; gap: 1px; }
-.nnav-week > .nnav-topics { padding-left: 1.1rem; }
+/* Level two. The rail is what turns a set of indents into a visible hierarchy:
+   it runs the height of the lesson list and points back up at the week that
+   owns it. */
+.nnav-lessons {
+  margin: 3px 0 5px 1rem;
+  padding-left: .6rem;
+  border-left: 2px solid var(--lilac-100);
+}
+.nnav-lesson { margin: 0; }
+.nnav-lesson + .nnav-lesson,
+.nnav-lesson + .nnav-lesson-empty,
+.nnav-lesson-empty + .nnav-lesson { margin-top: 3px; }
+
+/* Level three. No rail of its own — every topic already carries a left border,
+   and stacked at a 1px gap those line up into one, which is the rail. Adding a
+   second beside it only made the column busy. */
+.nnav-topics { padding: 3px 0 5px 1.15rem; display: grid; gap: 1px; }
+
+/* A week with no lessons is a level shallower, so its topics sit roughly where
+   a lesson would rather than floating in from nowhere. */
+.nnav-week > .nnav-topics { padding-left: 1rem; }
 
 /* ── topics ─────────────────────────────────────────────────── */
 
@@ -176,8 +198,11 @@ details[open] > summary > .nnav-caret { transform: rotate(90deg); }
   display: flex;
   align-items: baseline;
   gap: .4rem;
-  padding: .45rem .5rem;
-  margin: 2px 0 2px .55rem;
+  /* Lines up with a real lesson's summary — it sits inside .nnav-lessons and so
+     inherits the same indent and rail. The left padding matches the caret width
+     a lesson has and this does not, so the two read as the same level. */
+  padding: .45rem .5rem .45rem 1.1rem;
+  margin: 0;
   font-size: .82rem;
   line-height: 1.35;
   color: var(--muted);

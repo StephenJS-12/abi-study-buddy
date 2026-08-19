@@ -105,6 +105,22 @@ var Calendar = (function () {
     return '--card-ink:' + c.ink + ';--card-tint:' + c.tint + ';--card-edge:' + c.edge;
   }
 
+  /* Which subject a thing belongs to, said in the one character that reads at
+     any size. Colour alone was not enough: a month cell of lesson names all
+     carrying the same book emoji told her nothing about which subject each
+     one was, and the tints are close together by design. */
+  function modEmoji(moduleId) {
+    if (!moduleId || typeof Modules === 'undefined') return '📘';
+    var m = Modules.get(moduleId);
+    return (m && m.emoji) || '📘';
+  }
+
+  function modCode(moduleId) {
+    if (!moduleId || typeof Modules === 'undefined') return '';
+    var m = Modules.get(moduleId);
+    return (m && m.code) || '';
+  }
+
   /* ───────────────────────── the screen ───────────────────────── */
 
   function render(el) {
@@ -320,7 +336,8 @@ var Calendar = (function () {
           out.push({
             kind: 'lesson',
             moduleId: items[i].moduleId,
-            text: '📗 Wk ' + L.weekNumber + ' L' + L.number + ': ' + L.title,
+            text: modEmoji(items[i].moduleId) + ' W' + L.weekNumber + 'L' + L.number +
+                  ' · ' + L.title,
             done: false
           });
         }
@@ -416,7 +433,9 @@ var Calendar = (function () {
       (c ? ' style="' + vars(c) + '"' : '') + '>' +
       '<div class="cal-card-head">' +
         '<span class="cal-time">' + (ev.time ? esc(ev.time) : 'All day') + '</span>' +
-        '<span class="cal-mod">' + esc(mod) + '</span>' +
+        '<span class="cal-mod">' +
+          (block.moduleId ? '<span class="cal-mod-emoji">' + modEmoji(block.moduleId) + '</span>' : '') +
+          esc(mod) + '</span>' +
       '</div>' +
       '<div class="cal-item' + (ev.done ? ' is-done' : '') + '">' +
         '<button class="cal-tick" type="button" data-evtick="' + esc(ev.id) + '"' +
@@ -481,7 +500,8 @@ var Calendar = (function () {
         (block.time
           ? '<span class="cal-time">' + esc(block.time) + '</span>'
           : '<span class="cal-time cal-time-done">Done</span>') +
-        '<span class="cal-mod">' + esc(block.moduleCode) + '</span>' +
+        '<span class="cal-mod"><span class="cal-mod-emoji">' +
+          modEmoji(block.moduleId) + '</span>' + esc(block.moduleCode) + '</span>' +
       '</div>' +
       lessonBar +
       rows +

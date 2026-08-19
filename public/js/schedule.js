@@ -698,6 +698,11 @@ var Schedule = (function () {
         for (var li = 0; li < items.length; li++) {
           var lk = items[li].lessonKey;
           if (!lk || seenL[lk]) continue;
+          /* A module with no lessons — maths — still gets a lesson key so the
+             grouping works, but it is a topic wearing a lesson's clothes.
+             Announcing it as "Lesson 0" with no title told her nothing and
+             hid the topic name she actually needed. */
+          if (!items[li].lesson) continue;
           seenL[lk] = 1;
           lessonList.push({
             key: lk,

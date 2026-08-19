@@ -284,7 +284,20 @@ body.reduce-motion .cal-addev:hover { transform: none; }
 }
 .cal-time { font-variant-numeric: tabular-nums; }
 .cal-time-done { opacity: .7; }
-.cal-mod { opacity: .7; font-size: .64rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Which subject this is. It used to be faint 10px text in the corner, which
+   made a day of similarly-tinted cards hard to read at a glance. It is now
+   the same weight as the time, with the module's own emoji in front of it. */
+.cal-mod {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font-size: .68rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cal-mod-emoji { font-size: .95rem; line-height: 1; }
 
 /* The lesson a session covers, when she has chosen to study by lesson. Sits
    above the topics rather than replacing them: the lesson is what she is
@@ -302,8 +315,11 @@ body.reduce-motion .cal-addev:hover { transform: none; }
   font-weight: 800;
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: var(--card-ink, var(--lilac-700));
-  opacity: .8;
+  color: #fff;
+  background: var(--card-ink, var(--lilac-700));
+  border-radius: var(--r-pill);
+  padding: .1rem .45rem;
+  align-self: flex-start;
 }
 .cal-lesson-title { font-size: .84rem; font-weight: 700; line-height: 1.25; overflow-wrap: break-word; }
 

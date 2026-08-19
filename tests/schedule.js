@@ -900,6 +900,16 @@ for (i = 0; i < pNo.sessions.length; i++) {
 }
 ok(biggest === 1,
    "lessons: a module with no lessons should give one topic per session, got a session of " + biggest);
+
+/* And it must not ANNOUNCE itself as a lesson. Maths topics are given a lesson
+   key so the grouping works, which is not the same as having a lesson — saying
+   "Lesson 0" with no title told her nothing and hid the topic name. */
+for (i = 0; i < pNo.sessions.length; i++) {
+    if (pNo.sessions[i].lessons && pNo.sessions[i].lessons.length) {
+        fail("lessons: a module with no lessons is claiming to cover one");
+        break;
+    }
+}
 for (i = 0; i < CONTENT.bbb.weeks[0].topics.length; i++) {
     CONTENT.bbb.weeks[0].topics[i].lesson = savedLessons[i];
 }

@@ -1404,7 +1404,126 @@ for (i = 0; i < spill.done.length; i++) {
 ok(timed === 1, "spill: expected one finished session to take the day's only slot, got " + timed);
 ok(untimed >= 1, "spill: the overflow was dropped instead of shown without a time");
 
-// ── 21. pass names ───────────────────────────────────────────────
+// ── 21. a part-finished session keeps the rest of its lesson ─────
+//
+// The other face of the refilling bug, and it appeared the moment the first
+// half was fixed. Making finished work occupy its slot meant the slot held
+// only what she had TICKED — so ticking one topic of a five-topic lesson gave
+// a session containing that one topic, with the other four pushed out into
+// some later session. She could not finish the lesson in front of her.
+//
+// A started session takes back what it still owes, and only that: the rest of
+// the lessons it already holds, never a new one.
+
+baseline({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 3, unit: 'lessons', lessons: 1, minutes: 60,
+               times: ['09:00', '12:00', '15:00'] },
+    weekend: { count: 3, unit: 'lessons', lessons: 1, minutes: 60,
+               times: ['09:00', '12:00', '15:00'] },
+    exams: { aaa: daysFromToday(60) }
+});
+
+var whole = Schedule.plan();
+var target = null;
+for (i = 0; i < whole.sessions.length; i++) {
+    /* A lesson with more than one topic in it, or there is nothing to be
+       half-finished. */
+    if (whole.sessions[i].date === today && whole.sessions[i].items.length > 2) {
+        target = whole.sessions[i];
+        break;
+    }
+}
+ok(target !== null, "partial: found no multi-topic lesson session today to half-finish");
+
+if (target) {
+    var full = target.items.length;
+    var lessonKey = target.items[0].lessonKey;
+
+    /* The MIDDLE topic, not the first. Ticking the first hides an ordering
+       fault: the rest of the lesson gets appended after it and happens to come
+       out in taught order anyway. Ticking the middle one means the ticked half
+       and the queued half have to be interleaved properly or the lesson lists
+       topic 2, then topic 1, then topic 3. */
+    var pick = Math.floor(target.items.length / 2);
+    var tickedKey = target.items[pick].key;
+
+    Schedule.setDone(target.items[pick].topicId, target.items[pick].pass, true, today);
+
+    var half = Schedule.plan();
+
+    /* Found by the topic she ticked, not by the time it used to sit at.
+       Started work claims the earliest free slot of its day, because nothing
+       records WHICH sitting she did — so a lesson she started at noon can come
+       back at nine. That is a guess the engine is entitled to make. What it is
+       not entitled to do is lose the rest of the lesson. */
+    var host = null, z;
+    for (i = 0; i < half.sessions.length; i++) {
+        for (z = 0; z < half.sessions[i].items.length; z++) {
+            if (half.sessions[i].items[z].key === tickedKey) { host = half.sessions[i]; break; }
+        }
+        if (host) break;
+    }
+    ok(host !== null, "partial: the half-finished session left the calendar entirely");
+
+    if (host) {
+        ok(host.items.length === full,
+           "partial: session lost topics after one tick — had " + full +
+           ", now " + host.items.length + ", so she cannot finish it");
+
+        var ticked = 0, todo = 0;
+        for (z = 0; z < host.items.length; z++) {
+            if (host.items[z].done) ticked++; else todo++;
+        }
+        ok(ticked === 1, "partial: expected one ticked topic, got " + ticked);
+        ok(todo === full - 1,
+           "partial: the topics she still has to do are missing, got " + todo);
+
+        ok(host.done !== true, "partial: a session with work left in it is marked finished");
+        ok(host.date === today, "partial: the started session moved off today");
+
+        // And it must not have grown a second lesson while topping back up.
+        var keys = {}, howMany = 0;
+        for (z = 0; z < host.items.length; z++) {
+            if (!keys[host.items[z].lessonKey]) { keys[host.items[z].lessonKey] = 1; howMany++; }
+        }
+        ok(howMany === 1,
+           "partial: topping a session back up pulled in " + howMany + " lessons");
+        ok(keys[lessonKey], "partial: the session came back holding a different lesson");
+
+        // Taught order, not ticked-first order.
+        var outOfOrder = false;
+        for (z = 1; z < host.items.length; z++) {
+            if (orderIn(target.items, host.items[z - 1].topicId) >
+                orderIn(target.items, host.items[z].topicId)) { outOfOrder = true; break; }
+        }
+        ok(!outOfOrder, "partial: the rebuilt session is not in taught order");
+    }
+
+    // Nothing counted twice: the ticked topic must not also be sitting in some
+    // later session waiting to be done again.
+    var dupes = 0, fl = flat(half.sessions);
+    for (i = 0; i < fl.length; i++) if (fl[i].key === tickedKey) dupes++;
+    ok(dupes === 1, "partial: the ticked topic appears " + dupes + " times across the plan");
+
+    // Every topic of that lesson is somewhere exactly once, ticked or not.
+    for (z = 0; z < target.items.length; z++) {
+        var seenTimes = 0;
+        for (i = 0; i < fl.length; i++) if (fl[i].key === target.items[z].key) seenTimes++;
+        if (seenTimes !== 1) {
+            fail("partial: " + target.items[z].topicId + " appears " + seenTimes +
+                 " times — a topic was lost or duplicated");
+            break;
+        }
+    }
+}
+
+function orderIn(list, topicId) {
+    for (var z = 0; z < list.length; z++) if (list[z].topicId === topicId) return z;
+    return 999;
+}
+
+// ── 22. pass names ───────────────────────────────────────────────
 
 ok(Schedule.passName(1) === 'First pass', "names: pass 1");
 ok(Schedule.passName(2) === 'Revision', "names: pass 2");
@@ -1416,8 +1535,9 @@ ok(Schedule.passName(4) === 'Revision 3', "names: pass 4");
 WScript.Echo("Schedule engine checked:");
 WScript.Echo("  dates, slots, settings, ordering, ticking, badges, focus, shortfall");
 WScript.Echo("  warnings, spare-time revision, exam urgency, blocked exam days,");
-WScript.Echo("  multiple topics per session, capacity counted in topics, and a");
-WScript.Echo("  finished session keeping its slot instead of refilling itself.");
+WScript.Echo("  multiple topics per session, capacity counted in topics, a finished");
+WScript.Echo("  session keeping its slot instead of refilling itself, and a");
+WScript.Echo("  part-finished one keeping the rest of its lesson.");
 WScript.Echo("");
 
 if (problems.length === 0) {

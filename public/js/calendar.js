@@ -491,7 +491,12 @@ var Calendar = (function () {
         '<button class="cal-item-body" type="button" data-topic="' + esc(it.topicId) +
           '" data-mod="' + esc(block.moduleId) + '">' +
           '<span class="cal-item-title">' + esc(it.emoji || '') + ' ' + esc(it.title) + '</span>' +
-          '<span class="cal-item-pass">' + esc(it.passName) + '</span>' +
+          /* Only when it says something. Nearly every row is a first pass, so
+             "FIRST PASS" under every topic was a caption repeating the default
+             — three lines of it under a lesson, in a column that has to fit
+             seven of them across. "Revision" is worth the line, because it
+             tells her she has seen this before. */
+          (it.pass > 1 ? '<span class="cal-item-pass">' + esc(it.passName) + '</span>' : '') +
         '</button>' +
       '</div>';
     }

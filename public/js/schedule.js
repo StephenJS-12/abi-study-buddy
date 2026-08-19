@@ -623,9 +623,16 @@ var Schedule = (function () {
       var queue = [];
       for (j = 0; j < first.length; j++) queue.push({ topic: first[j], pass: 1 });
 
+      /* Taught position of each topic, so a session rebuilt from two sources —
+         what she ticked, and what is still in the queue — can be put back into
+         the order she is meant to work it. */
+      var order = {};
+      for (j = 0; j < topics.length; j++) order[topics[j].id] = j;
+
       state.push({
         module: mods[i],
         topics: topics,
+        order: order,
         exam: s.exams[mods[i].id],
         queue: queue,
         at: 0,
@@ -717,12 +724,21 @@ var Schedule = (function () {
       var room = slot.room || slot.topics || 1;
       var items = [], pick = null, skip = null;
 
-      /* A session she has already finished takes its slot before anything is
+      /* A session she has already started takes its slot before anything is
          planned into it. Without this the slot is replanned every time she
          ticks something off, so the session she is sitting in front of keeps
          growing new work and can never be completed. */
       var settledHere = takeSettled(settled, slot);
-      if (settledHere) { doneSessions.push(settledHere); continue; }
+      if (settledHere) {
+        var host = stateFor(state, settledHere.moduleId);
+        if (host) topUp(host, slot, settledHere);
+        /* Finished ones are a record; part-finished ones are still work, and
+           belong with the sessions so the home tile can offer her the one she
+           is halfway through rather than the next untouched one. */
+        if (settledHere.done) doneSessions.push(settledHere);
+        else { settledHere.kind = 'session'; sessions.push(settledHere); }
+        continue;
+      }
 
       /* A session pinned to a subject goes to that subject. If it has nothing
          left to give — finished, or its exam already sat — the slot goes to
@@ -1022,8 +1038,93 @@ var Schedule = (function () {
       unit: slot.unit || 'topics',
       lessons: lessonsIn(items, slot.unit),
       items: items,
+      /* Provisional. topUp decides it properly once the unticked half of the
+         session is back in — a session with one topic ticked is in progress,
+         not finished. */
       done: true
     };
+  }
+
+  /* Puts the rest of a part-finished session back into it.
+   *
+   * takeSettled only knows about what she has TICKED. Left at that, ticking one
+   * topic of a five-topic lesson produced a session containing that one topic
+   * and nothing else — the other four went back to the queue and turned up in
+   * some later session, so there was no way to finish the one in front of her.
+   * That is the same bug as the refilling session wearing the opposite face.
+   *
+   * So a session that has been started takes back the work it still owes:
+   *   - measured in lessons, the remaining topics of the lessons it already
+   *     holds, and NOTHING else. Pulling in a fresh lesson is precisely the
+   *     bug this area exists to fix.
+   *   - measured in topics, enough to fill the room it was given.
+   */
+  function topUp(st, slot, sess) {
+    var room = slot.room || slot.topics || 1;
+    var extra = [], k;
+
+    function take(entry) {
+      st.placed++;
+      return {
+        key: markKey(entry.topic.id, entry.pass),
+        topicId: entry.topic.id,
+        title: entry.topic.title,
+        emoji: entry.topic.emoji,
+        weekNumber: entry.topic.weekNumber,
+        lesson: entry.topic.lesson,
+        lessonTitle: entry.topic.lessonTitle,
+        lessonKey: entry.topic.lessonKey,
+        pass: entry.pass,
+        passName: passName(entry.pass),
+        done: false
+      };
+    }
+
+    if (slot.unit === 'lessons') {
+      var want = {};
+      for (k = 0; k < sess.items.length; k++) {
+        want[sess.items[k].lessonKey + '|' + sess.items[k].pass] = 1;
+      }
+      /* Spliced out of the queue wherever they sit rather than assumed to be
+         next: st.at only marks how far the queue has been consumed, and a
+         started lesson's leftovers are not guaranteed to be at that point. */
+      for (k = st.at; k < st.queue.length; k++) {
+        var q = st.queue[k];
+        if (!want[q.topic.lessonKey + '|' + q.pass]) continue;
+        extra.push(take(q));
+        st.queue.splice(k, 1);
+        k--;
+      }
+    } else {
+      while (sess.items.length + extra.length < room && st.at < st.queue.length) {
+        extra.push(take(st.queue[st.at]));
+        st.at++;
+      }
+    }
+
+    if (extra.length) {
+      sess.items = sess.items.concat(extra);
+      /* Back into taught order. The ticked half came from the marks and the
+         rest from the queue, so concatenating leaves them interleaved wrongly
+         — a lesson listing topic 3 above topic 1 reads as a mistake. */
+      sess.items.sort(function (a, b) {
+        if (a.pass !== b.pass) return a.pass - b.pass;
+        return (st.order[a.topicId] || 0) - (st.order[b.topicId] || 0);
+      });
+      sess.lessons = lessonsIn(sess.items, slot.unit);
+    }
+
+    for (k = 0; k < sess.items.length; k++) {
+      if (!sess.items[k].done) { sess.done = false; break; }
+    }
+    return sess;
+  }
+
+  function stateFor(state, moduleId) {
+    for (var i = 0; i < state.length; i++) {
+      if (state[i].module.id === moduleId) return state[i];
+    }
+    return null;
   }
 
   /* Whatever the slots could not take: work done before her start date, and

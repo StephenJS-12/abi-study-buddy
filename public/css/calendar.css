@@ -199,24 +199,35 @@ body.reduce-motion .cal-addev:hover { transform: none; }
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  /* Sessions are flat tinted chips. An event is a raised one: it keeps the
-     module's colour but sits on the surface with a full border and a shadow,
-     so a cell holding three sessions and one assignment reads as three things
-     and one THING. */
+  /* Filled solid, the same way an exam day is. A bordered chip on a white
+     background was still a light shape among light shapes; the thing that
+     actually finds an exam in a full month at a glance is the block of solid
+     colour, so an event gets one too.
+
+     An exam is still distinguishable: its day cell is outlined as well, and its
+     label is uppercase and letter-spaced where an event carries its own type
+     emoji and its name as she typed it. */
   .cal-lab.is-event {
-    background: var(--surface);
-    border: 1px solid var(--card-ink);
-    border-left-width: 4px;
-    font-weight: 800;
-    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), .2);
+    background: var(--card-ink);
+    color: #fff;
+    border-left-color: var(--card-ink);
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(var(--shadow-rgb), .22);
   }
+  /* Struck through in white rather than inheriting the session's fade, which
+     on a filled chip left the text barely there at all. */
+  .cal-lab.is-event.is-done { opacity: .55; }
   .cal-lab.is-done { opacity: .5; text-decoration: line-through; }
   .cal-lab.is-exam {
     background: var(--card-ink);
     color: #fff;
     border-left-color: var(--card-ink);
-    font-weight: 700;
-    letter-spacing: .02em;
+    font-weight: 800;
+    /* Both an exam and an event are now solid blocks of module colour, so the
+       exam takes the shoutier typography to stay the louder of the two. Its day
+       cell is outlined as well, which nothing else on the month gets. */
+    letter-spacing: .04em;
+    text-transform: uppercase;
   }
   .cal-lab-more {
     font-size: .62rem;

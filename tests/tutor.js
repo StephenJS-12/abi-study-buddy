@@ -41,6 +41,20 @@ var document = { addEventListener: function () {}, createElement: function () { 
 function fetch() {}
 function TextDecoder() {}
 
+// payload() now asks Content what is in the module, so Pip can talk about a
+// topic Abi is not standing on. Stubbed rather than loaded: what is under test
+// is what travels, not how the outline is built.
+var lookedUpFor = null;
+var Content = {
+    outline: function () { return "Week 4: Theory of Interest\n  Lesson 2: Simple and compound"; },
+    findByQuestion: function (q) {
+        return /standard deviation/i.test(q)
+            ? { id: "w3-sd", title: "Standard Deviation" }
+            : null;
+    },
+    notesText: function (topic) { lookedUpFor = topic.id; return "SD-NOTES-" + topic.id; }
+};
+
 var Tutor;
 eval(read(REPO + "\\public\\js\\tutor.js"));
 
@@ -93,6 +107,12 @@ check(sent.question === "Where do I start?", "her own question is sent");
 var allowed = {
   moduleId: 1,
   topicId: 1, topicTitle: 1, mode: 1, notes: 1,
+  /* Whether those notes are the page in front of her or a topic she only
+     named — it changes how Pip refers to them, nothing more. */
+  notesOpen: 1,
+  /* Week, lesson and topic NAMES for the module she is in. Checked below to
+     carry no content: a contents page is not an answer sheet. */
+  outline: 1,
   questionText: 1, question: 1, history: 1
 };
 for (var key in sent) {
@@ -122,6 +142,55 @@ var withHistory = Tutor.payload(
   [{ role: "user", content: "what is a mean" }, { role: "assistant", content: "an average" }]
 );
 check(withHistory.history.length === 2, "prior turns are carried");
+
+// ── Pip can talk about a topic Abi is not standing on ──────────
+//
+// She could only ever discuss the open page, because the page was the only
+// thing that sent her material. Two things changed: the module's contents
+// travel on every request, and naming a topic fetches its notes.
+//
+// The second one has to respect the mode. "Notes hidden" is what Test mode
+// means, and looking them up because Abi typed the topic name at Pip would walk
+// straight around it.
+
+var away = Tutor.payload({ id: "app:modules", title: "Abi's Study Buddy", mode: "app" },
+                         "can you explain standard deviation", []);
+check(away.notes === "SD-NOTES-w3-sd",
+      "asking about a topic from elsewhere fetches that topic's notes");
+check(away.topicTitle === "Standard Deviation",
+      "and the notes are labelled with the topic she asked about, not the screen she is on");
+check(away.notesOpen === false,
+      "flagged as not on screen, so Pip does not point at a box that is not there");
+
+var vague = Tutor.payload({ id: "app:modules", title: "Home", mode: "app" },
+                          "what should I study tonight", []);
+check(vague.notes === "", "a question naming no topic fetches nothing");
+
+lookedUpFor = null;
+var sitting = Tutor.payload(
+    { id: "w4-compound", title: "Compound interest", mode: "test",
+      questionText: "Ayanda invests R21 000..." },
+    "can you explain standard deviation", []);
+check(sitting.notes === "" && lookedUpFor === null,
+      "in a TEST the notes are not looked up, however she words it - hidden means hidden");
+
+var examMode = Tutor.payload({ id: "w4-compound", title: "Compound interest", mode: "exam" },
+                             "can you explain standard deviation", []);
+check(examMode.notes === "", "nor in an exam");
+
+var reading = Tutor.payload(
+    { id: "w4-compound", title: "Compound interest", mode: "notes", notes: "REAL-PAGE" },
+    "can you explain standard deviation", []);
+check(reading.notes === "REAL-PAGE",
+      "the page she is actually reading always wins over a lookup");
+check(reading.notesOpen === true, "and is flagged as being on screen");
+
+// The contents travel whatever she is doing. Titles are not answers, and
+// knowing a topic exists is what lets Pip say where something lives.
+check(away.outline.indexOf("Theory of Interest") !== -1, "the module contents travel");
+check(sitting.outline.indexOf("Theory of Interest") !== -1, "including during a test");
+check(sitting.outline.indexOf("SD-NOTES") === -1,
+      "the contents carry names only, never the notes themselves");
 
 // ── what Pip has been told about the site ──────────────────────
 //

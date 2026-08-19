@@ -229,6 +229,33 @@ body.reduce-motion .pip-panel { animation: none; }
 }
 .pip-close:hover { background: rgba(255,255,255,.38); transform: rotate(90deg); }
 
+/* Start again. Sits beside the close button and turns the other way, so the two
+   never read as the same control. */
+.pip-fresh { font-size: 1rem; }
+.pip-fresh:hover { transform: rotate(-180deg); }
+
+/* Where the conversation moved. The chat now survives navigation, so without a
+   marker a thread reads as one continuous exchange when half of it was about a
+   different topic. A line rather than a bubble: it is not something either of
+   them said. */
+.pip-marker {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin: .55rem 0;
+  font-size: .7rem;
+  color: var(--muted);
+  letter-spacing: .02em;
+}
+.pip-marker::before,
+.pip-marker::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--lilac-100);
+}
+.pip-marker span { flex: none; max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
 .pip-thread {
   flex: 1;
   overflow-y: auto;

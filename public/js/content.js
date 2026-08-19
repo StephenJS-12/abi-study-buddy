@@ -38,7 +38,87 @@ var Content = (function () {
     return (topic.questions || []).length;
   }
 
+  /* ── what Pip is allowed to know about ──────────────────────────
+     Pip could only ever discuss the page Abi happened to be standing on,
+     because the page was the only thing that ever sent her material. These
+     two let her answer about any topic in the module she is in.
+
+     Scoped to the current module deliberately. Handing her both modules at
+     once would double the prompt for the sake of a question she is not
+     asking, and "which subject is this" is a distinction worth keeping
+     sharp. */
+
+  /* Week, lesson and topic names — no content. Enough for Pip to know what is
+     actually in the course, point Abi at where something lives, and say
+     plainly when a thing she asked about is not on the syllabus. */
+  function outline() {
+    if (!weeks.length) return '';
+
+    var out = [], w, L, t;
+    for (w = 0; w < weeks.length; w++) {
+      var week = weeks[w];
+      if (week.comingSoon) continue;
+      out.push('Week ' + week.number + ': ' + week.title);
+
+      if (week.lessons && week.lessons.length) {
+        for (L = 0; L < week.lessons.length; L++) {
+          var lesson = week.lessons[L];
+          var names = [];
+          for (t = 0; t < lesson.topicIds.length; t++) {
+            var lt = topicIndex[lesson.topicIds[t]];
+            if (lt) names.push(lt.topic.title);
+          }
+          out.push('  Lesson ' + lesson.number + ': ' + lesson.title +
+                   (names.length ? ' — ' + names.join('; ') : ' (not written yet)'));
+        }
+      } else {
+        for (t = 0; t < (week.topics || []).length; t++) {
+          out.push('  ' + week.topics[t].title);
+        }
+      }
+    }
+    return out.join('\n');
+  }
+
+  /* The topic a question is about, or null. Longest title wins, so "Finding
+     the Present Value" is not beaten by a topic called "Present Value" that
+     also appears in the sentence.
+
+     Titles shorter than four characters are skipped: a topic called "Mean"
+     would otherwise match the word "meaning", and a false match sends Pip the
+     wrong notes entirely — worse than sending her none. */
+  function findByQuestion(text) {
+    if (!text) return null;
+    var haystack = ' ' + String(text).toLowerCase().replace(/[^a-z0-9]+/g, ' ') + ' ';
+    var best = null, bestLen = 0, id;
+
+    for (id in topicIndex) {
+      if (!topicIndex.hasOwnProperty(id)) continue;
+      var topic = topicIndex[id].topic;
+      var title = String(topic.title || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ');
+      if (title.length < 4) continue;
+      if (haystack.indexOf(' ' + title + ' ') === -1) continue;
+      if (title.length > bestLen) { best = topic; bestLen = title.length; }
+    }
+    return best;
+  }
+
+  /* A topic's notes as plain text. Quiz has its own copy of this shape for the
+     topic she is sitting; this one is for a topic she has only named. */
+  function notesText(topic) {
+    if (!topic || typeof document === 'undefined') return '';
+    var holder = document.createElement('div');
+    holder.innerHTML = Notes.renderBlocks(topic, false);
+    return String(holder.textContent || '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
   return {
+    outline: outline,
+    findByQuestion: findByQuestion,
+    notesText: notesText,
+
     use: use,
     moduleId: function () { return moduleId; },
     module: function () { return moduleId ? Modules.get(moduleId) : null; },

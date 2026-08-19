@@ -15,6 +15,18 @@ var Buddy = (function () {
 
   var context = { mode: 'app', id: 'app', title: 'Abi\'s Study Buddy' };
   var history = [];
+
+  /* Must match MAX_HISTORY_TURNS in src/tutor.js — anything past it is thrown
+     away at the far end, so sending it is waste. Counted in entries, not
+     exchanges: four of her questions and four of Pip's replies. */
+  var SEND_TURNS = 8;
+
+  /* Where the thread currently says she is, and the pending announcement that
+     she has moved. Both belong to the visible conversation rather than to the
+     context: `context` is where she is now, `shownPlace` is the last place the
+     thread has told her about. */
+  var shownPlace = null;
+  var markTimer = null;
   var thread = null;
   var panel = null;
   var root = null;
@@ -127,6 +139,11 @@ var Buddy = (function () {
             '<span class="pip-name">Pip</span>' +
             '<span class="pip-status" id="pipStatus">here to help 💚</span>' +
           '</span>' +
+          /* Clearing the chat is now something she does on purpose. It used to
+             happen by itself on every navigation, which meant there was never
+             any need for a button — and no way to keep a conversation either. */
+          '<button class="pip-close pip-fresh" type="button" id="pipFresh"' +
+            ' aria-label="Start a new chat" title="Start a new chat">⟳</button>' +
           '<button class="pip-close" type="button" id="pipClose" aria-label="Close">×</button>' +
         '</div>' +
         '<div class="pip-thread" id="pipThread"></div>' +
@@ -157,6 +174,7 @@ var Buddy = (function () {
 
     document.getElementById('pipButton').addEventListener('click', toggle);
     document.getElementById('pipClose').addEventListener('click', function () { toggle(false); });
+    document.getElementById('pipFresh').addEventListener('click', freshStart);
     document.getElementById('pipForm').addEventListener('submit', onAsk);
 
     document.addEventListener('keydown', function (e) {
@@ -295,6 +313,10 @@ var Buddy = (function () {
     if (open) {
       if (!thread.childNodes.length) {
         say(HELLOS[context.mode] || HELLOS.app);
+        /* The greeting is the thread's first content, so this is where it
+           starts knowing where she is. Without it the next navigation would
+           announce a move away from somewhere it had never mentioned. */
+        shownPlace = placeName(context);
       }
       setTimeout(function () { document.getElementById('pipInput').focus(); }, 60);
     }
@@ -347,6 +369,12 @@ var Buddy = (function () {
         } else if (answer) {
           history.push({ role: 'user', content: question });
           history.push({ role: 'assistant', content: answer });
+          /* The Worker keeps the last MAX_HISTORY_TURNS of whatever it is sent
+             and drops the rest, so sending more is bandwidth and nothing else.
+             It matters now that a conversation survives navigation: before, the
+             thread was wiped every few clicks and could never get long enough
+             for this to be worth doing. */
+          if (history.length > SEND_TURNS) history = history.slice(-SEND_TURNS);
         }
         busy = false;
         document.getElementById('pipSend').disabled = false;
@@ -358,21 +386,72 @@ var Buddy = (function () {
 
   /* ── what the screens tell her ─────────────────────────────────── */
 
-  /* Called whenever the screen changes. A new question is a new problem, so
-     the conversation starts over rather than carrying old hints into it —
-     otherwise Pip would keep nudging about something Abi has moved past. */
+  /* Called whenever the screen changes.
+   *
+   * This used to empty the thread every time the context moved, on the
+   * reasoning that a new question is a new problem. In practice the context
+   * moves on every navigation — including the one Pip herself causes when she
+   * sends Abi to a topic — so a conversation could not survive a single click.
+   * Asking something, opening the notes to look, and coming back left an empty
+   * box where the answer had been.
+   *
+   * The conversation now persists. What changes is that Pip is told she has
+   * moved: a marker goes into the thread so both of them can see where the
+   * ground shifted, and every request carries the current context anyway, so
+   * she is never answering about the wrong screen. Starting fresh is a button
+   * in the header — a deliberate act rather than a side effect of walking
+   * around the site.
+   */
   function setContext(next) {
     if (!hosted) return;
 
-    var previous = context;
     context = next || { mode: 'app', id: 'app', title: 'Abi\'s Study Buddy' };
 
-    var wasOn = previous.id + '|' + (previous.questionText || '');
-    var nowOn = context.id + '|' + (context.questionText || '');
-    if (wasOn !== nowOn) {
-      history = [];
-      if (thread) thread.innerHTML = '';
-    }
+    /* Nothing to interrupt until there is a conversation. */
+    if (!thread || !thread.childNodes.length) return;
+
+    /* Deferred, and only the last one survives.
+       Every navigation calls this twice: app.js resets to general chat before
+       drawing, then the screen says what it actually is. Marking on each would
+       put "elsewhere in the app" above "now on Compound Interest" for every
+       single move. Coalescing to the end of the tick leaves one marker saying
+       where she ended up. */
+    if (markTimer) clearTimeout(markTimer);
+    markTimer = setTimeout(function () {
+      markTimer = null;
+      var where = placeName(context);
+      if (where === shownPlace) return;
+      shownPlace = where;
+      marker(where);
+    }, 0);
+  }
+
+  /* What Pip would call where Abi is. Deliberately the topic and not the
+     question: announcing each of thirty questions in a round would fill the
+     thread with markers and tell her nothing she did not just see happen. */
+  function placeName(ctx) {
+    if (!ctx || ctx.mode === 'app') return '';
+    return ctx.title || '';
+  }
+
+  function marker(where) {
+    var el = document.createElement('div');
+    el.className = 'pip-marker';
+    el.innerHTML = '<span>' +
+      (where ? 'now on ' + esc(where) : 'elsewhere in the app') + '</span>';
+    thread.appendChild(el);
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  /* Deliberate, and hers to press. Everything goes: the thread she can see and
+     the history Pip is sent. */
+  function freshStart() {
+    history = [];
+    if (thread) thread.innerHTML = '';
+    say(HELLOS[context.mode] || HELLOS.app);
+    shownPlace = placeName(context);
+    var input = document.getElementById('pipInput');
+    if (input) input.focus();
   }
 
   /* A small cheer when she gets one right. Pip should feel like she is

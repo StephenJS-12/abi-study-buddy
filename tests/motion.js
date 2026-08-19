@@ -196,7 +196,50 @@ check(/max-width:\s*calc\(100vw/.test(buddyCss) && /max-height:\s*calc\(100vh/.t
 check(buddySrc.indexOf('localStorage') !== -1 && !/Store\.[A-Za-z]*[Pp]ipSize/.test(buddySrc),
       "the panel size is kept device-local rather than synced through Store");
 
-WScript.Echo("Celebration and Pip checks run: 13");
+// 14. The conversation survives walking around the site.
+//
+// setContext used to empty the thread whenever the context moved. The context
+// moves on every navigation — including the one Pip causes herself by sending
+// Abi to a topic — so a conversation could not survive a single click: ask
+// something, open the notes to look, come back, and the answer was gone.
+//
+// Checked in the source because there is no DOM here to navigate. The specific
+// shape being guarded is that setContext neither empties `history` nor clears
+// the thread; clearing is freshStart's job and hers to press.
+var ctxFrom = buddySrc.indexOf("function setContext(next)");
+var ctxTo = buddySrc.indexOf("function placeName(ctx)");
+check(ctxFrom !== -1 && ctxTo > ctxFrom, "found setContext in buddy.js");
+var ctxBody = buddySrc.substring(ctxFrom, ctxTo);
+
+check(!/history\s*=\s*\[\]/.test(ctxBody),
+      "setContext must not empty the history - a conversation has to survive a navigation");
+check(!/thread\.innerHTML\s*=\s*''/.test(ctxBody),
+      "setContext must not clear the thread - clearing is freshStart's job");
+
+// And there has to be a way to clear it on purpose, or the conversation is now
+// impossible to end.
+check(buddySrc.indexOf("function freshStart()") !== -1, "buddy.js has a freshStart");
+check(/freshStart[\s\S]{0,120}history\s*=\s*\[\]/.test(buddySrc),
+      "freshStart empties the history Pip is sent, not just the bubbles on screen");
+// Both halves, separately. Checking the name appears somewhere passed even
+// with the id renamed in the markup, because the getElementById still spelled
+// it the old way — which is exactly the break worth catching: a button in the
+// header wired to nothing, or a handler wired to no button.
+check(/id="pipFresh"/.test(buddySrc), "the header carries the button");
+check(/getElementById\('pipFresh'\)[\s\S]{0,80}freshStart/.test(buddySrc),
+      "and that button is the one wired to freshStart");
+
+// Sending more history than the far end keeps is bandwidth and nothing else.
+// It only started mattering when threads could get long.
+check(/SEND_TURNS/.test(buddySrc), "buddy.js caps how much history it sends");
+var workerSrc = read(REPO + "\\src\\tutor.js");
+var clientCap = /SEND_TURNS\s*=\s*(\d+)/.exec(buddySrc);
+var serverCap = /MAX_HISTORY_TURNS\s*=\s*(\d+)/.exec(workerSrc);
+check(!!clientCap && !!serverCap && clientCap[1] === serverCap[1],
+      "the client cap matches MAX_HISTORY_TURNS in src/tutor.js (" +
+      (clientCap ? clientCap[1] : "?") + " vs " + (serverCap ? serverCap[1] : "?") + ")");
+
+WScript.Echo("Celebration and Pip checks run: 14");
 WScript.Echo("");
 if (!fails.length) {
     WScript.Echo("Celebrations fire by default and the toggle works.");

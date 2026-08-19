@@ -20,15 +20,48 @@ var Tutor = (function () {
      means a future change there cannot accidentally widen what travels — a
      tutor that was never told the answer cannot let it slip, however it is
      asked, which is a guarantee no prompt wording can give. */
+  /* Modes in which she is entitled to see the material. In a test or an exam
+     the notes are hidden on purpose, and fetching them for her because she
+     named a topic in a question to Pip would walk straight around that. */
+  var MAY_LOOK_UP = { notes: true, practise: true, app: true };
+
   function payload(context, question, past) {
+    var mode = context.mode || 'notes';
+    var notes = context.notes || '';
+    var title = context.title;
+    var notesOpen = !!notes;
+
+    /* Pip could only ever discuss the page Abi was standing on, because the
+       page was the only thing that sent her any material. Ask about standard
+       deviation from the home screen and she had nothing to work from.
+       So: if the question names a topic and Abi is somewhere she is allowed to
+       read, that topic's notes travel too. */
+    if (!notes && MAY_LOOK_UP[mode]) {
+      var found = Content.findByQuestion(question);
+      if (found) {
+        notes = Content.notesText(found);
+        title = found.title;
+      }
+    }
+
     return {
       topicId: context.id,
-      topicTitle: context.title,
+      topicTitle: title,
       /* Which module she is in, so the tutor is briefed on the right subject.
          Empty on the home screen, where she has not picked one. */
       moduleId: context.moduleId || '',
-      mode: context.mode || 'notes',
-      notes: context.notes || '',
+      mode: mode,
+      notes: notes,
+      /* False when the notes were looked up because she named the topic, so
+         Pip does not talk about "the box above" when there isn't one. */
+      notesOpen: notesOpen,
+      /* The course contents — week, lesson and topic names, no content. Sent
+         always, so Pip knows what is actually in the module and can talk about
+         any of it, point Abi at where it lives, and say plainly when something
+         she has asked about is not on the syllabus. Titles are not answers, so
+         this is safe in a test; it also sits inside the cached part of the
+         prompt, so it is paid for roughly once. */
+      outline: Content.outline(),
       questionText: context.questionText || '',
       question: question,
       history: past

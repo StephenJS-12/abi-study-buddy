@@ -67,12 +67,15 @@
         topics: ['i4-principles', 'i4-authority', 'i4-power', 'i4-delegation', 'i4-jobdesign'] },
       { number: 3, title: 'Departmentalisation',
         topics: ['i4-depart', 'i4-structure'] },
-      /* PROVISIONAL TITLE. The official list for Week 4 was supplied as one
-         screenshot that stops part-way through Lesson 3, so this lesson's real
-         name has not been seen. "Functional area organising" follows the
-         pattern of Week 3's "Functional area planning" and Week 6's
-         "Functional area control", and the topics below are certainly its
-         content — but the title is inference, not evidence. */
+      /* The sixteen numbered items in this lesson are now confirmed, but its
+         TITLE still is not — it appears in neither the screenshot nor the
+         extracted notes. "Functional area organising" follows the pattern of
+         Week 3's "Functional area planning" and Week 6's "Functional area
+         control".
+
+         Six of its items have no topic here yet. They are listed in the
+         commit that recorded them; the pages exist in the source notes, so
+         they can be written whenever Stephen wants them. */
       { number: 4, title: 'Functional area organising',
         topics: ['i4-opsorg', 'i4-hrmkt', 'i4-finpur'] }
     ],

@@ -309,6 +309,24 @@ var Calendar = (function () {
         });
         continue;
       }
+      /* A session she chose to study as a whole lesson shows as that lesson,
+         not as a list of the topics inside it. Listing five topic names on a
+         month cell is exactly what picking "whole lessons" was meant to stop.
+         Completed sessions have no lessons array and fall through to topics,
+         which is right — what she ticked off was topics. */
+      if (items[i].lessons && items[i].lessons.length) {
+        for (j = 0; j < items[i].lessons.length; j++) {
+          var L = items[i].lessons[j];
+          out.push({
+            kind: 'lesson',
+            moduleId: items[i].moduleId,
+            text: '📗 Wk ' + L.weekNumber + ' L' + L.number + ': ' + L.title,
+            done: false
+          });
+        }
+        continue;
+      }
+
       for (j = 0; j < items[i].items.length; j++) {
         var it = items[i].items[j];
         out.push({
@@ -444,6 +462,19 @@ var Calendar = (function () {
       '</div>';
     }
 
+    /* Studying by lesson: name the lesson, then list its topics underneath so
+       she can still tick them off one at a time. */
+    var lessonBar = '';
+    if (block.lessons && block.lessons.length) {
+      for (i = 0; i < block.lessons.length; i++) {
+        var L = block.lessons[i];
+        lessonBar += '<div class="cal-lesson">' +
+          '<span class="cal-lesson-tag">Wk ' + L.weekNumber + ' · Lesson ' + L.number + '</span>' +
+          '<span class="cal-lesson-title">' + esc(L.title) + '</span>' +
+        '</div>';
+      }
+    }
+
     return '<div class="cal-card' + (block.done ? ' is-done' : '') +
       (block.late ? ' is-late' : '') + '" style="' + vars(c) + '">' +
       '<div class="cal-card-head">' +
@@ -452,6 +483,7 @@ var Calendar = (function () {
           : '<span class="cal-time cal-time-done">Done</span>') +
         '<span class="cal-mod">' + esc(block.moduleCode) + '</span>' +
       '</div>' +
+      lessonBar +
       rows +
     '</div>';
   }

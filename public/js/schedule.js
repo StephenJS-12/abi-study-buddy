@@ -377,6 +377,14 @@ var Schedule = (function () {
     var weeks = (content && content.weeks) || [];
     for (var w = 0; w < weeks.length; w++) {
       if (weeks[w].comingSoon) continue;
+
+      /* Lesson titles, so a session built out of whole lessons can say which
+         lesson it is rather than listing the topics inside it. */
+      var lessonTitles = {};
+      for (var L = 0; L < (weeks[w].lessons || []).length; L++) {
+        lessonTitles[weeks[w].lessons[L].number] = weeks[w].lessons[L].title;
+      }
+
       var topics = weeks[w].topics || [];
       for (var t = 0; t < topics.length; t++) {
         out.push({
@@ -386,6 +394,7 @@ var Schedule = (function () {
           weekNumber: weeks[w].number,
           weekTitle: weeks[w].title,
           lesson: topics[t].lesson || 0,
+          lessonTitle: lessonTitles[topics[t].lesson] || '',
           /* Lesson numbers restart every week, so a session built out of whole
              lessons has to compare week AND lesson. A module with no lessons
              at all (maths) gives every topic its own key, which makes "one
@@ -625,6 +634,9 @@ var Schedule = (function () {
           title: item.topic.title,
           emoji: item.topic.emoji,
           weekNumber: item.topic.weekNumber,
+          lesson: item.topic.lesson,
+          lessonTitle: item.topic.lessonTitle,
+          lessonKey: item.topic.lessonKey,
           pass: item.pass,
           passName: passName(item.pass),
           done: false
@@ -654,6 +666,27 @@ var Schedule = (function () {
       if (!items.length || !pick) continue;
       var late = pick.exam && slot.date > pick.exam;
 
+      /* When a session is a whole lesson, the calendar should say so rather
+         than listing the topics inside it — she chose to study by lesson, and
+         seeing five topic names is not what she asked for. The topics are
+         still carried, because she still ticks them off one at a time. */
+      var lessonList = [];
+      if (slot.unit === 'lessons') {
+        var seenL = {};
+        for (var li = 0; li < items.length; li++) {
+          var lk = items[li].lessonKey;
+          if (!lk || seenL[lk]) continue;
+          seenL[lk] = 1;
+          lessonList.push({
+            key: lk,
+            weekNumber: items[li].weekNumber,
+            number: items[li].lesson,
+            title: items[li].lessonTitle,
+            passName: items[li].passName
+          });
+        }
+      }
+
       sessions.push({
         date: slot.date,
         time: slot.time,
@@ -661,6 +694,10 @@ var Schedule = (function () {
         moduleId: pick.module.id,
         moduleCode: pick.module.code,
         accent: pick.module.accent,
+        unit: slot.unit || 'topics',
+        /* Empty unless the session is measured in lessons AND the module has
+           them — maths has none, so its sessions stay topic-shaped. */
+        lessons: lessonList,
         items: items,
         late: !!late
       });
@@ -674,14 +711,20 @@ var Schedule = (function () {
       for (j = st.at; j < st.queue.length; j++) if (st.queue[j].pass <= 3) left++;
       var short = left + st.overflow;
       if (short > 0) {
+        /* Counted in TOPIC SITTINGS, not sessions — a topic appears once per
+           pass, and one session may hold several of them. Calling these
+           "sessions" was true only back when a session was always one topic,
+           and it badly overstated the problem the moment she set a session to
+           hold a whole lesson. */
         warnings.push({
           moduleId: st.module.id,
           moduleCode: st.module.code,
           exam: st.exam,
           short: short,
-          text: short + ' ' + (short === 1 ? 'session' : 'sessions') +
-                ' will not fit before the ' + st.module.code + ' exam' +
-                (st.exam ? ' on ' + pretty(st.exam) : '') + '.'
+          text: short + ' ' + (short === 1 ? 'topic' : 'topics') +
+                ' will not be covered before the ' + st.module.code + ' exam' +
+                (st.exam ? ' on ' + pretty(st.exam) : '') +
+                ', counting each pass separately.'
         });
       }
     }

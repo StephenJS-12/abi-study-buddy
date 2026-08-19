@@ -286,6 +286,27 @@ body.reduce-motion .cal-addev:hover { transform: none; }
 .cal-time-done { opacity: .7; }
 .cal-mod { opacity: .7; font-size: .64rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* The lesson a session covers, when she has chosen to study by lesson. Sits
+   above the topics rather than replacing them: the lesson is what she is
+   doing, the topics are what she ticks. */
+.cal-lesson {
+  display: flex;
+  flex-direction: column;
+  gap: .1rem;
+  padding: .35rem .5rem .4rem;
+  border-top: 1px solid var(--card-edge, var(--line));
+  background: rgba(255, 255, 255, .5);
+}
+.cal-lesson-tag {
+  font-size: .64rem;
+  font-weight: 800;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: var(--card-ink, var(--lilac-700));
+  opacity: .8;
+}
+.cal-lesson-title { font-size: .84rem; font-weight: 700; line-height: 1.25; overflow-wrap: break-word; }
+
 /* One row per topic. The tick sits at the start of the row and the title takes
    everything else, so a narrow column loses none of the title. */
 .cal-item {

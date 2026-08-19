@@ -888,6 +888,66 @@ for (i = 0; i < CONTENT.bbb.weeks[0].topics.length; i++) {
     CONTENT.bbb.weeks[0].topics[i].lesson = savedLessons[i];
 }
 
+/* A lesson-based session has to SAY which lesson it is. Without this the
+   calendar lists the topics inside it, which is exactly what choosing "whole
+   lessons" was meant to stop. */
+set({
+    days: [1, 2, 3, 4, 5],
+    weekday: { count: 1, unit: 'lessons', lessons: 1, topics: 1,
+               times: ['17:00'], mins: [60], mods: ['aaa'] },
+    weekend: { count: 1, unit: 'topics', topics: 1, times: ['09:00'], mins: [60], mods: [''] },
+    exams: { aaa: daysFromToday(200) }
+});
+var pLab = Schedule.plan();
+var firstAaaLesson = null;
+for (i = 0; i < pLab.sessions.length; i++) {
+    if (pLab.sessions[i].moduleId === 'aaa') { firstAaaLesson = pLab.sessions[i]; break; }
+}
+ok(firstAaaLesson !== null, "lessons: no aaa session to inspect");
+if (firstAaaLesson) {
+    ok(firstAaaLesson.unit === 'lessons', "lessons: the session does not record how it was measured");
+    ok(firstAaaLesson.lessons && firstAaaLesson.lessons.length === 1,
+       "lessons: a one-lesson session should name exactly one lesson, got " +
+       (firstAaaLesson.lessons ? firstAaaLesson.lessons.length : 'none'));
+    ok(firstAaaLesson.lessons[0].number > 0, "lessons: the named lesson has no number");
+    ok(firstAaaLesson.lessons[0].weekNumber > 0,
+       "lessons: the named lesson has no week, so two weeks' Lesson 1 would look alike");
+}
+
+/* A topics-based session must NOT claim to be a lesson. */
+set({
+    days: [1, 2, 3, 4, 5],
+    weekday: { count: 1, unit: 'topics', topics: 2,
+               times: ['17:00'], mins: [60], mods: ['aaa'] },
+    weekend: { count: 1, unit: 'topics', topics: 1, times: ['09:00'], mins: [60], mods: [''] },
+    exams: { aaa: daysFromToday(200) }
+});
+var pTop = Schedule.plan();
+for (i = 0; i < pTop.sessions.length; i++) {
+    if (pTop.sessions[i].lessons && pTop.sessions[i].lessons.length) {
+        fail("lessons: a topics-based session is claiming to be a whole lesson");
+        break;
+    }
+}
+
+/* The shortfall warning counts TOPIC SITTINGS, not sessions. It said
+   "sessions" once, which was true only while a session was always one topic —
+   and it badly overstated the problem as soon as a session held a lesson. */
+set({
+    days: [1],
+    weekday: { count: 1, unit: 'topics', topics: 1, times: ['17:00'], mins: [60], mods: [''] },
+    weekend: { count: 1, unit: 'topics', topics: 1, times: ['09:00'], mins: [60], mods: [''] },
+    exams: { aaa: daysFromToday(14), bbb: daysFromToday(14) }
+});
+var pWord = Schedule.plan();
+ok(pWord.warnings.length > 0, "warning: this really should not fit");
+if (pWord.warnings.length) {
+    ok(String(pWord.warnings[0].text).indexOf('session') < 0,
+       "warning: still calls topic sittings 'sessions' — " + pWord.warnings[0].text);
+    ok(String(pWord.warnings[0].text).indexOf('topic') >= 0,
+       "warning: does not say what it is actually counting");
+}
+
 /* A nonsense unit falls back rather than producing an empty plan. */
 set({ weekday: { count: 1, unit: 'chapters', topics: 2, times: ['09:00'], mins: [60], mods: [''] } });
 ok(Schedule.settings().weekday.unit === 'topics',

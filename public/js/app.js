@@ -145,6 +145,7 @@ var App = (function () {
       case 'notes':     return screenNotesWeeks();
       case 'notesWeek': return screenNotesTopics(route.params.weekId);
       case 'notesTopic':return screenNotesTopic(route.params.topicId);
+      case 'schedule':  return screenSchedule();
       /* Rewards, badges and stats are one screen now. The old route is kept
          pointing at it so any link she has open still lands somewhere sensible. */
       case 'progress':
@@ -249,6 +250,10 @@ var App = (function () {
 
       '<div class="section-title">Everything else</div>' +
       '<div class="grid-2">' +
+        '<button class="tile acc-2" type="button" data-goto="schedule">' +
+          '<span class="tile-glow"></span><span class="tile-emoji">🗓️</span>' +
+          '<h3 class="tile-title">Study schedule</h3>' +
+          '<p class="tile-desc">' + esc(scheduleLine()) + '</p></button>' +
         '<button class="tile acc-3" type="button" data-goto="progress">' +
           '<span class="tile-glow"></span><span class="tile-emoji">🏆</span>' +
           '<h3 class="tile-title">Progress &amp; rewards</h3>' +
@@ -269,6 +274,59 @@ var App = (function () {
     Content.use(id);
     Store.rememberModule(id);
     go('home');
+  }
+
+  /* What the schedule tile says. The next session is the only thing worth
+     putting on a tile — "12 sessions this week" is a statistic, "Fractions,
+     today at 17:00" is something she can act on. A shortfall outranks it,
+     because that needs fixing before anything else on the tile matters. */
+  function scheduleLine() {
+    var plan = Schedule.plan();
+    if (plan.warnings.length) {
+      return '⚠️ ' + plan.warnings.length +
+             (plan.warnings.length === 1 ? ' module will not fit' : ' modules will not fit');
+    }
+    var next = plan.sessions.length ? plan.sessions[0] : null;
+    if (!next) return 'Plan your run-up to the exams';
+
+    var today = Schedule.todayYmd();
+    var when = next.date === today
+      ? 'Today'
+      : (next.date === Schedule.ymd(Schedule.addDays(new Date(), 1))
+          ? 'Tomorrow'
+          : Schedule.pretty(next.date));
+    return when + ' at ' + next.time + ' — ' + next.title;
+  }
+
+  /* ───────────────────────── schedule ─────────────────────────
+
+     The calendar spans every module at once, so unlike every other screen
+     below the picker it does not belong to whichever module she last opened.
+     It is reachable from the home screen and from inside a module, and looks
+     the same from both. */
+
+  function screenSchedule() {
+    /* Back to wherever she came from. She can reach this from the picker or
+       from inside a module, and sending her to the wrong one of those is the
+       kind of small wrongness that makes an app feel unreliable. */
+    if (Content.moduleId()) {
+      setCrumb('Back to ' + (Content.module() ? Content.module().code : 'module'),
+               function () { go('home'); });
+    } else {
+      setCrumb('All modules', function () { go('modules'); });
+    }
+    Calendar.render(screen);
+  }
+
+  /* Called from a calendar card: switch to that topic's module, then open its
+     notes. Switching module first is what makes a card for a subject she is
+     not currently "in" work at all. */
+  function openTopic(moduleId, topicId) {
+    if (moduleId && moduleId !== Content.moduleId()) {
+      Content.use(moduleId);
+      Store.rememberModule(moduleId);
+    }
+    go('notesTopic', { topicId: topicId });
   }
 
   /* Which kind of session she last picked. Held here rather than per week,
@@ -433,6 +491,14 @@ var App = (function () {
       '</section>' +
 
       '<div class="grid-2" style="margin-top:2rem">' +
+        /* The calendar covers every module at once, so it is the same screen
+           from here as it is from the picker. It is offered in both places
+           because "when am I doing this" is a question she has just as often
+           standing inside a module as outside one. */
+        '<button class="tile acc-2" type="button" data-goto="schedule">' +
+          '<span class="tile-glow"></span><span class="tile-emoji">🗓️</span>' +
+          '<h3 class="tile-title">Study schedule</h3>' +
+          '<p class="tile-desc">' + esc(scheduleLine()) + '</p></button>' +
         '<button class="tile acc-3" type="button" data-goto="progress">' +
           '<span class="tile-glow"></span><span class="tile-emoji">🏆</span>' +
           '<h3 class="tile-title">Progress &amp; rewards</h3>' +
@@ -1234,6 +1300,11 @@ var App = (function () {
       if (e.key === 'Escape' && !veil.hidden) closeModal();
     });
 
+    /* Every control on the calendar changes the plan, so the calendar asks to
+       be redrawn rather than patching itself. Handing it draw() keeps the
+       "which screen am I on" decision in exactly one place. */
+    Calendar.init(function () { if (route.name === 'schedule') draw(); });
+
     applyMotion();
     showSaveWarning();
     refreshPoints();
@@ -1272,7 +1343,8 @@ var App = (function () {
     go: go,
     modal: modal,
     setCrumb: setCrumb,
-    refreshPoints: refreshPoints
+    refreshPoints: refreshPoints,
+    openTopic: openTopic
   };
 })();
 

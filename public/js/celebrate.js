@@ -112,6 +112,19 @@ var Celebrate = (function () {
       }
     },
 
+    /* Ticking a study session off the calendar. Deliberately the quietest
+       celebration in here: no confetti and no hype word, because she may tick
+       four sessions in a row and being shouted at four times is not a reward.
+       A few sparkles where her thumb landed is enough to feel like something. */
+    tick: function (anchorEl) {
+      var box = anchorEl && anchorEl.getBoundingClientRect
+        ? anchorEl.getBoundingClientRect()
+        : null;
+      var cx = box ? box.left + box.width / 2 : window.innerWidth / 2;
+      var cy = box ? box.top + box.height / 2 : window.innerHeight / 2;
+      sparkles(8, cx, cy);
+    },
+
     /* Big finish for a completed quiz */
     finish: function (scorePct) {
       if (scorePct >= 80) {

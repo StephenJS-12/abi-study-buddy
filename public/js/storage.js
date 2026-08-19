@@ -25,6 +25,9 @@ var Store = (function () {
     lastModule: null,        // so returning to the site resumes where she was
     lastSaved: null,         // ISO of the last successful write, for the health check
     claimed: {},             // reward threshold -> ISO date claimed
+    /* When she studies, what she has covered, and when the exams are.
+       Shape and defaults live in schedule.js — this only has to keep it. */
+    schedule: null,
     /* Celebrations are the point of this site, so they default ON even when Windows
        has animations switched off system-wide. She can still turn them off here. */
     settings: { motion: true }
@@ -221,6 +224,14 @@ var Store = (function () {
       return state.claimed ? Object.keys(state.claimed).length : 0;
     },
 
+    /* The schedule is stored as one blob because it is only ever read and
+       written whole. Schedule.settings() is what validates its contents; this
+       keeps it, nothing more. */
+    setSchedule: function (cfg) {
+      state.schedule = cfg;
+      save();
+    },
+
     motionOn: function () {
       return !state.settings || state.settings.motion !== false;
     },
@@ -259,6 +270,11 @@ var Store = (function () {
       out.topicCorrect = countMap(data.topicCorrect);
       out.badges       = stringMap(data.badges);
       out.claimed      = stringMap(data.claimed);
+
+      /* Carried across as-is. Every field inside it is re-validated by
+         Schedule.settings() on the way out, so a corrupted schedule degrades
+         to the defaults rather than to a broken calendar. */
+      if (data.schedule && typeof data.schedule === 'object') out.schedule = data.schedule;
 
       if (data.lastSetup && typeof data.lastSetup === 'object') out.lastSetup = data.lastSetup;
       if (typeof data.lastModule === 'string') out.lastModule = data.lastModule;

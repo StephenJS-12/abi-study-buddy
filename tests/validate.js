@@ -12,14 +12,14 @@ var files = ["week1.js", "week2.js", "week3.js", "week4.js",
              // Derived from the example papers. Must load after the weeks: it
              // merges its questions into the pools they register, so the loop
              // below validates them exactly like any other question.
-             "inba\\paper-assign1.js", "inba\\paper-assign2.js",
+             "inba\\lessons.js", "inba\\paper-assign1.js", "inba\\paper-assign2.js",
              "inba\\paper-assign3.js", "inba\\paper-assign4.js",
              "inba\\paper-mock2.js", "inba\\paper-mock3.js"];
 
 var window = {};                 // the data files attach to window.WEEK_DATA
 var problems = [];
 var topicIds = {}, questionIds = {};
-var totals = { topics: 0, questions: 0, mcq: 0, numeric: 0, steps: 0, multi: 0, match: 0, marks: 0 };
+var totals = { lessons: 0, topics: 0, questions: 0, mcq: 0, numeric: 0, steps: 0, multi: 0, match: 0, marks: 0 };
 
 function read(p) {
     var f = fso.OpenTextFile(p, 1);
@@ -55,6 +55,40 @@ for (var w = 0; w < weeks.length; w++) {
 
     var topics = wk.topics || [];
     if (!topics.length) problems.push(wtag + ": no topics");
+
+    /* Weeks that are taught as lessons carry a lesson map. Every topic must
+       land in exactly one of them, or the notes screen would hide a topic
+       behind a lesson she can never open — and it would look like the topic
+       had simply never been written. Maths has no lessons and is skipped. */
+    if (wk.lessons) {
+      var inLesson = {}, lessonNums = {};
+      for (var L = 0; L < wk.lessons.length; L++) {
+        var les = wk.lessons[L];
+        if (!les.title)  problems.push(wtag + ": lesson " + les.number + " has no title");
+        if (!les.number) problems.push(wtag + ": a lesson has no number");
+        if (lessonNums[les.number]) problems.push(wtag + ": two lessons numbered " + les.number);
+        lessonNums[les.number] = 1;
+
+        if (les.topicIds.length !== les.wanted) {
+          problems.push(wtag + "/lesson " + les.number + ": names " + les.wanted +
+                        " topics but only " + les.topicIds.length +
+                        " exist - a topic id in lessons.js does not match the week data");
+        }
+        for (var q2 = 0; q2 < les.topicIds.length; q2++) {
+          if (inLesson[les.topicIds[q2]]) {
+            problems.push(wtag + ": topic " + les.topicIds[q2] + " is in two lessons");
+          }
+          inLesson[les.topicIds[q2]] = 1;
+        }
+      }
+      for (var q3 = 0; q3 < topics.length; q3++) {
+        if (!inLesson[topics[q3].id]) {
+          problems.push(wtag + ": topic " + topics[q3].id +
+                        " belongs to no lesson, so nothing on the notes screen can reach it");
+        }
+      }
+      totals.lessons += wk.lessons.length;
+    }
 
     for (var t = 0; t < topics.length; t++) {
         var tp = topics[t];
@@ -181,6 +215,7 @@ for (var w = 0; w < weeks.length; w++) {
     }
 }
 
+WScript.Echo("Lessons:   " + totals.lessons);
 WScript.Echo("Topics:    " + totals.topics);
 WScript.Echo("Questions: " + totals.questions +
              "  (mcq " + totals.mcq + ", numeric " + totals.numeric + ", steps " + totals.steps +

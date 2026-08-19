@@ -25,7 +25,7 @@ var App = (function () {
   /* Screens that belong to one module, and so wear that module's colour.
      Everything not listed here spans every module and stays the default. */
   var INSIDE_MODULE = {
-    home: true, week: true, notes: true, notesWeek: true, notesTopic: true
+    home: true, week: true, notes: true, notesWeek: true, notesLesson: true, notesTopic: true
   };
 
   /* Whether the full reward ladder is showing. Deliberately not persisted —
@@ -231,8 +231,9 @@ var App = (function () {
       case 'home':      return prev.moduleId && Modules.get(prev.moduleId)
                                 ? Modules.get(prev.moduleId).code
                                 : 'Module';
-      case 'notes':     return 'All notes';
-      case 'notesWeek': return 'Topics';
+      case 'notes':      return 'All notes';
+      case 'notesWeek':  return 'Lessons';
+      case 'notesLesson':return 'Topics';
       case 'notesTopic':return 'Notes';
       case 'schedule':  return 'Schedule';
       case 'progress':
@@ -272,6 +273,7 @@ var App = (function () {
       case 'week':      return screenWeek(route.params.weekIds || route.params.weekId, route.params.mode);
       case 'notes':     return screenNotesWeeks();
       case 'notesWeek': return screenNotesTopics(route.params.weekId);
+      case 'notesLesson':return screenNotesLesson(route.params.weekId, route.params.lesson);
       case 'notesTopic':return screenNotesTopic(route.params.topicId);
       case 'schedule':  return screenSchedule();
       /* Rewards, badges and stats are one screen now. The old route is kept
@@ -1022,27 +1024,96 @@ var App = (function () {
     });
   }
 
+  /* A row in the notes contents — used for both lessons and topics, because
+     they are the same thing to look at: a name, a line of explanation, and an
+     arrow. */
+  function pickRow(attr, value, emoji, title, meta, badge) {
+    return '<button class="pick" type="button" ' + attr + '="' + esc(value) + '">' +
+      '<span class="pick-emoji">' + emoji + '</span>' +
+      '<span class="pick-body">' +
+        '<span class="pick-title">' + esc(title) + (badge ? ' 🏅' : '') + '</span>' +
+        '<span class="pick-meta">' + esc(meta) + '</span>' +
+      '</span><span style="color:var(--lilac-400);font-weight:800">›</span></button>';
+  }
+
+  /* Opening a week.
+   *
+   * Business is taught Week > Lesson > Topic, so this shows its lessons and
+   * the topics live one level further in. Maths has no lessons and goes
+   * straight to its topics, which is what this screen always used to do. */
   function screenNotesTopics(weekId) {
     var w = Content.week(weekId);
     if (!w) return go('notes');
     crumbFromHistory();
 
-    var list = w.topics.map(function (t) {
-      return '<button class="pick" type="button" data-ntopic="' + t.id + '">' +
-        '<span class="pick-emoji">' + t.emoji + '</span>' +
-        '<span class="pick-body">' +
-          '<span class="pick-title">' + esc(t.title) + (Store.hasBadge(t.id) ? ' 🏅' : '') + '</span>' +
-          '<span class="pick-meta">' + esc(t.summary) + '</span>' +
-        '</span><span style="color:var(--lilac-400);font-weight:800">›</span></button>';
-    }).join('');
+    var list, head;
+
+    if (w.lessons && w.lessons.length) {
+      list = w.lessons.map(function (L) {
+        var done = 0;
+        for (var i = 0; i < L.topicIds.length; i++) {
+          if (Store.hasBadge(L.topicIds[i])) done++;
+        }
+        var n = L.topicIds.length;
+        var meta = n + (n === 1 ? ' topic' : ' topics') +
+                   (done ? ' · ' + done + ' badged 🏅' : '');
+        return pickRow('data-nlesson', String(L.number), L.emoji,
+                       'Lesson ' + L.number + ': ' + L.title, meta, done === n && n > 0);
+      }).join('');
+      head = w.lessons.length + ' lessons';
+    } else {
+      list = w.topics.map(function (t) {
+        return pickRow('data-ntopic', t.id, t.emoji, t.title, t.summary, Store.hasBadge(t.id));
+      }).join('');
+      head = w.topics.length + ' topics';
+    }
 
     screen.innerHTML =
-      '<div class="pagehead"><span class="kicker">Week ' + w.number + ' notes</span>' +
+      '<div class="pagehead"><span class="kicker">Week ' + w.number + ' notes · ' + head + '</span>' +
       '<h1>' + w.emoji + ' ' + esc(w.title) + '</h1></div>' +
       '<div class="picklist">' + list + '</div>';
 
+    bindNotesPicks(weekId);
+  }
+
+  /* Opening a lesson: its topics, and nothing from the rest of the week. */
+  function screenNotesLesson(weekId, number) {
+    var w = Content.week(weekId);
+    if (!w || !w.lessons) return go('notesWeek', { weekId: weekId });
+
+    var lesson = null;
+    for (var i = 0; i < w.lessons.length; i++) {
+      if (String(w.lessons[i].number) === String(number)) lesson = w.lessons[i];
+    }
+    if (!lesson) return go('notesWeek', { weekId: weekId });
+
+    crumbFromHistory();
+
+    var list = '';
+    for (i = 0; i < lesson.topicIds.length; i++) {
+      var t = Content.topic(lesson.topicIds[i]);
+      if (!t) continue;
+      list += pickRow('data-ntopic', t.id, t.emoji, t.title, t.summary, Store.hasBadge(t.id));
+    }
+
+    screen.innerHTML =
+      '<div class="pagehead">' +
+        '<span class="kicker">Week ' + w.number + ' · Lesson ' + lesson.number + '</span>' +
+        '<h1>' + lesson.emoji + ' ' + esc(lesson.title) + '</h1>' +
+      '</div>' +
+      '<div class="picklist">' + list + '</div>';
+
+    bindNotesPicks(weekId);
+  }
+
+  function bindNotesPicks(weekId) {
     Array.prototype.forEach.call(screen.querySelectorAll('[data-ntopic]'), function (b) {
       b.addEventListener('click', function () { go('notesTopic', { topicId: b.getAttribute('data-ntopic') }); });
+    });
+    Array.prototype.forEach.call(screen.querySelectorAll('[data-nlesson]'), function (b) {
+      b.addEventListener('click', function () {
+        go('notesLesson', { weekId: weekId, lesson: b.getAttribute('data-nlesson') });
+      });
     });
   }
 
@@ -1054,7 +1125,10 @@ var App = (function () {
     crumbFromHistory();
 
     screen.innerHTML =
-      '<div class="pagehead"><span class="kicker">Week ' + w.number + ' · Notes</span>' +
+      /* Names the lesson too where the module has them, so she always knows
+         which part of the week she is standing in. */
+      '<div class="pagehead"><span class="kicker">Week ' + w.number +
+        (t.lesson ? ' · Lesson ' + t.lesson : '') + ' · Notes</span>' +
       '<h1>' + t.emoji + ' ' + esc(t.title) + '</h1>' +
       '<p>' + esc(t.summary) + '</p></div>' +
       Notes.renderBlocks(t, true) +

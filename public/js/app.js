@@ -6,6 +6,22 @@ var App = (function () {
   var route = { name: 'home', params: {} };
   var backAction = null;
 
+  /* WHERE SHE CAME FROM.
+   *
+   * Every screen used to name its own Back destination, which made Back mean
+   * "the page above this one in the structure" rather than "the page I was
+   * just on". Opening the schedule from the module picker and pressing Back
+   * landed her in whichever module she happened to have open last — a screen
+   * she had not been on and had not asked for.
+   *
+   * So this is a real history stack. go() pushes where she was, back() pops.
+   * Each entry carries the module that was loaded at the time, because the
+   * calendar can send her into a topic belonging to a different subject, and
+   * coming back has to restore the module as well as the screen.
+   */
+  var history = [];
+  var MAX_HISTORY = 40;
+
   /* Whether the full reward ladder is showing. Deliberately not persisted —
      it is a view preference for the moment she is in, not something worth
      remembering between sessions. */
@@ -111,7 +127,47 @@ var App = (function () {
 
   /* ───────────────────────── routing ───────────────────────── */
 
-  function go(name, params) {
+  function go(name, params, opts) {
+    opts = opts || {};
+
+    /* The brand in the top bar means "start again from the top", so it wipes
+       the trail rather than adding to it. */
+    if (opts.reset) history.length = 0;
+
+    /* Going to the screen she is already on is not a journey, so it must not
+       leave a copy of that screen behind for Back to return to. */
+    var samePlace = route.name === name && sameParams(route.params, params || {});
+    if (!opts.reset && !opts.replace && !samePlace) {
+      history.push({
+        name: route.name,
+        params: route.params,
+        /* `fromModule` is for callers that switch module BEFORE navigating —
+           the calendar does, and without this the trail would record where she
+           ended up rather than where she left. */
+        moduleId: opts.fromModule !== undefined ? opts.fromModule : (Content.moduleId() || null)
+      });
+      if (history.length > MAX_HISTORY) history.shift();
+    }
+
+    enter(name, params);
+  }
+
+  /* Back. Pops where she was and returns there, restoring the module that was
+     loaded at the time — a calendar session can send her into a topic from a
+     different subject, and coming back has to undo that too. */
+  function back() {
+    if (!history.length) return enter('modules', {});
+    var prev = history.pop();
+
+    if (prev.moduleId && prev.moduleId !== Content.moduleId()) {
+      Content.use(prev.moduleId);
+      Store.rememberModule(prev.moduleId);
+    }
+    enter(prev.name, prev.params);
+  }
+
+  /* The shared part of both: everything except deciding what to remember. */
+  function enter(name, params) {
     Quiz.clear();
     route = { name: name, params: params || {} };
     window.scrollTo({ top: 0 });
@@ -130,6 +186,50 @@ var App = (function () {
     }
 
     draw();
+  }
+
+  /* Shallow is enough: route params are flat, and the only array among them
+     is the list of week ids. */
+  function sameParams(a, b) {
+    var k;
+    for (k in a) {
+      if (!Object.prototype.hasOwnProperty.call(a, k)) continue;
+      if (String(a[k]) !== String(b[k])) return false;
+    }
+    for (k in b) {
+      if (!Object.prototype.hasOwnProperty.call(b, k)) continue;
+      if (String(a[k]) !== String(b[k])) return false;
+    }
+    return true;
+  }
+
+  /* What to call the screen Back would return to. The label has to describe
+     where she is going, not where she is — "All modules" when that is what is
+     underneath, "Schedule" when she came in from the calendar. */
+  function backLabelFor(prev) {
+    if (!prev) return null;
+    switch (prev.name) {
+      case 'modules':   return 'All modules';
+      case 'home':      return prev.moduleId && Modules.get(prev.moduleId)
+                                ? Modules.get(prev.moduleId).code
+                                : 'Module';
+      case 'notes':     return 'All notes';
+      case 'notesWeek': return 'Topics';
+      case 'notesTopic':return 'Notes';
+      case 'schedule':  return 'Schedule';
+      case 'progress':
+      case 'rewards':   return 'Progress';
+      case 'week':      return 'Questions';
+      default:          return 'Back';
+    }
+  }
+
+  /* Puts the Back button where the history says it should point. Screens no
+     longer choose this for themselves — that is what made Back mean "up a
+     level" instead of "where I just was". */
+  function crumbFromHistory() {
+    if (!history.length) return setCrumb(null);
+    setCrumb(backLabelFor(history[history.length - 1]), back);
   }
 
   function draw() {
@@ -327,29 +427,21 @@ var App = (function () {
     /* Back to wherever she came from. She can reach this from the picker or
        from inside a module, and sending her to the wrong one of those is the
        kind of small wrongness that makes an app feel unreliable. */
-    if (Content.moduleId()) {
-      setCrumb('Back to ' + (Content.module() ? Content.module().code : 'module'),
-               function () { go('home'); });
-    } else {
-      setCrumb('All modules', function () { go('modules'); });
-    }
+    crumbFromHistory();
     Calendar.render(screen);
   }
 
   /* Called from a calendar card: switch to that topic's module, then open its
      notes. Switching module first is what makes a card for a subject she is
-     not currently "in" work at all.
-
-     `from` is carried through so the Back button returns her to where she
-     actually came from. Without it she taps a session on the calendar, reads
-     the notes, presses Back and lands in that week's topic list — somewhere
-     she never was, with no way back to her schedule. */
-  function openTopic(moduleId, topicId, from) {
-    if (moduleId && moduleId !== Content.moduleId()) {
+     not currently "in" work at all — and the history stack records the module
+     she was in before, so Back undoes the switch as well as the screen. */
+  function openTopic(moduleId, topicId) {
+    var was = Content.moduleId() || null;
+    if (moduleId && moduleId !== was) {
       Content.use(moduleId);
       Store.rememberModule(moduleId);
     }
-    go('notesTopic', { topicId: topicId, from: from || '' });
+    go('notesTopic', { topicId: topicId }, { fromModule: was });
   }
 
   /* Which kind of session she last picked. Held here rather than per week,
@@ -379,7 +471,7 @@ var App = (function () {
     /* Back to the picker, unless this is the only module she has — in which
        case there is nothing to go back to and the crumb would be a dead end. */
     if (Modules.all().length > 1) {
-      setCrumb('All modules', function () { go('modules'); });
+      crumbFromHistory();
     } else {
       setCrumb(null);
     }
@@ -602,7 +694,7 @@ var App = (function () {
     var picked = (weekIds || []).map(Content.week).filter(function (w) { return !!w; });
     if (!picked.length) return go('home');
 
-    setCrumb('Back', function () { go('home'); });
+    crumbFromHistory();
 
     /* The remembered setup is keyed on the whole selection, so choosing weeks
        1 and 3 together remembers its own topic choice rather than inheriting
@@ -813,7 +905,7 @@ var App = (function () {
   /* ───────────────────────── notes ───────────────────────── */
 
   function screenNotesWeeks() {
-    setCrumb('Home', function () { go('home'); });
+    crumbFromHistory();
     var tiles = Content.weeks().map(function (w) {
       if (w.comingSoon) {
         return '<button class="tile acc-' + w.accent + ' is-locked" type="button" disabled>' +
@@ -842,7 +934,7 @@ var App = (function () {
   function screenNotesTopics(weekId) {
     var w = Content.week(weekId);
     if (!w) return go('notes');
-    setCrumb('All notes', function () { go('notes'); });
+    crumbFromHistory();
 
     var list = w.topics.map(function (t) {
       return '<button class="pick" type="button" data-ntopic="' + t.id + '">' +
@@ -868,15 +960,7 @@ var App = (function () {
     var w = Content.weekOfTopic(topicId);
     if (!t || !w) return go('notes');
 
-    /* Back goes to wherever she actually came from. Arriving from a calendar
-       session and being returned to a week's topic list is a dead end — she
-       was never there, and her schedule is now two taps away with no sign of
-       which two. */
-    if (route.params.from === 'schedule') {
-      setCrumb('Back to schedule', function () { go('schedule'); });
-    } else {
-      setCrumb('Week ' + w.number + ' topics', function () { go('notesWeek', { weekId: w.id }); });
-    }
+    crumbFromHistory();
 
     screen.innerHTML =
       '<div class="pagehead"><span class="kicker">Week ' + w.number + ' · Notes</span>' +
@@ -923,7 +1007,7 @@ var App = (function () {
      It sits above the modules rather than inside one, since points and rewards
      are shared across every module — the badges are simply grouped by module. */
   function screenProgress() {
-    setCrumb('Home', function () { go('modules'); });
+    crumbFromHistory();
 
     var st = Store.get();
     var points = Store.points();
@@ -1349,7 +1433,8 @@ var App = (function () {
        choosing what she is doing today. */
     var resume = Modules.remembered();
     if (resume) Content.use(resume);
-    go('modules');
+    /* reset, so the very first screen leaves no phantom entry behind it. */
+    go('modules', {}, { reset: true });
   }
 
   /* The brand in the top bar goes all the way out to the module picker — it is
@@ -1362,11 +1447,11 @@ var App = (function () {
               'earned are safe.</p>',
         confirmLabel: 'Yes, go home',
         confirmClass: 'btn-danger',
-        onConfirm: function () { go('modules'); }
+        onConfirm: function () { go('modules', {}, { reset: true }); }
       });
       return;
     }
-    go('modules');
+    go('modules', {}, { reset: true });
   }
 
   return {

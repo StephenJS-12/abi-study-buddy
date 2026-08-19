@@ -52,9 +52,14 @@ var Schedule = (function () {
     days: [1, 2, 3, 4, 5],
     /* `topics` is how many topics fit in ONE session. Some topics are short
        enough to double up, and being forced to spend a whole hour on a small
-       one is how a schedule starts feeling like a waste of an evening. */
-    weekday: { count: 2, minutes: 60, topics: 1, times: ['17:00', '19:30'] },
-    weekend: { count: 3, minutes: 60, topics: 1, times: ['09:00', '11:30', '14:00'] },
+       one is how a schedule starts feeling like a waste of an evening.
+
+       `mods` pins a session to a subject — mods[1] = 'inba' means the second
+       session of a weekday is always business. An empty string leaves it to
+       the scheduler, which is the default and gives whichever module is
+       furthest behind. */
+    weekday: { count: 2, minutes: 60, topics: 1, times: ['17:00', '19:30'], mods: ['', ''] },
+    weekend: { count: 3, minutes: 60, topics: 1, times: ['09:00', '11:30', '14:00'], mods: ['', '', ''] },
     exams: {},          // moduleId -> 'YYYY-MM-DD'
     marks: {},          // 'topicId|pass' -> 'YYYY-MM-DD' when done, false when explicitly not
     focus: {},          // topicId -> true, revised first
@@ -188,10 +193,20 @@ var Schedule = (function () {
       out.times = [];
       for (var i = 0; i < b.times.length; i++) out.times.push(cleanTime(b.times[i], i));
     }
-    /* Always exactly `count` times, so the UI can render one picker per
-       session without checking for holes. */
+    if (Object.prototype.toString.call(b.mods) === '[object Array]') {
+      out.mods = [];
+      for (var j = 0; j < b.mods.length; j++) out.mods.push(String(b.mods[j] || ''));
+    }
+
+    /* Always exactly `count` times and `count` module choices, so the UI can
+       render one row per session without checking for holes. Sorting the times
+       has to carry the module pinned to each one along with it, or raising the
+       session count would silently reshuffle which subject sits where. */
+    if (!out.mods) out.mods = [];
     while (out.times.length < out.count) out.times.push(nextTime(out.times, out.minutes));
+    while (out.mods.length < out.times.length) out.mods.push('');
     out.times.length = out.count;
+    out.mods.length = out.count;
     return out;
   }
 
@@ -311,9 +326,19 @@ var Schedule = (function () {
          a schedule she stops trusting. */
       if (indexOfNum(s.days, dow) >= 0 && !(blocked && blocked[key])) {
         var cfg = isWeekendDay(dow) ? s.weekend : s.weekday;
-        var times = cfg.times.slice(0, cfg.count).sort();
-        for (var i = 0; i < times.length; i++) {
-          out.push({ date: key, time: times[i], minutes: cfg.minutes, topics: cfg.topics });
+        /* Times are sorted with their pinned module attached, not separately.
+           Sorting the two apart would quietly move which subject sits in which
+           session every time she edited a time. */
+        var pairs = [], i;
+        for (i = 0; i < cfg.count; i++) {
+          pairs.push({ time: cfg.times[i], mod: (cfg.mods && cfg.mods[i]) || '' });
+        }
+        pairs.sort(function (a, b) { return a.time < b.time ? -1 : (a.time > b.time ? 1 : 0); });
+        for (i = 0; i < pairs.length; i++) {
+          out.push({
+            date: key, time: pairs[i].time, minutes: cfg.minutes,
+            topics: cfg.topics, mod: pairs[i].mod
+          });
         }
       }
       cur = addDays(cur, 1);
@@ -380,10 +405,20 @@ var Schedule = (function () {
 
     /* Topic capacity from each slot to the end, so the urgency comparison
        below can weigh remaining work against remaining CAPACITY rather than
-       against a slot count that may hold two or three topics each. */
-    var capFrom = new Array(slots.length + 1);
-    capFrom[slots.length] = 0;
-    for (i = slots.length - 1; i >= 0; i--) capFrom[i] = capFrom[i + 1] + (slots[i].topics || 1);
+       against a slot count that may hold two or three topics each.
+
+       Worked out per module, because a slot pinned to another subject is not
+       capacity this one can use. Without that, pinning every weekday evening
+       to business would leave maths thinking it had the whole calendar. */
+    function capacityFor(moduleId) {
+      var arr = new Array(slots.length + 1);
+      arr[slots.length] = 0;
+      for (var k = slots.length - 1; k >= 0; k--) {
+        var mine = !slots[k].mod || slots[k].mod === moduleId;
+        arr[k] = arr[k + 1] + (mine ? (slots[k].topics || 1) : 0);
+      }
+      return arr;
+    }
 
     /* Per-module state. `queue` holds the required work — first pass, revision,
        second revision — with anything already ticked left out. */
@@ -413,39 +448,33 @@ var Schedule = (function () {
       });
     }
 
-    /* The index of the last slot that falls on or before each module's exam.
-       Precomputed so the urgency comparison below stays O(1) per slot. */
+    /* The index of the last slot that falls on or before each module's exam,
+       and the capacity available to it. Precomputed so the urgency comparison
+       below stays O(1) per slot. */
     for (i = 0; i < state.length; i++) {
       state[i].lastSlot = lastSlotOnOrBefore(slots, state[i].exam);
+      state[i].cap = capacityFor(state[i].module.id);
     }
 
-    var sessions = [];
-    for (i = 0; i < slots.length; i++) {
-      var pick = choose(state, i, capFrom);
-      if (!pick) continue;
-
-      var slot = slots[i];
-      var room = slot.topics || 1;
-      var late = pick.exam && slot.date > pick.exam;
-      var items = [];
-
-      /* One session can hold more than one topic. They all come from the same
-         module: switching subject halfway through an hour is not what she
-         meant by two topics in a session. */
-      while (items.length < room) {
-        var item = pick.queue[pick.at];
+    /* Pulls up to `room` topics off one module's queue for one slot. Kept
+       separate so a slot pinned to a module that turns out to have nothing
+       left can fall back to whoever does need it, rather than sitting empty. */
+    function fill(st, slot, room) {
+      var out = [], late = st.exam && slot.date > st.exam;
+      while (out.length < room) {
+        var item = st.queue[st.at];
         if (!item) {
           /* Required work is finished and the exam is still ahead: fill the
              gap with another revision round rather than leaving it blank. */
-          if (!extendRevision(pick, s.focus)) break;
-          item = pick.queue[pick.at];
+          if (!extendRevision(st, s.focus)) break;
+          item = st.queue[st.at];
           if (!item) break;
         }
-        pick.at++;
-        pick.placed++;
-        if (late && item.pass <= 3) pick.overflow++;
+        st.at++;
+        st.placed++;
+        if (late && item.pass <= 3) st.overflow++;
 
-        items.push({
+        out.push({
           key: markKey(item.topic.id, item.pass),
           topicId: item.topic.id,
           title: item.topic.title,
@@ -456,8 +485,29 @@ var Schedule = (function () {
           done: false
         });
       }
+      return out;
+    }
 
-      if (!items.length) continue;
+    var sessions = [];
+    for (i = 0; i < slots.length; i++) {
+      var slot = slots[i];
+      var room = slot.topics || 1;
+      var items = [], pick = null, skip = null;
+
+      /* A session pinned to a subject goes to that subject. If it has nothing
+         left to give — finished, or its exam already sat — the slot goes to
+         whoever else needs it rather than being wasted. */
+      if (slot.mod) {
+        pick = pinned(state, i, slot.mod);
+        if (pick) { items = fill(pick, slot, room); skip = pick; }
+      }
+      if (!items.length) {
+        pick = choose(state, i, skip);
+        if (pick) items = fill(pick, slot, room);
+      }
+
+      if (!items.length || !pick) continue;
+      var late = pick.exam && slot.date > pick.exam;
 
       sessions.push({
         date: slot.date,
@@ -510,28 +560,45 @@ var Schedule = (function () {
      which is not the same as the number of slots once a slot can hold two or
      three topics. A module whose exam has passed is finished and takes
      nothing. */
-  function choose(state, slotIndex, capFrom) {
+  function choose(state, slotIndex, skip) {
     var best = null, bestPressure = -1;
     for (var i = 0; i < state.length; i++) {
       var st = state[i];
-      if (st.lastSlot >= 0 && slotIndex > st.lastSlot && st.at >= st.queue.length) continue;
-      if (st.exam && slotIndex > st.lastSlot) continue;
+      if (st === skip) continue;
+      if (slotIndex > st.lastSlot) continue;
 
       var remaining = st.queue.length - st.at;
       /* Nothing required left, but the exam is still ahead: it can still take
          slots for extra revision, at the lowest possible priority. */
       var pressure;
       if (remaining <= 0) {
-        pressure = st.exam ? 0.0001 : -1;
+        pressure = 0.0001;
       } else {
-        var room = capFrom[slotIndex] - capFrom[st.lastSlot + 1];
+        var room = st.cap[slotIndex] - st.cap[st.lastSlot + 1];
         pressure = room > 0 ? remaining / room : 1e9;
       }
-      if (pressure < 0) continue;
+      /* Ties are broken toward whichever module has had fewer sessions so far.
+         Without that, two subjects with the same deadline and the same amount
+         of work would compare exactly equal at every slot and the first one
+         listed would take the lot — she would finish one subject entirely
+         before touching the other. */
+      var better = false;
+      if (best === null) better = true;
+      else if (pressure > bestPressure + 1e-9) better = true;
+      else if (pressure > bestPressure - 1e-9 && st.placed < best.placed) better = true;
 
-      if (pressure > bestPressure) { bestPressure = pressure; best = st; }
+      if (better) { bestPressure = pressure; best = st; }
     }
     return best;
+  }
+
+  /* The module a slot is pinned to, if it is still able to use the slot. */
+  function pinned(state, slotIndex, moduleId) {
+    for (var i = 0; i < state.length; i++) {
+      if (state[i].module.id !== moduleId) continue;
+      return slotIndex > state[i].lastSlot ? null : state[i];
+    }
+    return null;
   }
 
   /* Adds one more revision round for a module that has finished its required

@@ -545,7 +545,46 @@ body.reduce-motion .cal-sum-fill { transition: none; }
 }
 .cal-stepper b { min-width: 1.6rem; text-align: center; }
 
-.cal-times { display: grid; gap: .45rem; }
+.cal-times { display: grid; gap: .7rem; }
+
+/* One session: its start time, and which subject it is for. */
+.cal-sessrow {
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  padding: .55rem .65rem;
+  background: var(--lilac-50);
+}
+.cal-sessrow-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: .8rem;
+  margin-bottom: .5rem;
+}
+.cal-sessno { font-size: .88rem; font-weight: 600; color: var(--ink-soft); }
+.cal-sessrow .cal-time-in { background: var(--surface); }
+
+.cal-modpick { display: flex; flex-wrap: wrap; gap: .3rem; }
+
+/* Each chip wears its module's colour when chosen, so the settings and the
+   calendar agree at a glance about which subject is which. */
+.cal-modchip {
+  border: 1px solid var(--lilac-200);
+  background: var(--surface);
+  color: var(--ink-soft);
+  border-radius: var(--r-pill);
+  padding: .3rem .7rem;
+  font-size: .78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .14s, border-color .14s, color .14s;
+}
+.cal-modchip:hover { background: var(--lilac-50); }
+.cal-modchip.is-on {
+  background: var(--card-ink, var(--lilac-600));
+  border-color: var(--card-ink, var(--lilac-600));
+  color: #fff;
+}
 
 .cal-timerow {
   display: flex; align-items: center; justify-content: space-between;

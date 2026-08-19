@@ -452,8 +452,8 @@ var Calendar = (function () {
       '</summary>' +
       '<div class="cal-opts-body">' +
         daysHtml(s) +
-        dayBlockHtml('weekday', 'Weekdays', s.weekday) +
-        dayBlockHtml('weekend', 'Weekends', s.weekend) +
+        dayBlockHtml('weekday', 'Weekdays', s.weekday, plan.modules) +
+        dayBlockHtml('weekend', 'Weekends', s.weekend, plan.modules) +
         examsHtml(s, plan) +
         focusHtml(plan) +
       '</div>' +
@@ -476,7 +476,7 @@ var Calendar = (function () {
     '</div>';
   }
 
-  function dayBlockHtml(which, label, cfg) {
+  function dayBlockHtml(which, label, cfg, mods) {
     var lens = '';
     for (var i = 0; i < LENGTHS.length; i++) {
       lens += '<button class="cal-chip' + (cfg.minutes === LENGTHS[i] ? ' is-on' : '') + '" type="button"' +
@@ -485,11 +485,14 @@ var Calendar = (function () {
 
     var times = '';
     for (var t = 0; t < cfg.count; t++) {
-      times += '<label class="cal-timerow">' +
-        '<span>Session ' + (t + 1) + '</span>' +
-        '<input class="cal-time-in" type="time" value="' + esc(cfg.times[t]) + '"' +
-          ' data-time="' + which + ':' + t + '">' +
-      '</label>';
+      times += '<div class="cal-sessrow">' +
+        '<div class="cal-sessrow-top">' +
+          '<span class="cal-sessno">Session ' + (t + 1) + '</span>' +
+          '<input class="cal-time-in" type="time" value="' + esc(cfg.times[t]) + '"' +
+            ' data-time="' + which + ':' + t + '" aria-label="Session ' + (t + 1) + ' start time">' +
+        '</div>' +
+        modPickHtml(which, t, (cfg.mods && cfg.mods[t]) || '', mods) +
+      '</div>';
     }
 
     return '<div class="cal-opt">' +
@@ -503,6 +506,22 @@ var Calendar = (function () {
       '</div>' +
       '<div class="cal-times">' + times + '</div>' +
     '</div>';
+  }
+
+  /* Which subject a given session is for. "Any" is the default and hands the
+     slot to whichever module is furthest behind; picking one pins it, so she
+     can put business at five and maths at seven and have it stay that way. */
+  function modPickHtml(which, index, current, mods) {
+    var out = '<button class="cal-modchip' + (!current ? ' is-on' : '') + '" type="button"' +
+      ' data-mod-set="' + which + ':' + index + ':">Any</button>';
+
+    for (var i = 0; i < mods.length; i++) {
+      var m = mods[i], c = hue(m.id), on = current === m.id;
+      out += '<button class="cal-modchip' + (on ? ' is-on' : '') + '" type="button"' +
+        ' style="' + vars(c) + '" data-mod-set="' + which + ':' + index + ':' + esc(m.id) + '">' +
+        esc(m.code) + '</button>';
+    }
+    return '<div class="cal-modpick">' + out + '</div>';
   }
 
   function stepperHtml(label, which, field, value) {
@@ -722,6 +741,22 @@ var Calendar = (function () {
         blk[field] = next;
         var patch = {};
         patch[which] = blk;
+        Schedule.update(patch);
+        again();
+      });
+    });
+
+    /* "weekday:1:inba" — pin the second weekday session to business. An empty
+       third part means Any, which hands the slot back to the scheduler. */
+    each('[data-mod-set]', function (b) {
+      b.addEventListener('click', function () {
+        var bits = b.getAttribute('data-mod-set').split(':');
+        var s = Schedule.settings(), blk = s[bits[0]];
+        if (!blk.mods) blk.mods = [];
+        while (blk.mods.length < blk.count) blk.mods.push('');
+        blk.mods[Number(bits[1])] = bits[2] || '';
+        var patch = {};
+        patch[bits[0]] = blk;
         Schedule.update(patch);
         again();
       });

@@ -639,7 +639,102 @@ var pc = Schedule.plan();
 ok(pc.warnings.length === 0,
    "capacity: 20 Mondays x 4 topics is 80 slots of room for 60 topics, but it reported a shortfall");
 
-// ── 19. pass names ───────────────────────────────────────────────
+// ── 19. pinning a session to a module ────────────────────────────
+// She wants business at 17:00 and maths at 19:00. Nothing else may take
+// those slots while the pinned module still has work.
+
+set({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 2, minutes: 60, topics: 1,
+               times: ['17:00', '19:00'], mods: ['bbb', 'aaa'] },
+    weekend: { count: 2, minutes: 60, topics: 1,
+               times: ['09:00', '11:00'], mods: ['', ''] },
+    exams: { aaa: daysFromToday(120), bbb: daysFromToday(120) }
+});
+
+var pp2 = Schedule.plan();
+var wrong17 = 0, wrong19 = 0, seen17 = 0, seen19 = 0;
+for (i = 0; i < pp2.sessions.length; i++) {
+    var sn = pp2.sessions[i];
+    var dow2 = Schedule.parseYmd(sn.date).getDay();
+    if (dow2 === 0 || dow2 === 6) continue;
+    if (sn.time === '17:00') { seen17++; if (sn.moduleId !== 'bbb') wrong17++; }
+    if (sn.time === '19:00') { seen19++; if (sn.moduleId !== 'aaa') wrong19++; }
+}
+ok(seen17 > 0 && seen19 > 0, "pin: no weekday sessions were generated at all");
+ok(wrong17 === 0, "pin: " + wrong17 + " of the 17:00 sessions went to the wrong module");
+ok(wrong19 === 0, "pin: " + wrong19 + " of the 19:00 sessions went to the wrong module");
+
+// Unpinned weekend slots stay automatic, so both modules can appear there.
+var wkendMods = {};
+for (i = 0; i < pp2.sessions.length; i++) {
+    var dow3 = Schedule.parseYmd(pp2.sessions[i].date).getDay();
+    if (dow3 === 0 || dow3 === 6) wkendMods[pp2.sessions[i].moduleId] = 1;
+}
+ok(wkendMods.aaa && wkendMods.bbb,
+   "pin: unpinned weekend slots should still be shared between modules");
+
+// Everything still gets planned.
+ok(pp2.warnings.length === 0, "pin: pinning should not create a shortfall here");
+ok(requiredCount(pp2.sessions) === 60,
+   "pin: expected all 60 required topics, got " + requiredCount(pp2.sessions));
+
+// Editing a time must not silently move which subject sits where. Times are
+// sorted with their module attached; sorting them apart would swap the pins.
+set({
+    days: [1],
+    weekday: { count: 2, minutes: 60, topics: 1,
+               times: ['20:00', '08:00'], mods: ['bbb', 'aaa'] },
+    weekend: { count: 1, minutes: 60, topics: 1, times: ['09:00'], mods: [''] },
+    exams: { aaa: daysFromToday(200), bbb: daysFromToday(200) }
+});
+var pj = Schedule.plan();
+var early = null, later = null;
+for (i = 0; i < pj.sessions.length && (!early || !later); i++) {
+    if (pj.sessions[i].time === '08:00' && !early) early = pj.sessions[i];
+    if (pj.sessions[i].time === '20:00' && !later) later = pj.sessions[i];
+}
+ok(early && early.moduleId === 'aaa',
+   "pin: the 08:00 pin was lost when the times were sorted, got " + (early ? early.moduleId : 'nothing'));
+ok(later && later.moduleId === 'bbb',
+   "pin: the 20:00 pin was lost when the times were sorted, got " + (later ? later.moduleId : 'nothing'));
+
+// A slot pinned to a module whose exam has already gone must not sit empty.
+set({
+    days: [1, 2, 3, 4, 5],
+    weekday: { count: 2, minutes: 60, topics: 1,
+               times: ['17:00', '19:00'], mods: ['aaa', ''] },
+    weekend: { count: 1, minutes: 60, topics: 1, times: ['09:00'], mods: [''] },
+    exams: { aaa: daysFromToday(-3), bbb: daysFromToday(90) }
+});
+var pfall = Schedule.plan();
+var after17 = 0;
+for (i = 0; i < pfall.sessions.length; i++) {
+    if (pfall.sessions[i].time === '17:00') after17++;
+}
+ok(after17 > 0,
+   "pin: slots pinned to a finished module were left empty instead of going to the other one");
+for (i = 0; i < pfall.sessions.length; i++) {
+    if (pfall.sessions[i].moduleId === 'aaa') { fail("pin: a module past its exam still took a slot"); break; }
+}
+
+// Pinning must be counted as capacity. If every weekday belongs to one module,
+// the other only has weekends and should say so rather than pretending to fit.
+set({
+    days: [0, 1, 2, 3, 4, 5, 6],
+    weekday: { count: 1, minutes: 60, topics: 1, times: ['17:00'], mods: ['bbb'] },
+    weekend: { count: 1, minutes: 60, topics: 1, times: ['09:00'], mods: ['bbb'] },
+    exams: { aaa: daysFromToday(40), bbb: daysFromToday(40) }
+});
+var pcap = Schedule.plan();
+var aaaW = null;
+for (i = 0; i < pcap.warnings.length; i++) if (pcap.warnings[i].moduleId === 'aaa') aaaW = pcap.warnings[i];
+ok(aaaW !== null && aaaW.short === 30,
+   "pin: a module pinned out of every slot should report all 30 topics short, got " +
+   (aaaW ? aaaW.short : 'no warning'));
+ok(countFor(pcap.sessions, 'aaa') === 0, "pin: a module pinned out of every slot still got sessions");
+
+// ── 20. pass names ───────────────────────────────────────────────
 
 ok(Schedule.passName(1) === 'First pass', "names: pass 1");
 ok(Schedule.passName(2) === 'Revision', "names: pass 2");

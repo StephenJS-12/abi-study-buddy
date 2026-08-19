@@ -168,3 +168,19 @@ details[open] > summary > .nnav-caret { transform: rotate(90deg); }
 .nnav-topic-emoji { flex: none; font-size: .9rem; line-height: 1; }
 .nnav-topic-title { flex: 1; min-width: 0; overflow-wrap: break-word; }
 .nnav-badge { flex: none; font-size: .7rem; }
+
+/* A lesson the course has that the app has not been written for yet. Not a
+   button: there is nothing to open. Shown so the contents page describes the
+   real week rather than the part of it that happens to exist. */
+.nnav-lesson-empty {
+  display: flex;
+  align-items: baseline;
+  gap: .4rem;
+  padding: .45rem .5rem;
+  margin: 2px 0 2px .55rem;
+  font-size: .82rem;
+  line-height: 1.35;
+  color: var(--muted);
+  font-style: italic;
+}
+.nnav-lesson-empty .nnav-lesson-no { color: var(--muted); font-style: normal; }

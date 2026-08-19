@@ -1050,15 +1050,26 @@ var App = (function () {
 
     if (w.lessons && w.lessons.length) {
       list = w.lessons.map(function (L) {
-        var done = 0;
-        for (var i = 0; i < L.topicIds.length; i++) {
-          if (Store.hasBadge(L.topicIds[i])) done++;
-        }
         var n = L.topicIds.length;
+
+        /* A lesson the course has but the app has not been written for yet.
+           Shown rather than hidden: leaving it out would tell her the week is
+           three lessons long and she had finished it. */
+        if (!n) {
+          return '<div class="pick is-empty">' +
+            '<span class="pick-emoji">' + L.emoji + '</span>' +
+            '<span class="pick-body">' +
+              '<span class="pick-title">Lesson ' + L.number + ': ' + esc(L.title) + '</span>' +
+              '<span class="pick-meta">Not in here yet — Stephen is still writing this one.</span>' +
+            '</span></div>';
+        }
+
+        var done = 0;
+        for (var i = 0; i < n; i++) if (Store.hasBadge(L.topicIds[i])) done++;
         var meta = n + (n === 1 ? ' topic' : ' topics') +
                    (done ? ' · ' + done + ' badged 🏅' : '');
         return pickRow('data-nlesson', String(L.number), L.emoji,
-                       'Lesson ' + L.number + ': ' + L.title, meta, done === n && n > 0);
+                       'Lesson ' + L.number + ': ' + L.title, meta, done === n);
       }).join('');
       head = w.lessons.length + ' lessons';
     } else {

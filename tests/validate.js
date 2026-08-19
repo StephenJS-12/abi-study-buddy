@@ -6,7 +6,7 @@ var base = REPO + "\\public\\js\\data\\";
 // window.MODULE_CONTENT.inba.weeks. Both are validated by exactly the same
 // rules below - a business question with a broken answer index should fail as
 // loudly as a maths one.
-var files = ["week1.js", "week2.js", "week3.js", "week4.js",
+var files = ["week1.js", "week2.js", "week3.js", "week4.js", "lessons.js",
              "inba\\week1.js", "inba\\week2.js", "inba\\week3.js", "inba\\week4.js",
              "inba\\week5.js", "inba\\week6.js",
              // Derived from the example papers. Must load after the weeks: it

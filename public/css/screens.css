@@ -903,3 +903,12 @@ button.bigbox:hover {
   .matchrow { grid-template-columns: 1fr auto; }
   .matchrow-pick { grid-column: 1 / -1; }
 }
+
+/* A lesson listed on the week's contents that has no topics yet. Same shape as
+   a pick row so the list still reads as one list, but plainly not tappable. */
+.pick.is-empty {
+  cursor: default;
+  opacity: .62;
+  border-style: dashed;
+}
+.pick.is-empty .pick-title { font-style: italic; }

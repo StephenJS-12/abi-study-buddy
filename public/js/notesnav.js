@@ -80,6 +80,18 @@ var NotesNav = (function () {
             if (lt) topicRows += topicRow(lt, current);
           }
 
+          /* A lesson the course has that the app has not yet been written for.
+             Listed flat and greyed rather than as something she can open, so
+             the contents shows the real shape of the week without offering her
+             a page that does not exist. */
+          if (!lesson.topicIds.length) {
+            body += '<div class="nnav-lesson-empty">' +
+              '<span class="nnav-lesson-no">L' + lesson.number + '</span>' +
+              '<span class="nnav-label">' + esc(lesson.title) + '</span>' +
+            '</div>';
+            continue;
+          }
+
           body += '<details class="nnav-lesson"' + (open.lessons[lKey] ? ' open' : '') +
             ' data-nnav-lesson="' + esc(lKey) + '">' +
             '<summary>' +

@@ -77,10 +77,26 @@ var Calendar = (function () {
     for (var i = 0; i < mods.length; i++) colourOf[mods[i].id] = PALETTE[i % PALETTE.length];
   }
 
-  /* Assigned on demand as well as during a render, because the dashboard asks
-     for a module's colour on screens the calendar has never drawn on. Left to
-     the render alone, every module on the home screen came out the same. */
+  /* A module's colour on the calendar.
+   *
+   * If she has picked a colour for the module, that is the answer — a chip for
+   * business should be the colour business is, on the calendar and on the
+   * dashboard alike, or the two screens are telling her different things.
+   *
+   * The palette below is only the fallback for a module still on the default,
+   * and it exists so that two undecided modules are still told apart.
+   *
+   * Assigned on demand as well as during a render, because the dashboard asks
+   * for a module's colour on screens the calendar has never drawn on. Left to
+   * the render alone, every module on the home screen came out the same. */
   function hue(moduleId) {
+    if (moduleId && typeof Themes !== 'undefined') {
+      var chosen = Themes.get(moduleId);
+      if (chosen) {
+        var s = Themes.swatch(chosen);
+        return { name: chosen, ink: s.ink, tint: s.tint, edge: s.edge };
+      }
+    }
     if (!colourOf) assignColours(typeof Modules !== 'undefined' ? Modules.ready() : []);
     return colourOf[moduleId] || PALETTE[0];
   }
@@ -389,12 +405,10 @@ var Calendar = (function () {
           ' aria-pressed="' + (ev.done ? 'true' : 'false') + '"' +
           ' title="' + (ev.done ? 'Mark as not done' : 'Mark as done') + '">' +
           (ev.done ? '✓' : '') + '</button>' +
-        '<span class="cal-item-body">' +
+        '<button class="cal-item-body" type="button" data-evedit="' + esc(ev.id) + '">' +
           '<span class="cal-item-title">' + t.emoji + ' ' + esc(ev.name) + '</span>' +
           '<span class="cal-item-pass">' + esc(t.name) + '</span>' +
-        '</span>' +
-        '<button class="cal-evdel" type="button" data-evdel="' + esc(ev.id) + '"' +
-          ' aria-label="Remove">×</button>' +
+        '</button>' +
       '</div>' +
     '</div>';
   }
@@ -828,10 +842,10 @@ var Calendar = (function () {
       });
     });
 
-    each('[data-evdel]', function (b) {
+    each('[data-evedit]', function (b) {
       b.addEventListener('click', function () {
-        Planner.removeEvent(b.getAttribute('data-evdel'));
-        again();
+        var id = b.getAttribute('data-evedit');
+        Dashboard.openEdit(id, function () { keepScroll = window.pageYOffset || 0; redraw(); });
       });
     });
 

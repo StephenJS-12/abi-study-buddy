@@ -159,9 +159,12 @@ for (var t = 0; t < THEMES.length; t++) {
     w('}');
     w('');
 
+    /* ink / tint / edge are what a calendar chip needs — the strong colour,
+       the pale fill and the border between them. accent is for the swatch
+       ring in the picker. */
     swatches.push("    { id: '" + th.id + "', name: '" + th.name + "', " +
         "ink: '" + hex(primary['600']) + "', tint: '" + hex(primary['100']) + "', " +
-        "accent: '" + hex(accent['400']) + "' }");
+        "edge: '" + hex(primary['200']) + "', accent: '" + hex(accent['400']) + "' }");
 }
 
 var fso = new ActiveXObject("Scripting.FileSystemObject");

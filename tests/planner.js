@@ -327,6 +327,52 @@ try { lastModal.onConfirm(); } catch (e) { threw = true; }
 ok(threw || saved.events.length === 0,
    "addbox: confirming with no form should fail loudly or do nothing, not save junk");
 
+// ── 10. editing an event ─────────────────────────────────────────
+// Tapping an event opens it. Everything about it can be changed, including
+// which module it is filed against — an event on the wrong subject is exactly
+// what editing is for, so the picker is offered here even inside a module.
+
+reset();
+var toEdit = Planner.addEvent({ name: 'Draft title', date: day(3), time: '09:00', type: 'test', moduleId: 'aaa' });
+
+Dashboard.openEdit(toEdit.id, function () {});
+ok(lastModal !== null, "edit: the editor did not open");
+ok(String(lastModal.body).indexOf('id="evMod"') >= 0,
+   "edit: the module must be changeable when editing — that is what editing is for");
+ok(String(lastModal.body).indexOf('value="Draft title"') >= 0,
+   "edit: the form did not come up filled in with the event's name");
+ok(String(lastModal.body).indexOf('value="' + day(3) + '"') >= 0,
+   "edit: the form did not come up filled in with the event's date");
+ok(String(lastModal.body).indexOf('value="09:00"') >= 0,
+   "edit: the form did not come up filled in with the event's time");
+ok(/value="test"\s+selected|value="test" selected/.test(String(lastModal.body)),
+   "edit: the event's type was not pre-selected");
+
+fillForm('Final title', day(6), '', 'assignment', '');
+lastModal.onConfirm();
+ok(saved.events.length === 1, "edit: editing created a second event instead of changing the first");
+var after = saved.events[0];
+ok(after.id === toEdit.id, "edit: the event lost its identity");
+ok(after.name === 'Final title', "edit: the name was not changed");
+ok(after.date === day(6), "edit: the date was not changed");
+ok(after.time === '', "edit: clearing the time did not take");
+ok(after.type === 'assignment', "edit: the type was not changed");
+ok(after.moduleId === '', "edit: moving it off a module did not take");
+
+/* Editing must not disturb whether it is done. */
+reset();
+var dun = Planner.addEvent({ name: 'Handed in', date: day(1) });
+Planner.setEventDone(dun.id, true);
+Dashboard.openEdit(dun.id, function () {});
+fillForm('Handed in late', day(1), '', 'assignment', '');
+lastModal.onConfirm();
+ok(saved.events[0].done !== '', "edit: editing a completed event marked it undone");
+
+/* An event that no longer exists must not open an editor at all. */
+lastModal = null;
+Dashboard.openEdit('gone-forever', function () {});
+ok(lastModal === null, "edit: opened an editor for an event that does not exist");
+
 // ── report ───────────────────────────────────────────────────────
 
 WScript.Echo("Dashboard model checked:");

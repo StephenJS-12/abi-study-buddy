@@ -25,19 +25,19 @@ var Themes = (function () {
      can never drift from the theme it represents. Regenerate both together
      with tests/_gentheme.js. */
   var LIST = [
-    { id: '',         name: 'Default',      ink: '#8B6DD9', tint: '#EBE0FF', accent: '#FF9EC4' },
-    { id: 'navy',     name: 'Dark blue',    ink: '#597AD4', tint: '#E0E9FF', accent: '#9EE5FF' },
-    { id: 'sky',      name: 'Light blue',   ink: '#2F85B6', tint: '#E0F4FF', accent: '#A1FDF0' },
-    { id: 'forest',   name: 'Dark green',   ink: '#2F8E65', tint: '#E3FDF1', accent: '#C6FAA3' },
-    { id: 'meadow',   name: 'Light green',  ink: '#30913D', tint: '#E3FDE6', accent: '#E1FDA1' },
-    { id: 'maroon',   name: 'Maroon',       ink: '#C55E6F', tint: '#FCE3E8', accent: '#FDBFA1' },
-    { id: 'coral',    name: 'Light red',    ink: '#D15A4D', tint: '#FFE3E0', accent: '#FF9EC2' },
-    { id: 'sunshine', name: 'Yellow',       ink: '#9A7C28', tint: '#FFF7E0', accent: '#FFCB9E' },
-    { id: 'grape',    name: 'Dark purple',  ink: '#AD5FCE', tint: '#F5E2FD', accent: '#FDA1E4' },
-    { id: 'lavender', name: 'Light purple', ink: '#946EBF', tint: '#EFE6FA', accent: '#F0ADF0' },
-    { id: 'rose',     name: 'Pink',         ink: '#D25184', tint: '#FFE0ED', accent: '#E5A5F8' },
-    { id: 'ocean',    name: 'Ocean green',  ink: '#2B8D86', tint: '#E2FDFC', accent: '#A1DBFD' },
-    { id: 'davy',     name: 'Davy grey',    ink: '#847C92', tint: '#EFEDF2', accent: '#CCC4D9' }
+    { id: '',         name: 'Default',      ink: '#8B6DD9', tint: '#EBE0FF', edge: '#D9C7FA', accent: '#FF9EC4' },
+    { id: 'navy',     name: 'Dark blue',    ink: '#597AD4', tint: '#E0E9FF', edge: '#C7D4FA', accent: '#9EE5FF' },
+    { id: 'sky',      name: 'Light blue',   ink: '#2F85B6', tint: '#E0F4FF', edge: '#C7E7FA', accent: '#A1FDF0' },
+    { id: 'forest',   name: 'Dark green',   ink: '#2F8E65', tint: '#E3FDF1', edge: '#CBF6E3', accent: '#C6FAA3' },
+    { id: 'meadow',   name: 'Light green',  ink: '#30913D', tint: '#E3FDE6', edge: '#CBF6D0', accent: '#E1FDA1' },
+    { id: 'maroon',   name: 'Maroon',       ink: '#C55E6F', tint: '#FCE3E8', edge: '#F5CCD3', accent: '#FDBFA1' },
+    { id: 'coral',    name: 'Light red',    ink: '#D15A4D', tint: '#FFE3E0', edge: '#FACCC7', accent: '#FF9EC2' },
+    { id: 'sunshine', name: 'Yellow',       ink: '#9A7C28', tint: '#FFF7E0', edge: '#FAECC7', accent: '#FFCB9E' },
+    { id: 'grape',    name: 'Dark purple',  ink: '#AD5FCE', tint: '#F5E2FD', edge: '#EAC9F8', accent: '#FDA1E4' },
+    { id: 'lavender', name: 'Light purple', ink: '#946EBF', tint: '#EFE6FA', edge: '#DFD0F1', accent: '#F0ADF0' },
+    { id: 'rose',     name: 'Pink',         ink: '#D25184', tint: '#FFE0ED', edge: '#FAC7DB', accent: '#E5A5F8' },
+    { id: 'ocean',    name: 'Ocean green',  ink: '#2B8D86', tint: '#E2FDFC', edge: '#C9F8F4', accent: '#A1DBFD' },
+    { id: 'davy',     name: 'Davy grey',    ink: '#847C92', tint: '#EFEDF2', edge: '#DFDCE5', accent: '#CCC4D9' }
   ];
 
   function all() { return LIST; }

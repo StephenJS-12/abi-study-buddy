@@ -1556,7 +1556,10 @@ var App = (function () {
     modal: modal,
     setCrumb: setCrumb,
     refreshPoints: refreshPoints,
-    openTopic: openTopic
+    openTopic: openTopic,
+    /* So a dialog can add a button of its own — the event editor puts Remove
+       beside Save — and still close the modal when it fires. */
+    closeModal: closeModal
   };
 })();
 

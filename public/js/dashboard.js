@@ -142,15 +142,13 @@ var Dashboard = (function () {
         ' aria-pressed="' + (ev.done ? 'true' : 'false') + '"' +
         ' title="' + (ev.done ? 'Mark as not done' : 'Mark as done') + '">' +
         (ev.done ? '✓' : '') + '</button>' +
-      '<span class="mini-body">' +
+      '<button class="mini-body" type="button" data-evedit="' + esc(ev.id) + '">' +
         '<span class="mini-name">' + t.emoji + ' ' + esc(ev.name) + '</span>' +
         '<span class="mini-meta">' + esc(t.name) +
           (ev.time ? ' · ' + esc(ev.time) : '') +
           (mod ? ' · ' + esc(mod) : '') +
         '</span>' +
-      '</span>' +
-      '<button class="mini-del" type="button" data-evdel="' + esc(ev.id) + '"' +
-        ' aria-label="Remove">×</button>' +
+      '</button>' +
     '</div>';
   }
 
@@ -206,76 +204,136 @@ var Dashboard = (function () {
      Shared by the dashboard and the main calendar, so the same box appears
      wherever the + is pressed. */
 
-  function openAdd(scope, onSaved) {
+  /* The form, shared by adding and editing so the two can never drift apart
+     about what an event is. `lockedModule` is a module id when the module is
+     already decided and must not be asked for; null when it must. */
+  function formHtml(ev, lockedModule) {
     var mods = typeof Modules !== 'undefined' ? Modules.ready() : [];
-    var locked = !(scope === null || scope === undefined);
+    var i;
 
     var typeOpts = '';
-    for (var i = 0; i < Planner.TYPES.length; i++) {
+    for (i = 0; i < Planner.TYPES.length; i++) {
       var t = Planner.TYPES[i];
-      typeOpts += '<option value="' + esc(t.id) + '">' + t.emoji + ' ' + esc(t.name) + '</option>';
+      typeOpts += '<option value="' + esc(t.id) + '"' +
+        (ev.type === t.id ? ' selected' : '') + '>' + t.emoji + ' ' + esc(t.name) + '</option>';
     }
 
     /* Adding from inside a module, the module is already decided — offering a
        list she could pick the wrong entry from is a way to file an assignment
        under the wrong subject and not notice. It is shown, not editable, so
-       she can still see where it is going. */
+       she can still see where it is going. Editing always offers the list,
+       because moving a thing that was filed wrongly is the point of editing. */
     var modField;
-    if (locked) {
-      var m = typeof Modules !== 'undefined' ? Modules.get(scope) : null;
+    if (lockedModule !== null && lockedModule !== undefined) {
+      var m = typeof Modules !== 'undefined' ? Modules.get(lockedModule) : null;
       modField = '<label class="ev-field"><span>Module</span>' +
-        '<span class="ev-fixed">' + esc(m ? m.code : scope) + '</span></label>';
+        '<span class="ev-fixed">' + esc(m ? m.code : lockedModule) + '</span></label>';
     } else {
-      var modOpts = '<option value="">No module</option>';
-      for (var k = 0; k < mods.length; k++) {
-        modOpts += '<option value="' + esc(mods[k].id) + '">' + esc(mods[k].code) + '</option>';
+      var modOpts = '<option value=""' + (!ev.moduleId ? ' selected' : '') + '>No module</option>';
+      for (i = 0; i < mods.length; i++) {
+        modOpts += '<option value="' + esc(mods[i].id) + '"' +
+          (ev.moduleId === mods[i].id ? ' selected' : '') + '>' + esc(mods[i].code) + '</option>';
       }
       modField = '<label class="ev-field"><span>Module</span>' +
         '<select id="evMod">' + modOpts + '</select></label>';
     }
+
+    return '<div class="ev-form">' +
+      '<label class="ev-field ev-field-wide"><span>Name</span>' +
+        '<input id="evName" type="text" maxlength="120" autocomplete="off" ' +
+          'placeholder="e.g. Assignment 2 due" value="' + esc(ev.name || '') + '"></label>' +
+      '<label class="ev-field"><span>Date</span>' +
+        '<input id="evDate" type="date" value="' + esc(ev.date || '') + '"></label>' +
+      '<label class="ev-field"><span>Time <i>(optional)</i></span>' +
+        '<input id="evTime" type="time" value="' + esc(ev.time || '') + '"></label>' +
+      '<label class="ev-field"><span>Type</span>' +
+        '<select id="evType">' + typeOpts + '</select></label>' +
+      modField +
+    '</div>';
+  }
+
+  /* Keeps the confirm button honest while she types. */
+  function watchForm(okBtn) {
+    var name = document.getElementById('evName');
+    var date = document.getElementById('evDate');
+    function check() {
+      okBtn.disabled = !name.value.replace(/^\s+|\s+$/g, '') || !date.value;
+    }
+    name.addEventListener('input', check);
+    date.addEventListener('change', check);
+    setTimeout(function () { name.focus(); }, 80);
+    check();
+  }
+
+  function readForm(lockedModule) {
+    var pick = document.getElementById('evMod');
+    return {
+      name: document.getElementById('evName').value,
+      date: document.getElementById('evDate').value,
+      time: document.getElementById('evTime').value,
+      type: document.getElementById('evType').value,
+      /* No picker when the module was already decided: the scope IS the
+         answer. */
+      moduleId: (lockedModule !== null && lockedModule !== undefined)
+        ? lockedModule : (pick ? pick.value : '')
+    };
+  }
+
+  function openAdd(scope, onSaved) {
+    var locked = (scope === null || scope === undefined) ? null : scope;
 
     App.modal({
       title: 'Add to the calendar',
       body:
         '<p class="ev-hint">Assignments, tests, classes — anything with a date that is not ' +
         'a study session. These never have study sessions created for them.</p>' +
-        '<div class="ev-form">' +
-          '<label class="ev-field ev-field-wide"><span>Name</span>' +
-            '<input id="evName" type="text" maxlength="120" autocomplete="off" ' +
-              'placeholder="e.g. Assignment 2 due"></label>' +
-          '<label class="ev-field"><span>Date</span>' +
-            '<input id="evDate" type="date" value="' + esc(Schedule.todayYmd()) + '"></label>' +
-          '<label class="ev-field"><span>Time <i>(optional)</i></span>' +
-            '<input id="evTime" type="time"></label>' +
-          '<label class="ev-field"><span>Type</span>' +
-            '<select id="evType">' + typeOpts + '</select></label>' +
-          modField +
-        '</div>',
+        formHtml({ date: Schedule.todayYmd(), type: 'assignment' }, locked),
       confirmLabel: 'Add it',
       confirmClass: 'btn-primary',
       confirmDisabled: true,
+      onOpen: function (box, okBtn) { watchForm(okBtn); },
+      onConfirm: function () {
+        Planner.addEvent(readForm(locked));
+        if (onSaved) onSaved();
+      }
+    });
+  }
+
+  /* Tapping an event opens it. Everything about it can be changed, including
+     which module it belongs to — an event filed against the wrong subject is
+     exactly the thing editing exists to fix. */
+  function openEdit(id, onSaved) {
+    var ev = Planner.findEvent(id);
+    if (!ev) return;
+    var t = Planner.typeOf(ev.type);
+
+    App.modal({
+      title: 'Edit ' + t.emoji + ' ' + ev.name,
+      body: formHtml(ev, null),
+      confirmLabel: 'Save',
+      confirmClass: 'btn-primary',
       onOpen: function (box, okBtn) {
-        var name = document.getElementById('evName');
-        var date = document.getElementById('evDate');
-        function check() {
-          okBtn.disabled = !name.value.replace(/^\s+|\s+$/g, '') || !date.value;
-        }
-        name.addEventListener('input', check);
-        date.addEventListener('change', check);
-        setTimeout(function () { name.focus(); }, 80);
-        check();
+        watchForm(okBtn);
+
+        /* Removing lives in here rather than as a cross on the chip. The chip
+           is a few millimetres across and now opens this box when tapped;
+           putting an irreversible action right beside a routine one, at that
+           size, is a lost assignment waiting to happen. */
+        var actions = box.querySelector('.modal-actions');
+        if (!actions) return;
+        var del = document.createElement('button');
+        del.type = 'button';
+        del.className = 'btn btn-danger ev-remove';
+        del.textContent = 'Remove';
+        del.addEventListener('click', function () {
+          Planner.removeEvent(id);
+          App.closeModal();
+          if (onSaved) onSaved();
+        });
+        actions.insertBefore(del, actions.firstChild);
       },
       onConfirm: function () {
-        var pick = document.getElementById('evMod');
-        Planner.addEvent({
-          name: document.getElementById('evName').value,
-          date: document.getElementById('evDate').value,
-          time: document.getElementById('evTime').value,
-          type: document.getElementById('evType').value,
-          /* No picker when it was opened from inside a module: the scope IS
-             the answer. */
-          moduleId: locked ? scope : (pick ? pick.value : '')
-        });
+        Planner.updateEvent(id, readForm(null));
         if (onSaved) onSaved();
       }
     });
@@ -302,10 +360,9 @@ var Dashboard = (function () {
       });
     });
 
-    each('[data-evdel]', function (b) {
+    each('[data-evedit]', function (b) {
       b.addEventListener('click', function () {
-        Planner.removeEvent(b.getAttribute('data-evdel'));
-        redraw();
+        openEdit(b.getAttribute('data-evedit'), redraw);
       });
     });
 
@@ -359,6 +416,7 @@ var Dashboard = (function () {
     init: init,
     html: html,
     bind: bind,
-    openAdd: openAdd
+    openAdd: openAdd,
+    openEdit: openEdit
   };
 })();

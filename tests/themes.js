@@ -59,6 +59,7 @@ for (var i = 0; i < LIST.length; i++) {
     seenName[t.name] = 1;
     if (!/^#[0-9A-F]{6}$/.test(t.ink))    fail("catalogue: " + t.name + " has a bad ink swatch");
     if (!/^#[0-9A-F]{6}$/.test(t.tint))   fail("catalogue: " + t.name + " has a bad tint swatch");
+    if (!/^#[0-9A-F]{6}$/.test(t.edge))   fail("catalogue: " + t.name + " has a bad edge swatch");
     if (!/^#[0-9A-F]{6}$/.test(t.accent)) fail("catalogue: " + t.name + " has a bad accent swatch");
 }
 
@@ -158,6 +159,10 @@ for (i = 1; i < LIST.length; i++) {         // 0 is the default, which has no bl
        varIn(block, '--lilac-600'));
     ok(varIn(block, '--lilac-100') === th.tint,
        "swatch: " + th.name + " tint does not match the theme's --lilac-100");
+    /* The calendar draws its event and session chips from ink/tint/edge, so a
+       drift here would show a business chip in the wrong subject's colour. */
+    ok(varIn(block, '--lilac-200') === th.edge,
+       "swatch: " + th.name + " edge does not match the theme's --lilac-200");
     ok(varIn(block, '--pink-400') === th.accent,
        "swatch: " + th.name + " accent does not match the theme's --pink-400");
 }
@@ -200,6 +205,54 @@ Themes.apply('');
 ok(document.body.className.indexOf('mtheme-') < 0,
    "apply: leaving a module did not clear its colour (" + document.body.className + ")");
 ok(document.body.className.indexOf('at-home') >= 0, "apply: clearing the theme removed an unrelated class");
+
+// ── the calendar must use the colour she chose ───────────────────
+// An event chip for business should be the colour business IS. When the
+// calendar had its own fixed palette, a module themed ocean green had pink
+// chips on its own dashboard, and the two screens disagreed.
+
+var Modules = {
+    ready: function () {
+        return [{ id: 'mabu', code: 'MABU01-5', accent: 1 }, { id: 'inba', code: 'INBA01-5', accent: 2 }];
+    },
+    contentFor: function () { return { weeks: [] }; },
+    get: function (id) { return { id: id, code: id.toUpperCase() }; }
+};
+
+eval(read(REPO + "\\public\\js\\calendar.js"));
+
+savedThemes = {};
+var a = Calendar.hueFor('mabu'), b = Calendar.hueFor('inba');
+ok(a.ink !== b.ink,
+   "calendar: two modules with no colour chosen must still be told apart, both came out " + a.ink);
+
+savedThemes = { mabu: 'forest' };
+var picked = Calendar.hueFor('mabu');
+var forest = Themes.swatch('forest');
+ok(picked.ink === forest.ink,
+   "calendar: a chip for a module should use the colour she chose (" + forest.ink +
+   "), got " + picked.ink);
+ok(picked.tint === forest.tint, "calendar: the chip fill does not follow the chosen colour");
+ok(picked.edge === forest.edge, "calendar: the chip border does not follow the chosen colour");
+
+/* And the module still on the default keeps a palette colour of its own. */
+var other = Calendar.hueFor('inba');
+ok(other.ink !== picked.ink,
+   "calendar: an undecided module took the same colour as one that had been chosen");
+
+/* Every theme must be usable as a chip: all three parts present and distinct
+   from each other, or the border and fill would vanish into one another. */
+for (i = 0; i < LIST.length; i++) {
+    savedThemes = { mabu: LIST[i].id };
+    var c = Calendar.hueFor('mabu');
+    if (!c.ink || !c.tint || !c.edge) {
+        fail("calendar: " + LIST[i].name + " does not give a usable chip colour");
+        continue;
+    }
+    if (c.ink === c.tint || c.tint === c.edge) {
+        fail("calendar: " + LIST[i].name + " has a chip whose parts are the same colour");
+    }
+}
 
 // ── report ───────────────────────────────────────────────────────
 

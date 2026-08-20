@@ -1256,6 +1256,184 @@ window.WEEK_DATA.push({
     ]
   },
 
+  /* ═══════════════════════ VENN DIAGRAMS ═══════════════════════ */
+  {
+    id: 'w3-venn',
+    title: 'Venn Diagrams',
+    emoji: '⭕',
+    summary: 'Drawing the sample space, so "or" and "and" stop being words and become areas.',
+    notes: [
+      {
+        heading: 'A picture of the sample space',
+        emoji: '🖼️',
+        html:
+          '<p>A <b>Venn diagram</b> is a simple visual tool for showing how sets or events relate to each other. ' +
+          'The whole picture is just two things:</p>' +
+          '<ul class="tickly">' +
+          '<li>The <b>rectangle</b> is the sample space — every possible outcome. It is usually labelled S or E.</li>' +
+          '<li>A <b>circle</b> inside it is one event — the outcomes you are interested in.</li>' +
+          '</ul>' +
+          '<p>Which leaves one more region for free: everything inside the rectangle but <b>outside</b> the circle. ' +
+          'That is the <b>complement</b> — "not A".</p>' +
+          '<div class="svgfig">' +
+          '<svg viewBox="0 0 420 200" role="img" aria-label="A rectangle labelled S containing one circle labelled A; the area outside the circle is not A">' +
+          '<rect x="20" y="20" width="380" height="160" rx="8" fill="#EBE0FF" stroke="#8B6DD9" stroke-width="2.5"/>' +
+          '<text x="34" y="42" font-size="15" font-weight="700" fill="#4A3457">S</text>' +
+          '<circle cx="160" cy="100" r="66" fill="#FFE1EE" stroke="#F0669F" stroke-width="2.5"/>' +
+          '<text x="160" y="107" text-anchor="middle" font-size="20" font-weight="700" fill="#4A3457">A</text>' +
+          '<text x="320" y="100" text-anchor="middle" font-size="14" font-weight="700" fill="#6E5C7C">not A</text>' +
+          '<text x="320" y="120" text-anchor="middle" font-size="12" fill="#6E5C7C">the complement</text>' +
+          '</svg><figcaption>One event, and everything that is not it</figcaption></div>' +
+          '<p>Because those two regions together are the whole rectangle, ' +
+          '<b>P(A) + P(not A) = 1</b> — which is the complement rule you already know, now visible.</p>'
+      },
+      {
+        heading: 'Two events, and the three questions',
+        emoji: '🔗',
+        html:
+          '<p>One circle is a definition. <b>Two</b> circles are where a Venn diagram starts earning its keep, because ' +
+          'the picture answers the questions the words make confusing.</p>' +
+          '<div class="svgfig">' +
+          '<svg viewBox="0 0 420 210" role="img" aria-label="Two overlapping circles A and B inside a rectangle, with the overlap labelled A and B">' +
+          '<rect x="15" y="15" width="390" height="180" rx="8" fill="#EBE0FF" stroke="#8B6DD9" stroke-width="2.5"/>' +
+          '<text x="29" y="37" font-size="15" font-weight="700" fill="#4A3457">S</text>' +
+          '<circle cx="165" cy="105" r="72" fill="#FFE1EE" stroke="#F0669F" stroke-width="2.5" opacity=".75"/>' +
+          '<circle cx="255" cy="105" r="72" fill="#D7F6EB" stroke="#34A98A" stroke-width="2.5" opacity=".75"/>' +
+          '<text x="112" y="112" text-anchor="middle" font-size="20" font-weight="700" fill="#4A3457">A</text>' +
+          '<text x="308" y="112" text-anchor="middle" font-size="20" font-weight="700" fill="#4A3457">B</text>' +
+          '<text x="210" y="102" text-anchor="middle" font-size="12" font-weight="700" fill="#4A3457">A and B</text>' +
+          '<text x="210" y="120" text-anchor="middle" font-size="11" fill="#6E5C7C">the overlap</text>' +
+          '</svg><figcaption>The overlap is the outcomes that are in both events at once</figcaption></div>' +
+          '<div class="tablewrap"><table class="dtable">' +
+          '<tr><th>In words</th><th>On the diagram</th></tr>' +
+          '<tr><td><b>A and B</b></td><td>Only the overlap — outcomes in both circles</td></tr>' +
+          '<tr><td><b>A or B</b></td><td>Everything inside either circle, counting the overlap <b>once</b></td></tr>' +
+          '<tr><td><b>not A</b></td><td>Everything in the rectangle outside circle A</td></tr>' +
+          '</table></div>' +
+          '<div class="keybox"><b>Mutually exclusive</b> events are the ones whose circles <b>do not touch</b>. ' +
+          'There is no overlap, so P(A and B) = 0 and there is nothing to subtract.</div>' +
+          '<p>That last row is the whole reason the addition law has a "− P(A and B)" on the end, and why it ' +
+          'disappears when events are mutually exclusive. The next two topics are those laws; this is the picture ' +
+          'they are describing.</p>'
+      },
+      {
+        heading: 'Drawing one for a real question',
+        emoji: '✏️',
+        html:
+          '<p><i>Of 100 cyclists at an E-Bike SA event, 62 own a road bike, 45 own a mountain bike, and 21 own both.</i></p>' +
+          '<p>Fill the overlap <b>first</b>, then work outwards — the number given for each circle is the whole ' +
+          'circle, overlap included.</p>' +
+          '<div class="worked"><div class="worked-title">Filling the regions</div>' +
+          '<div class="solstep"><div class="solstep-lab">Both</div>' +
+          '<div class="solstep-val">21 — straight into the overlap</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Road bike only</div>' +
+          '<div class="solstep-val">62 − 21 = 41</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Mountain bike only</div>' +
+          '<div class="solstep-val">45 − 21 = 24</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Inside a circle at all</div>' +
+          '<div class="solstep-val">41 + 21 + 24 = 86</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Neither — outside both</div>' +
+          '<div class="solstep-val">100 − 86 = 14</div></div></div>' +
+          '<div class="watchout"><b>Do not put 62 in the road-bike-only region.</b> The 62 already includes the 21 who ' +
+          'own both. Filling the overlap first and subtracting is what stops those 21 being counted twice.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'w3v1', type: 'mcq', marks: 2,
+        prompt: 'On a Venn diagram, what does the <b>rectangle</b> around the circles represent?',
+        options: [
+          'The sample space — every possible outcome',
+          'The event you are interested in',
+          'The complement of the event',
+          'The probability of the event'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The rectangle', val: 'Bounds everything that could happen' },
+          { lab: 'The circles inside it', val: 'Are the events' },
+          { lab: 'Answer', val: 'The sample space', final: true }
+        ],
+        why: 'Which is why the areas inside the rectangle must add to 1 — nothing can happen that is outside it.'
+      },
+      {
+        id: 'w3v2', type: 'mcq', marks: 2,
+        prompt: 'What does the area <b>inside the rectangle but outside circle A</b> represent?',
+        options: [
+          'The complement of A — everything that is not A',
+          'The overlap between A and another event',
+          'Nothing; it is empty space',
+          'The sample space'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Inside A', val: 'The event happens' },
+          { lab: 'Inside the box but outside A', val: 'The event does not happen' },
+          { lab: 'Answer', val: 'The complement, "not A"', final: true }
+        ],
+        why: 'Those two regions are the whole rectangle between them, so P(A) + P(not A) = 1. The complement rule is just this picture written down.'
+      },
+      {
+        id: 'w3v3', type: 'mcq', marks: 2,
+        prompt: 'Two circles on a Venn diagram <b>do not overlap at all</b>. What does that tell you about the events?',
+        options: [
+          'They are mutually exclusive — they cannot both happen',
+          'They are independent of each other',
+          'They are equally likely',
+          'One of them is certain to happen'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'No overlap', val: 'No outcome is in both events' },
+          { lab: 'So they cannot both happen', val: 'P(A and B) = 0' },
+          { lab: 'Answer', val: 'Mutually exclusive', final: true }
+        ],
+        why: 'Mutually exclusive and independent are different ideas that are easy to confuse. This one is about whether the circles touch; independence is about whether one event changes the odds of the other.'
+      },
+      {
+        id: 'w3v4', type: 'numeric', marks: 3,
+        prompt: 'Of 75 members at a club, 47 take a spinning class, 38 take a strength class and 19 take both. How many take <b>only</b> the spinning class?',
+        answer: 28, tol: 0.01,
+        solution: [
+          { lab: 'The 47 includes', val: 'The 19 who take both' },
+          { lab: 'Subtract the overlap', val: '47 − 19' },
+          { lab: 'Answer', val: '28', final: true }
+        ],
+        why: 'Fill the overlap first, then work outwards. Reading 47 as "spinning only" is the single most common mistake with these, and it double-counts 19 people.'
+      },
+      {
+        id: 'w3v5', type: 'numeric', marks: 3,
+        prompt: 'Same club: 75 members, 47 take spinning, 38 take strength, 19 take both. How many take <b>neither</b> class?',
+        answer: 9, tol: 0.01,
+        solution: [
+          { lab: 'Spinning only', val: '47 − 19 = 28' },
+          { lab: 'Strength only', val: '38 − 19 = 19' },
+          { lab: 'Inside a circle at all', val: '28 + 19 + 19 = 66' },
+          { lab: 'Answer', val: '75 − 66 = 9', final: true }
+        ],
+        why: '47 + 38 = 85, which is more members than the club has — because the 19 have been counted twice. Subtracting the overlap once brings it back to 66.'
+      },
+      {
+        id: 'w3v6', type: 'mcq', marks: 2,
+        prompt: 'Which region of a two-circle Venn diagram represents <b>A or B</b>?',
+        options: [
+          'Everything inside either circle, with the overlap counted once',
+          'Only the overlap where the circles meet',
+          'Everything outside both circles',
+          'The two circles added together, overlap counted twice'
+        ],
+        answer: 0,
+        solution: [
+          { lab: '"Or" means', val: 'A happens, or B does, or both' },
+          { lab: 'That is', val: 'The whole shaded area of both circles' },
+          { lab: 'Counted once', val: 'Because a person in the overlap is still one person' },
+          { lab: 'Answer', val: 'Either circle, overlap once', final: true }
+        ],
+        why: 'The last option is exactly the mistake the addition law\'s "− P(A and B)" exists to correct. Adding the two circles counts the overlap twice; subtracting it once puts that right.'
+      }
+    ]
+  },
+
   /* ═══════════════════════ ADDITION LAWS ═══════════════════════ */
   {
     id: 'w3-add',

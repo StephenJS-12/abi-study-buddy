@@ -7,11 +7,11 @@
  *
  * LESSONS WITH NO TOPICS ARE DECLARED ANYWAY
  *
- *   Week 1 has five lessons in the course and three of them in the app. The
- *   two that are missing are listed here with no topics rather than left out,
- *   so the contents page shows the shape of the actual week. Leaving them out
- *   would tell her Week 1 has three lessons and she had finished it, which is
- *   the one thing worse than an empty row.
+ *   One lesson is still unwritten — Week 1 Lesson 4, on turning words into
+ *   equations. It is listed here with no topics rather than left out, so the
+ *   contents page shows the shape of the actual week. Leaving it out would tell
+ *   her Week 1 has four lessons and she had finished it, which is the one thing
+ *   worse than an empty row.
  *
  *   validate.js still checks that every topic lands in exactly one lesson, so
  *   an empty lesson cannot be used to quietly hide one.
@@ -33,14 +33,16 @@
         topics: ['w1-powers', 'w1-exprules', 'w1-decay'] },
       /* NOT YET WRITTEN. Milpark's 4.1 to 4.3: turning words into solvable
          equations, then one-step and two-step equations. Nothing in the app
-         mentions equations at all. */
+         mentions equations at all. Deferred deliberately — Abi is not worried
+         about it for now. */
       { number: 4, title: 'Codifying words into equations to solve basic business problems',
         emoji: '🧩', topics: [] },
-      /* NOT YET WRITTEN. 5.1 is covered inside the Rounding topic, but 5.3 to
-         5.5 — the more complex checks, and the multiplication and division
-         checks — are not. */
       { number: 5, title: 'Reasonability checks using fractions, decimals and rounding',
-        emoji: '🧠', topics: [] }
+        emoji: '🧠',
+        /* 5.1 and 5.2 also live inside the Rounding topic in Lesson 2, where
+           they were first met. This is 5.3 to 5.5 — the multiplication and
+           division checks, which are where decimals actually catch people. */
+        topics: ['w1-reason'] }
     ],
 
     'week2': [
@@ -49,7 +51,7 @@
         topics: ['w2-convert', 'w2-rbp'] },
       { number: 2, title: 'Introduction to business uses of percentages',
         emoji: '📈',
-        topics: ['w2-change', 'w2-overhead'] },
+        topics: ['w2-change', 'w2-overhead', 'w2-variance'] },
       { number: 3, title: 'Use of percentages to determine discount amounts',
         emoji: '🏷️',
         topics: ['w2-discount'] },
@@ -67,7 +69,7 @@
         topics: ['w3-spread', 'w3-percentile', 'w3-sd', 'w3-skew'] },
       { number: 3, title: 'Introduction to probability',
         emoji: '🎲',
-        topics: ['w3-prob', 'w3-add', 'w3-mult'] },
+        topics: ['w3-prob', 'w3-venn', 'w3-add', 'w3-mult'] },
       { number: 4, title: 'Expected value and decision-making',
         emoji: '⚖️',
         topics: ['w3-ev'] }

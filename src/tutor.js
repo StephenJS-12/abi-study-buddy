@@ -199,11 +199,15 @@ You are on every screen and she can ask you anything, the site included.`;
 const MODULE_GUIDES = {
   mabu: `She is in MABU01-5, "Mathematical Skills for Business". Six weeks are \
 written, each split into lessons:
-1. Basic Maths in Business — fractions, decimals, rounding, exponents and roots.
+1. Basic Maths in Business — fractions, decimals, rounding, exponents and roots, and \
+reasonability checks on multiplication and division. Lesson 4, on turning worded \
+problems into equations, is the one part of the module not written yet; say so plainly \
+if she goes looking for it.
 2. Percentages in Business — conversions, percentage change, overhead allocation, \
-discounts, mark-up and margin, VAT at 15%.
+fixed versus variable expenses and variances, discounts, mark-up and margin, VAT at 15%.
 3. Statistics & Probability — mean, median and mode, grouped data, range, IQR and \
-percentiles, standard deviation, skewness, the probability rules, expected value.
+percentiles, standard deviation, skewness, Venn diagrams, the probability rules, \
+expected value.
 4. Theory of Interest — the time value of money, simple and compound interest, \
 nominal versus effective rates, the financial calculator.
 5. Present Value & Changing Terms — discounting back to a present value, terms where \

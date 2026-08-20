@@ -1307,6 +1307,216 @@ window.WEEK_DATA.push({
         why: 'Fixed rand or unit amounts change by the same size every period — that is linear, not exponential. The battery is exponential, but it is decay.'
       }
     ]
+  },
+
+  /* ═══════════════════════ REASONABILITY CHECKS ═══════════════════════ */
+  {
+    id: 'w1-reason',
+    title: 'Reasonability Checks',
+    emoji: '🧠',
+    summary: 'Approximating an answer in your head, so a misplaced decimal point cannot get past you.',
+    notes: [
+      {
+        heading: 'What a reasonability check is for',
+        emoji: '🎯',
+        html:
+          '<p>A calculator does exactly what it is told. If the decimal point goes in the wrong place, it will hand ' +
+          'back a confident answer ten times too big and say nothing about it.</p>' +
+          '<div class="keybox">A <b>reasonability check</b> is a rough answer worked out with simpler numbers. ' +
+          'Compare it to the answer you were given: they should be close. If they are not, something needs ' +
+          'investigating.</div>' +
+          '<p>You already do the easy half of this — rounding to check an addition. Multiplication and division are ' +
+          'where decimals genuinely trip people up, so those are what this topic covers.</p>'
+      },
+      {
+        heading: 'Checking a multiplication',
+        emoji: '✖️',
+        html:
+          '<div class="keybox"><b>1.</b> Round each number to its <b>first non-zero digit</b> from the left.<br>' +
+          '<b>2.</b> Multiply the two rounded numbers, ignoring the decimals for now.<br>' +
+          '<b>3.</b> Put the decimal point back — count the decimal places in the rounded numbers.</div>' +
+          '<div class="worked"><div class="worked-title">Worked example — painting a wall</div>' +
+          '<div class="solstep"><div class="solstep-lab">The job</div>' +
+          '<div class="solstep-val">A wall 7.4 m long and 3.764 m high. How many square metres?</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">The calculator says</div>' +
+          '<div class="solstep-val">278.536 m² — which feels like far too much</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Round both</div>' +
+          '<div class="solstep-val">7.4 → 7 &nbsp;and&nbsp; 3.764 → 4</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Multiply</div>' +
+          '<div class="solstep-val">7 × 4 = 28</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Decimal point</div>' +
+          '<div class="solstep-val">Neither rounded number had decimals, so nothing to move</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">So the answer should be near</div>' +
+          '<div class="solstep-val">28 m² — not 278.536. Redoing it carefully gives <b>27.8536 m²</b></div></div></div>' +
+          '<div class="watchout"><b>That check was worth real money.</b> Ordering paint for 278.536 m² would have ' +
+          'bought ten times what the wall needs.</div>'
+      },
+      {
+        heading: 'When the rounded numbers do have decimals',
+        emoji: '📍',
+        html:
+          '<p>Step 3 earns its place as soon as one of the numbers is small.</p>' +
+          '<div class="worked"><div class="worked-title">Worked example — 0.089 × 61.18</div>' +
+          '<div class="solstep"><div class="solstep-lab">Round both</div>' +
+          '<div class="solstep-val">0.089 → 0.09 &nbsp;and&nbsp; 61.18 → 60, which is 6 × 10</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Multiply, decimals ignored</div>' +
+          '<div class="solstep-val">9 × 6 × 10 = 54 × 10 = 540</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Put the point back</div>' +
+          '<div class="solstep-val">0.09 × 60 has 2 decimal places, so move 2 places into 540</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Approximation</div>' +
+          '<div class="solstep-val">5.40</div></div></div>' +
+          '<p>The exact answer is <b>5.44502</b> — within one percent of the approximation, which is all a ' +
+          'reasonability check is ever asked to be.</p>'
+      },
+      {
+        heading: 'Checking a division',
+        emoji: '➗',
+        html:
+          '<div class="keybox"><b>1.</b> Write the division as a fraction.<br>' +
+          '<b>2.</b> Multiply top and bottom by a power of ten, until the <b>bottom</b> has at least one digit to ' +
+          'the left of the decimal point.<br>' +
+          '<b>3.</b> Round the bottom to its first non-zero digit.<br>' +
+          '<b>4.</b> Round the top to something that divides neatly by the new bottom.<br>' +
+          '<b>5.</b> Divide.</div>' +
+          '<div class="worked"><div class="worked-title">Worked example — filling lubricant bottles</div>' +
+          '<div class="solstep"><div class="solstep-lab">The job</div>' +
+          '<div class="solstep-val">61.18 litres in the tank, 0.089 litres into each bottle. How many bottles?</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">The calculator says</div>' +
+          '<div class="solstep-val">687.41 — so about 687 bottles. Is that plausible?</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">As a fraction</div>' +
+          '<div class="solstep-val">61.18 ÷ 0.089</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">× 100 top and bottom</div>' +
+          '<div class="solstep-val">6118 ÷ 8.9</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Round the bottom</div>' +
+          '<div class="solstep-val">8.9 → 9</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Round the top to suit</div>' +
+          '<div class="solstep-val">6118 → 6300, because 9 divides into 63</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Divide</div>' +
+          '<div class="solstep-val">6300 ÷ 9 = <b>700</b></div></div></div>' +
+          '<p>700 against 687 is thirteen bottles apart, so the original calculation was fine. This time the check ' +
+          'confirmed the answer rather than catching a mistake — which is the more common outcome, and still worth ' +
+          'the thirty seconds.</p>' +
+          '<div class="watchout"><b>A misprint in the notes.</b> Step 2 of this example is printed as ' +
+          '"61.81 × 100". It is <b>61.18</b> — the digits are transposed. Their own answer of 687.41 comes from ' +
+          '61.18; 61.81 ÷ 0.089 would be 694.49.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'w1rc1', type: 'mcq', marks: 2,
+        prompt: 'What is a <b>reasonability check</b>?',
+        options: [
+          'A rough answer worked out from simpler numbers, to compare against the real one',
+          'Working the calculation out a second time on the calculator',
+          'Rounding the final answer to a sensible number of decimal places',
+          'Checking that the answer has the right units'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Simplify the numbers', val: 'So the sum can be done in your head' },
+          { lab: 'Compare', val: 'The approximation against the answer given' },
+          { lab: 'Answer', val: 'A rough answer from simpler numbers', final: true }
+        ],
+        why: 'Redoing it on the calculator is not a check — the same wrong keystroke usually happens twice. The point of approximating is that it uses a different method.'
+      },
+      {
+        id: 'w1rc2', type: 'numeric', marks: 3,
+        prompt: 'Approximate <b>8.6 × 4.13</b> by rounding each number to its first non-zero digit from the left.',
+        answer: 36, tol: 0.01,
+        solution: [
+          { lab: 'Round', val: '8.6 → 9 and 4.13 → 4' },
+          { lab: 'Multiply', val: '9 × 4' },
+          { lab: 'Answer', val: '36', final: true }
+        ],
+        why: 'The real answer is 35.518, so the approximation is within half a unit. Its job is not to be exact — it is to tell you whether the figure on your screen is even the right size.'
+      },
+      {
+        id: 'w1rc3', type: 'numeric', marks: 3,
+        prompt: 'Now calculate <b>8.6 × 4.13</b> exactly, to three decimal places.',
+        answer: 35.518, tol: 0.0005,
+        solution: [
+          { lab: 'Multiply', val: '8.6 × 4.13' },
+          { lab: 'Answer', val: '35.518', final: true }
+        ],
+        why: 'Against the approximation of 36, this is clearly right. An answer of 355.18 would be ten times too big — the decimal point one place out, which is the easiest mistake to make and the hardest to spot without a check.'
+      },
+      {
+        id: 'w1rc4', type: 'steps', marks: 5,
+        scenario: 'You need a quick check on 0.062 × 47.5.',
+        prompt: 'Approximate it using the three steps.',
+        steps: [
+          {
+            q: 'Round 0.062 to its first non-zero digit from the left.',
+            answer: 0.06, tol: 0.001,
+            explain: 'The first non-zero digit is the 6, in the hundredths place. 0.062 rounds to 0.06.'
+          },
+          {
+            q: 'Round 47.5 to its first non-zero digit from the left.',
+            answer: 50, tol: 0.5,
+            explain: 'The first non-zero digit is the 4, in the tens place. 47.5 rounds up to 50.'
+          },
+          {
+            q: 'Multiply the two rounded numbers. Give the approximation to two decimal places.',
+            answer: 3.00, tol: 0.02,
+            explain: 'Ignoring decimals: 6 × 5 × 10 = 300. There are 2 decimal places in 0.06 × 50, so move 2 places: 3.00.'
+          }
+        ],
+        solution: [
+          { lab: 'Round', val: '0.062 → 0.06, 47.5 → 50' },
+          { lab: 'Multiply', val: '6 × 5 × 10 = 300' },
+          { lab: 'Replace the point', val: '2 decimal places → 3.00' },
+          { lab: 'Approximation', val: '3.00', final: true }
+        ],
+        why: 'The exact answer is 2.945, so the approximation is out by under two percent. Where a check like this earns its keep is when the screen says 29.45 or 0.2945.'
+      },
+      {
+        id: 'w1rc5', type: 'numeric', marks: 4,
+        prompt: 'A drum holds 48.36 litres and each container takes 0.079 litres. Approximate the number of containers, using the five steps.',
+        answer: 600, tol: 1,
+        solution: [
+          { lab: 'As a fraction', val: '48.36 ÷ 0.079' },
+          { lab: '× 100 top and bottom', val: '4836 ÷ 7.9' },
+          { lab: 'Round the bottom', val: '7.9 → 8' },
+          { lab: 'Round the top to suit', val: '4836 → 4800, since 8 divides 48' },
+          { lab: 'Answer', val: '4800 ÷ 8 = 600 containers', final: true }
+        ],
+        why: 'The exact answer is 612.15, so 612 whole containers. Twelve apart from the approximation, which confirms the calculation rather than catching an error — the more usual outcome, and still worth the thirty seconds.'
+      },
+      {
+        id: 'w1rc6', type: 'mcq', marks: 2,
+        prompt: 'Why do you multiply top and bottom by a power of ten before approximating a division?',
+        options: [
+          'To get at least one digit to the left of the decimal point in the bottom, so it can be rounded sensibly',
+          'To make the answer bigger and easier to read',
+          'Because dividing by a decimal is not allowed',
+          'To remove the decimal from the top of the fraction'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'A denominator like 0.089', val: 'Has nothing to the left of the point to round to' },
+          { lab: '× 100', val: 'Makes it 8.9, which rounds cleanly to 9' },
+          { lab: 'Answer', val: 'So the bottom can be rounded sensibly', final: true }
+        ],
+        why: 'Multiplying top and bottom by the same number leaves the fraction unchanged, so nothing is lost. It just moves the numbers somewhere the rounding rule works.'
+      },
+      {
+        id: 'w1rc7', type: 'mcq', marks: 2,
+        prompt: 'Your approximation is 45 and the calculator says 4 512.8. What has most likely happened?',
+        options: [
+          'The decimal point is two places out',
+          'The approximation was rounded the wrong way',
+          'The calculator has rounded its answer',
+          'Nothing — an approximation can be that far out'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The two differ by', val: 'A factor of very nearly a hundred' },
+          { lab: 'A factor of a hundred', val: 'Is two decimal places' },
+          { lab: 'Answer', val: 'The point is two places out', final: true }
+        ],
+        why: 'An approximation should land within a few percent. Out by a factor of ten, a hundred, a thousand — that is always a decimal point, not rounding.'
+      }
+    ]
   }
 
   ]

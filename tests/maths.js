@@ -463,9 +463,47 @@ step("w1x3", 1, 3, "number of periods");
 step("w1x3", 2, 100 * Math.pow(1 - 0.08, 3), "percent remaining");
 chk("w1x4", 500000 * Math.pow(1.06, 4), "sales after 4 years at 6 percent");
 
+// -- Week 1 lesson 5 (reasonability checks) --------------------
+// The approximations are checked against the rule that produced them, and the
+// exact answers against the arithmetic. What makes the pair meaningful is the
+// gap between them: an approximation that is not close is not a check.
+chk("w1rc2", 9 * 4, "approximation of 8.6 x 4.13");
+chk("w1rc3", 8.6 * 4.13, "8.6 x 4.13 exactly");
+step("w1rc4", 0, roundTo(0.062, 2), "0.062 to its first non-zero digit");
+step("w1rc4", 1, Math.round(47.5 / 10) * 10, "47.5 to its first non-zero digit");
+step("w1rc4", 2, 0.06 * 50, "the approximation");
+chk("w1rc5", 4800 / 8, "approximate containers from 4800 / 8");
+
+/* Not stored answers — the property that makes each check worth doing. An
+   approximation more than a few percent out would be telling her nothing. */
+var approxChecks = [
+    ["multiplication, 8.6 x 4.13", 9 * 4, 8.6 * 4.13],
+    ["multiplication, 0.062 x 47.5", 0.06 * 50, 0.062 * 47.5],
+    ["division, 48.36 / 0.079", 4800 / 8, 48.36 / 0.079]
+];
+var approxProblems = [];
+for (var ac = 0; ac < approxChecks.length; ac++) {
+    var off = Math.abs(approxChecks[ac][1] - approxChecks[ac][2]) / approxChecks[ac][2];
+    if (off > 0.05) {
+        approxProblems.push("reasonability: the " + approxChecks[ac][0] +
+            " approximation is " + Math.round(off * 1000) / 10 +
+            "% out, which is too far to be a useful check");
+    }
+}
+
+// -- Week 2 lesson 2.5 (variances) -----------------------------
+chk("w2v5", (5 / 4) * 100, "flour used as a percentage of the flour planned");
+
+// -- Week 3 lesson 3.2 (Venn diagrams) -------------------------
+// 62 road, 45 mountain, 21 both, out of 100.
+chk("w3v4", 47 - 19, "spinning class only");
+chk("w3v5", 75 - ((47 - 19) + 19 + (38 - 19)), "neither class");
+
 var fails = [], checked = 0;
-/* The balloon property checks above, which had nowhere to report to until now. */
-fails = fails.concat(balloonProblems);
+/* Property checks from above, which had nowhere to report to until now — see
+   the note beside balloonProblems for why they are collected rather than
+   pushed straight in. */
+fails = fails.concat(balloonProblems).concat(approxProblems);
 for (var e = 0; e < expect.length; e++) {
     var it = expect[e], q = Q[it.id];
     if (!q) { fails.push("MISSING QUESTION " + it.id); continue; }

@@ -477,6 +477,207 @@ window.WEEK_DATA.push({
 
   /* ───────────────────────────────────────────────────────── */
   {
+    id: 'w2-variance',
+    title: 'Expenses & Variances',
+    emoji: '🧁',
+    summary: 'Which costs move with output, and what to do when the actual bill is not the planned one.',
+    notes: [
+      {
+        heading: 'What an overhead actually is',
+        emoji: '💡',
+        html:
+          '<p>E-Bike SA is thinking about selling protein muffins next to the bikes. Making a muffin is not just ' +
+          'mixing ingredients — there is electricity for the oven, rent for the kitchen, wages for whoever bakes ' +
+          'them. Which raises the question the last topic assumed: what <i>is</i> an overhead?</p>' +
+          '<div class="keybox"><b>Overhead expenses</b> are all the costs needed to produce or sell a product that ' +
+          'are <b>not part of the product itself</b>.</div>' +
+          '<ul class="tickly">' +
+          '<li>Rent for the store or the baking area</li>' +
+          '<li>Electricity for the ovens and the lights</li>' +
+          '<li>Security costs</li>' +
+          '<li>Salaries for cleaners and support staff</li>' +
+          '</ul>' +
+          '<p>The flour and the protein powder go <i>into</i> the muffin, so they are not overheads. The oven that ' +
+          'bakes it is.</p>'
+      },
+      {
+        heading: 'Fixed and variable',
+        emoji: '⚖️',
+        html:
+          '<p>The second split is about what happens when output changes.</p>' +
+          '<div class="tablewrap"><table class="dtable">' +
+          '<tr><th></th><th>What it does</th><th>Examples</th></tr>' +
+          '<tr><td><b>Fixed</b></td><td>Stays the same every month however many muffins you bake</td>' +
+          '<td>Rent, insurance, salaries</td></tr>' +
+          '<tr><td><b>Variable</b></td><td>Rises and falls with how much you produce</td>' +
+          '<td>Ingredients, electricity, water</td></tr>' +
+          '</table></div>' +
+          '<div class="watchout">Bake twice as many muffins and the ingredients bill roughly doubles while the rent ' +
+          'does not move. That is the whole distinction, and it is why doubling output never doubles total cost.</div>'
+      },
+      {
+        heading: 'Recipes are ratios',
+        emoji: '🥣',
+        html:
+          '<p>A baker explains that the recipes are ratios and they matter: the oil-to-water ratio for bread dough ' +
+          'must be <b>1:5 litres</b>. Mistakes happen.</p>' +
+          '<div class="worked"><div class="worked-title">One litre of oil too many</div>' +
+          '<div class="solstep"><div class="solstep-lab">Planned</div>' +
+          '<div class="solstep-val">1 litre of oil to 5 litres of water</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Actual</div>' +
+          '<div class="solstep-val">2 litres of oil to 5 litres of water</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Oil used</div>' +
+          '<div class="solstep-val">Double the plan — 200% of what the recipe called for</div></div></div>' +
+          '<ul class="tickly">' +
+          '<li>The texture of the bread changes</li>' +
+          '<li>The batch costs more than budgeted</li>' +
+          '<li>Wastage occurs and the profit shrinks</li>' +
+          '</ul>'
+      },
+      {
+        heading: 'Variances — planned against actual',
+        emoji: '📊',
+        html:
+          '<div class="keybox">A <b>variance</b> is the difference between what you planned and what actually ' +
+          'happened.</div>' +
+          '<p>They turn up everywhere: in the ingredients used, in the electricity consumed, in the labour hours ' +
+          'worked. And every one of them is one of two things.</p>' +
+          '<div class="tablewrap"><table class="dtable">' +
+          '<tr><th>Variance</th><th>Means</th><th>Looks like</th></tr>' +
+          '<tr><td><b>Favourable</b></td><td>The difference is <b>good</b> for the business</td>' +
+          '<td>Saved money · made more profit than expected · used fewer materials without losing quality</td></tr>' +
+          '<tr><td><b>Unfavourable</b></td><td>The difference is <b>bad</b> for the business</td>' +
+          '<td>Spent more than planned · made less profit · wasted materials or produced lower quality</td></tr>' +
+          '</table></div>' +
+          '<div class="watchout"><b>Favourable is not the same as "smaller".</b> A cost coming in under budget is ' +
+          'favourable; revenue coming in under budget is not. Ask which direction is good for the business, not ' +
+          'which number is bigger.</div>' +
+          '<p>Catching a variance early helps control costs, prevents wastage and protects the profit margin. Small ' +
+          'mistakes in a ratio — a little too much oil, a little extra electricity — add up quickly.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'w2v1', type: 'mcq', marks: 2,
+        prompt: 'Which of these is an <b>overhead</b> expense for a muffin business?',
+        options: [
+          'Rent for the kitchen space',
+          'The flour in the muffins',
+          'The protein powder in the muffins',
+          'The eggs in the muffins'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'An overhead', val: 'Is needed to produce or sell, but is not part of the product' },
+          { lab: 'Flour, powder and eggs', val: 'Go into the muffin itself' },
+          { lab: 'Answer', val: 'Rent for the kitchen', final: true }
+        ],
+        why: 'The test is simple: could you point to it in the finished product? If yes it is not an overhead. The oven that baked it is; the flour inside it is not.'
+      },
+      {
+        id: 'w2v2', type: 'mcq', marks: 2,
+        prompt: 'Which of these is a <b>fixed</b> expense?',
+        options: [
+          'Insurance',
+          'Electricity for the ovens',
+          'Ingredients',
+          'Water'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Fixed', val: 'Does not change with how much is produced' },
+          { lab: 'Insurance', val: 'Is the same bill whether you bake 10 or 10 000' },
+          { lab: 'Answer', val: 'Insurance', final: true }
+        ],
+        why: 'Electricity, ingredients and water all rise with output, so all three are variable. Rent and salaries are the other two the notes name as fixed.'
+      },
+      {
+        id: 'w2v3', type: 'mcq', marks: 2,
+        prompt: 'What is a <b>variance</b>?',
+        options: [
+          'The difference between what was planned and what actually happened',
+          'The difference between fixed and variable costs',
+          'The spread of a set of numbers around their mean',
+          'The difference between the selling price and the cost price'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Planned', val: 'What the budget or recipe said' },
+          { lab: 'Actual', val: 'What really happened' },
+          { lab: 'Answer', val: 'The difference between them', final: true }
+        ],
+        why: 'Careful — "variance" also means something quite different in Week 3, where it is a measure of spread. Same word, different subject; the context tells you which.'
+      },
+      {
+        id: 'w2v4', type: 'mcq', marks: 2,
+        prompt: 'A batch is baked using <b>fewer</b> ingredients than budgeted, with no drop in quality. What kind of variance is that?',
+        options: [
+          'Favourable — it is good for the business',
+          'Unfavourable — less was produced',
+          'Neither; only money counts as a variance',
+          'It depends on how many muffins were sold'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Fewer materials, same quality', val: 'Means lower cost for the same output' },
+          { lab: 'Good for the business', val: 'So favourable' },
+          { lab: 'Answer', val: 'Favourable', final: true }
+        ],
+        why: 'The "without affecting the quality" is doing real work here. Using less flour and producing worse muffins saves money and is still unfavourable.'
+      },
+      {
+        id: 'w2v5', type: 'numeric', marks: 3,
+        prompt: 'A muffin recipe budgets <b>4 kg</b> of flour per batch. The batch actually used <b>5 kg</b>. The flour used is what <b>percentage</b> of the flour planned?',
+        suf: '%', answer: 125, tol: 0.5,
+        solution: [
+          { lab: 'Planned', val: '4 kg' },
+          { lab: 'Actual', val: '5 kg' },
+          { lab: 'As a percentage', val: '(5 ÷ 4) × 100' },
+          { lab: 'Answer', val: '125% — a quarter more than planned', final: true }
+        ],
+        why: 'A 25% overspend on one ingredient, and an unfavourable variance. Reporting it as a percentage rather than "one kilo extra" is what makes it comparable to every other line in the budget.'
+      },
+      {
+        id: 'w2v6', type: 'multi', marks: 3,
+        prompt: 'Which of these describe an <b>unfavourable</b> variance? <b>Select all that apply.</b>',
+        options: [
+          'Spent more money than planned',
+          'Made less profit than expected',
+          'Wasted materials',
+          'Used fewer materials without losing quality',
+          'Made more profit than expected'
+        ],
+        answers: [0, 1, 2],
+        solution: [
+          { lab: 'Unfavourable', val: 'The difference is bad for the business' },
+          { lab: 'Overspending, lost profit, waste', val: 'All bad' },
+          { lab: 'The other two', val: 'Are favourable' },
+          { lab: 'Answer', val: 'Overspent, less profit, wasted materials', final: true }
+        ],
+        why: 'Notice none of these is about the size of the number. It is always about the direction of the effect on the business.'
+      },
+      {
+        id: 'w2v7', type: 'mcq', marks: 2,
+        prompt: 'Why does catching a variance <b>early</b> matter?',
+        options: [
+          'It helps control costs, prevents wastage and protects profit margins',
+          'It changes the budget that was originally set',
+          'It removes the need to allocate overheads',
+          'It converts a fixed expense into a variable one'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'A variance found late', val: 'Has already cost the business money' },
+          { lab: 'Found early', val: 'The cause can be fixed before the next batch' },
+          { lab: 'Answer', val: 'Control costs, prevent wastage, protect margins', final: true }
+        ],
+        why: 'Small mistakes in a ratio add up fast. A little too much oil per batch is trivial once and expensive over a year.'
+      }
+    ]
+  },
+
+  /* ───────────────────────────────────────────────────────── */
+  {
     id: 'w2-discount',
     title: 'Trade & Cash Discounts',
     emoji: '🏷️',

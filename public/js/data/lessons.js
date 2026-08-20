@@ -97,26 +97,25 @@
         topics: ['w5-addfv', 'w5-addpv'] }
     ],
 
-    /* Milpark lists five lessons for Week 6. The notes PDF stops partway
-       through the second, at 2.6, so the last three are declared with no
-       topics — the contents page shows the real week rather than the part of
-       it that happens to exist. The Week 6 exercises paper has 21 questions
-       covering them, held back with the notes. */
+    /* All five lessons, complete. The first Week 6 PDF stopped partway through
+       Lesson 2 and the last three were declared here with no topics; the full
+       notes arrived and they are written. */
     'week6': [
       { number: 1, title: 'The basic elements and calculations of annuities',
         emoji: '🔁',
         topics: ['w6-annuity', 'w6-annfv', 'w6-anncalc', 'w6-annpmt', 'w6-annrate'] },
       { number: 2, title: 'Using an annuity to pay back a loan',
         emoji: '🏠',
-        /* 2.7 Compiling an amortisation table and 2.8 its exercise are not in
-           the notes either — the two topics here cover 2.1 to 2.6. */
-        topics: ['w6-loancost', 'w6-schedule'] },
+        topics: ['w6-loancost', 'w6-schedule', 'w6-amort'] },
       { number: 3, title: 'Interest rate changes during term of amortised loan',
-        emoji: '📉', topics: [] },
+        emoji: '📉',
+        topics: ['w6-amortfn', 'w6-ratechange'] },
       { number: 4, title: 'PMT made at the beginning of an interest period',
-        emoji: '⏰', topics: [] },
+        emoji: '⏰',
+        topics: ['w6-due'] },
       { number: 5, title: 'The effect of deposits and balloon payments on annuity TVM values',
-        emoji: '🎈', topics: [] }
+        emoji: '🎈',
+        topics: ['w6-deposit', 'w6-balloon'] }
     ]
   };
 

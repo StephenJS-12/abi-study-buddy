@@ -284,6 +284,141 @@ chk("w6s5", 26459.71 * pvFactor(0.15 / 4, 7), "outstanding after 1 of 8 quarterl
 chk("w6s6", 26459.71 * pvFactor(0.15 / 4, 6), "outstanding after 2 of 8 quarterly payments");
 chk("w6s7", 62412.60 * pvFactor(0.095, 2), "outstanding after 2 of 4 yearly payments");
 
+// ------ Week 6, lessons 2.7 to 5 ------------------------------------------------------------------------------------------------------------------------------------
+// Amortisation, rate changes, annuities due, deposits and balloons.
+//
+// The amortisation figures are built by ROLLING THE LOAN FORWARD — interest on,
+// payment off, repeat — rather than from an annuity factor. That is the table
+// the notes actually compile, and it is a genuinely different route from the
+// bracket arithmetic in the topics.
+//
+// It also matters for real: where an instalment has been rounded, the two
+// routes part company. The pickup truck's balance after 24 months is
+// R365 183.13 rolled forward and R365 183.62 by factors, because R9 262 is a
+// rounded number. AMORT on the calculator rolls forward, so that is the figure
+// the bank would quote and the one the notes give.
+
+function toCent(x) { return Math.round(x * 100) / 100; }
+
+/* One row of an amortisation table, rounded to the cent as a real one is. */
+function amortRow(bal, i, pmt) {
+    var due = toCent(bal * i);
+    return { interest: due, capital: toCent(pmt - due), close: toCent(bal + due - pmt) };
+}
+
+/* The balance after `times` payments, rounding every row. */
+function amortAfter(pv, i, pmt, times) {
+    var bal = pv;
+    for (var k = 0; k < times; k++) bal = amortRow(bal, i, pmt).close;
+    return bal;
+}
+
+/* Unrounded, for the questions built from exact instalments. */
+function rollAfter(pv, i, pmt, times) {
+    var bal = pv;
+    for (var k = 0; k < times; k++) bal = bal * (1 + i) - pmt;
+    return bal;
+}
+
+// Lesson 2.7 - 2.8, the table itself
+var iEmp = 0.1273 / 12;
+chk("w6m2", 7500 * iEmp, "interest, month 1 of the employee loan");
+chk("w6m3", amortAfter(7500, iEmp, 1925, 1), "balance after payment 1");
+step("w6m4", 0, amortRow(amortAfter(7500, iEmp, 1925, 1), iEmp, 1925).interest, "interest, month 2");
+step("w6m4", 1, amortRow(amortAfter(7500, iEmp, 1925, 1), iEmp, 1925).capital, "capital, month 2");
+step("w6m4", 2, amortAfter(7500, iEmp, 1925, 2), "balance after payment 2");
+chk("w6m5", amortAfter(10000, 0.1905 / 12, 2600, 2), "colleague's balance after payment 2");
+
+// Lesson 3 - AMORT, and reading a balance off it
+var iTruck = 0.10 / 12;
+function outstanding(pv, rate, per, years, afterYears) {
+    var i = rate / per, n = per * years;
+    return rollAfter(pv, i, annPmtFromPv(pv, i, n), per * afterYears);
+}
+chk("w6x3", outstanding(150000, 0.085, 12, 6, 3), "R150 000 at 8.5%, balance after 3 of 6 years");
+chk("w6x4", outstanding(300000, 0.094, 12, 7, 5), "R300 000 at 9.4%, balance after 5 of 7 years");
+chk("w6x5", outstanding(1500000, 0.115, 12, 20, 10), "R1.5m at 11.5%, balance after 10 of 20 years");
+chk("w6x6", outstanding(1200000, 0.105, 4, 10, 8), "R1.2m at 10.5% quarterly, after 8 of 10 years");
+
+// Lesson 3 - the new instalment after a rate change
+function afterChange(pv, rate, newRate, per, years, afterYears) {
+    var i = rate / per, n = per * years, paid = per * afterYears;
+    var owed = rollAfter(pv, i, annPmtFromPv(pv, i, n), paid);
+    return annPmtFromPv(owed, newRate / per, n - paid);
+}
+/* The truck and the home loan use the instalment the agreement states, which is
+   rounded, so they are rolled from that rather than from a recomputed PMT. */
+chk("w6k3", annPmtFromPv(rollAfter(499950, iTruck, 9262, 24), 0.1025 / 12, 48),
+    "truck: new instalment at 10.25%");
+chk("w6k4", annPmtFromPv(10442.25 * pvFactor(0.095 / 12, 60), 0.0975 / 12, 60),
+    "home loan: new instalment at 9.75%");
+chk("w6k5", afterChange(500000, 0.115, 0.110, 12, 5, 2), "R500 000, 11.5% -> 11.0%");
+chk("w6k6", afterChange(1200000, 0.120, 0.090, 12, 10, 6), "R1.2m, 12% -> 9%");
+chk("w6k7", afterChange(1600000, 0.120, 0.080, 12, 20, 5), "R1.6m, 12% -> 8%");
+
+// Lesson 4 - paid at the beginning. Cross-checked a second way: an annuity due
+// is a payment today plus an ordinary annuity one period shorter.
+function dueP(pv, rate, per, years) {
+    var i = rate / per, n = per * years;
+    return pv / (1 + pvFactor(i, n - 1));
+}
+chk("w6d3", dueP(10000, 0.10, 1, 2), "R10 000 at 10%, two payments at the start");
+chk("w6d4", dueP(1000000, 0.08, 12, 5), "R1m at 8%, monthly at the start");
+chk("w6d5", dueP(400000, 0.09, 12, 3), "R400 000 at 9%, monthly at the start");
+chk("w6d6", dueP(350000, 0.11, 12, 6), "R350 000 at 11%, monthly at the start");
+chk("w6d7", dueP(499950, 0.10, 12, 6), "the truck, paid at the start of the month");
+
+// Lesson 5 - a deposit comes off the price before anything else happens
+function financed(cost, deposit, rate, per, years) {
+    return annPmtFromPv(cost - deposit, rate / per, per * years);
+}
+chk("w6e2", financed(499950, 50000, 0.10, 12, 6), "the truck with a R50 000 deposit");
+chk("w6e3", financed(400000, 50000, 0.10, 12, 5), "R400 000 less R50 000 at 10%");
+chk("w6e4", financed(250000, 25000, 0.08, 12, 4), "R250 000 less R25 000 at 8%");
+chk("w6e5", financed(1500000, 200000, 0.09, 12, 20), "R1.5m less R200 000 at 9%");
+chk("w6e6", 1000000 - 9500 * pvFactor(0.095 / 12, 180), "deposit to keep the payment under R9 500");
+
+// Lesson 5 - a balloon. Checked by rolling the loan forward: the balance left
+// after the last instalment must BE the balloon, which is what the whole
+// arrangement means.
+function balloonPmt(cost, balloon, rate, per, years) {
+    var i = rate / per, n = per * years;
+    return annPmtFromPv(cost - balloon * Math.pow(1 + i, -n), i, n);
+}
+function balloonLeft(cost, balloon, rate, per, years) {
+    var i = rate / per, n = per * years;
+    return rollAfter(cost, i, balloonPmt(cost, balloon, rate, per, years), n);
+}
+chk("w6b2", balloonPmt(499950, 100000, 0.10, 12, 6), "the truck with a R100 000 balloon");
+chk("w6b3", balloonPmt(400000, 50000, 0.08, 12, 5), "R400 000 with a R50 000 balloon");
+chk("w6b4", balloonPmt(350000, 25000, 0.08, 12, 5), "R350 000 with a R25 000 balloon");
+chk("w6b5", balloonPmt(600000, 200000, 0.13, 12, 5), "R600 000 with a R200 000 balloon");
+chk("w6b6", balloonPmt(1200000, 500000, 0.095, 12, 5), "R1.2m with a R500 000 balloon");
+
+/* Not a stored answer — a property of the arrangement itself. If rolling one of
+   these loans forward does not leave exactly the balloon, the instalment is
+   wrong however neatly it agrees with the topic it came from.
+
+   Collected here and handed to `fails` further down rather than pushed
+   straight in: `fails` is declared in the compare section below, so at this
+   point it is hoisted but still undefined, and pushing into it would crash
+   instead of reporting — which I only found by forcing one to fail. */
+var balloonProblems = [];
+var balloonChecks = [
+    [499950, 100000, 0.10, 12, 6], [400000, 50000, 0.08, 12, 5],
+    [350000, 25000, 0.08, 12, 5], [600000, 200000, 0.13, 12, 5],
+    [1200000, 500000, 0.095, 12, 5]
+];
+for (var bq = 0; bq < balloonChecks.length; bq++) {
+    var b = balloonChecks[bq];
+    var left = balloonLeft(b[0], b[1], b[2], b[3], b[4]);
+    if (Math.abs(left - b[1]) > 0.02) {
+        balloonProblems.push("balloon: R" + b[0] + " leaves R" +
+            Math.round(left * 100) / 100 +
+            " after the last instalment, but the balloon is R" + b[1]);
+    }
+}
+
 // ------ compare ---------------------------------------------------------------------------------------------------------------------------------------------------------
 // -- Week 1 (fractions) ---------------------------------------
 function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { var t = b; b = a % b; a = t; } return a; }
@@ -329,6 +464,8 @@ step("w1x3", 2, 100 * Math.pow(1 - 0.08, 3), "percent remaining");
 chk("w1x4", 500000 * Math.pow(1.06, 4), "sales after 4 years at 6 percent");
 
 var fails = [], checked = 0;
+/* The balloon property checks above, which had nowhere to report to until now. */
+fails = fails.concat(balloonProblems);
 for (var e = 0; e < expect.length; e++) {
     var it = expect[e], q = Q[it.id];
     if (!q) { fails.push("MISSING QUESTION " + it.id); continue; }

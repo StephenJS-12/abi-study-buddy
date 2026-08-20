@@ -1135,6 +1135,942 @@ window.WEEK_DATA.push({
         why: 'Halfway through the term, more than half the debt is still there — R109 050.60 of R200 000. Early instalments are mostly interest, and that is true of every amortised loan.'
       }
     ]
+  },
+
+  /* ═══════════════════════ THE AMORTISATION TABLE ═══════════════════════ */
+  {
+    id: 'w6-amort',
+    title: 'The Amortisation Table',
+    emoji: '🧾',
+    summary: 'Row by row through a real loan: what each instalment pays for, and what is left.',
+    notes: [
+      {
+        heading: 'Four columns and a rule',
+        emoji: '📐',
+        html:
+          '<p>An <b>amortisation table</b> is the repayment schedule for a loan repaid by instalments. One row per ' +
+          'interest period, and the same three sums every row:</p>' +
+          '<div class="keybox">' +
+          '<b>1.</b> Interest for the period = opening balance × <span class="math">i</span><br>' +
+          '<b>2.</b> Capital repaid = payment − interest<br>' +
+          '<b>3.</b> Closing balance = opening + interest − payment</div>' +
+          '<p>The closing balance of one row is the opening balance of the next, which is what makes the table ' +
+          'self-checking — where two rows fail to line up, the mistake is in the row above.</p>' +
+          '<div class="watchout">Use the <b>effective rate for the period</b>, not the quoted annual one. A loan at ' +
+          '12.73% per annum compounded monthly charges 12.73 ÷ 12 = <b>1.0608% a month</b>, and that is the number ' +
+          'every row multiplies by.</div>'
+      },
+      {
+        heading: 'Worked example — the employee loan',
+        emoji: '👩‍💼',
+        html:
+          '<p>E-Bike SA lends an employee <b>R7 500</b> at 12.73% per annum compounded monthly, repaid in ' +
+          '<b>4 monthly instalments of R1 925</b> deducted from her salary at the end of each month.</p>' +
+          '<p>Before any arithmetic: 4 × R1 925 = <b>R7 700</b>, so R200 of the total is interest.</p>' +
+          '<div class="tablewrap"><table class="dtable">' +
+          '<tr><th>End of month</th><th>Balance at start</th><th>Interest at 1.0608%</th>' +
+          '<th>Payment</th><th>Interest paid</th><th>Capital paid</th><th>Balance at end</th></tr>' +
+          '<tr><td>1</td><td>7 500.00</td><td>79.56</td><td>1 925.00</td><td>79.56</td><td>1 845.44</td><td>5 654.56</td></tr>' +
+          '<tr><td>2</td><td>5 654.56</td><td>59.99</td><td>1 925.00</td><td>59.99</td><td>1 865.01</td><td>3 789.55</td></tr>' +
+          '<tr><td>3</td><td>3 789.55</td><td>40.20</td><td>1 925.00</td><td>40.20</td><td>1 884.80</td><td>1 904.75</td></tr>' +
+          '<tr><td>4</td><td>1 904.75</td><td>20.21</td><td>1 925.00</td><td>20.21</td><td>1 904.79</td><td>(0.05)</td></tr>' +
+          '<tr><td></td><td></td><td><b>199.96</b></td><td><b>7 700.00</b></td><td><b>199.96</b></td><td><b>≈7 500</b></td><td></td></tr>' +
+          '</table></div>' +
+          '<p>Look down the interest column: R79.56, R59.99, R40.20, R20.21. It falls every month, because the ' +
+          'balance it is charged on is falling. The payment never changes, so the capital column has to rise to ' +
+          'match — R1 845.44, R1 865.01, R1 884.80, R1 904.79.</p>' +
+          '<div class="watchout"><b>The last balance is −5c, not zero.</b> Every row was rounded to the cent, and ' +
+          'four rows of that adds up to a few cents. The notes say to ignore it, and they are right — but do not go ' +
+          'hunting for a mistake that is not there.</div>'
+      },
+      {
+        heading: 'Three checks worth doing every time',
+        emoji: '✅',
+        html:
+          '<ul class="tickly">' +
+          '<li>The <b>capital paid</b> column should total back to the amount borrowed.</li>' +
+          '<li>The <b>interest for the month</b> column and the <b>interest paid</b> column should agree.</li>' +
+          '<li>The final <b>closing balance</b> should be R0, or a few cents either side of it.</li>' +
+          '</ul>' +
+          '<p>All three come free once the table is built, and any one of them failing tells you a row is wrong ' +
+          'before anyone else finds out.</p>'
+      },
+      {
+        heading: 'Exercise — a colleague\'s loan',
+        emoji: '🎯',
+        html:
+          '<p><i>A bank offers a colleague R10 000 at 19.05% per annum compounded monthly, repayable in 4 equal ' +
+          'monthly instalments of R2 600 at the end of each month. Build the table. If she settles at the end of ' +
+          'the second month, what does she still owe after making that payment?</i></p>' +
+          '<div class="worked"><div class="worked-title">Solution</div>' +
+          '<div class="solstep"><div class="solstep-lab">Rate per period</div>' +
+          '<div class="solstep-val">19.05% ÷ 12 = 1.5875% a month</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Month 1</div>' +
+          '<div class="solstep-val">Interest R158.75, capital R2 441.25, balance R7 558.75</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Month 2</div>' +
+          '<div class="solstep-val">Interest R120.00, capital R2 480.00, balance <b>R5 078.75</b></div></div></div>' +
+          '<p>So settling after the second payment costs her another R5 078.75 — and saves the R121.26 of interest ' +
+          'that months 3 and 4 would have charged.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'w6m1', type: 'mcq', marks: 2,
+        prompt: 'In an amortisation table, how is the <b>capital repaid</b> in a row worked out?',
+        options: [
+          'Payment minus the interest for that period',
+          'The payment divided by the number of periods',
+          'Opening balance minus the payment',
+          'The payment minus the closing balance'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The payment does two jobs', val: 'It settles the period\'s interest first' },
+          { lab: 'Whatever is left', val: 'Comes off the capital' },
+          { lab: 'Answer', val: 'Payment − interest', final: true }
+        ],
+        why: 'Which is why the capital portion grows every period on a level instalment: the interest half shrinks as the balance falls, so more of the same payment is free to attack the debt.'
+      },
+      {
+        id: 'w6m2', type: 'numeric', marks: 3,
+        prompt: 'A loan of R7 500 is charged interest at 12.73% per annum compounded monthly. Calculate the interest for the <b>first</b> month, to two decimal places.',
+        pre: 'R', answer: 79.56, tol: 0.5,
+        solution: [
+          { lab: 'Rate per period', val: '12.73% ÷ 12 = 1.0608% a month' },
+          { lab: 'Charged on', val: 'The opening balance of R7 500' },
+          { lab: 'Answer', val: 'R7 500 × 0.010608 = R79.56', final: true }
+        ],
+        why: 'Using 12.73% here would charge a year of interest in one month — R954.75 instead of R79.56. Converting the quoted rate to the period is the first thing every row does.'
+      },
+      {
+        id: 'w6m3', type: 'numeric', marks: 3,
+        prompt: 'That loan is repaid in 4 monthly instalments of R1 925. After the first payment, what is the outstanding balance? Give your answer to two decimal places.',
+        pre: 'R', answer: 5654.56, tol: 1,
+        solution: [
+          { lab: 'Opening', val: 'R7 500.00' },
+          { lab: 'Add the interest', val: '+ R79.56' },
+          { lab: 'Subtract the payment', val: '− R1 925.00' },
+          { lab: 'Answer', val: 'R5 654.56', final: true }
+        ],
+        why: 'The other route gives the same thing: capital repaid is R1 925 − R79.56 = R1 845.44, and R7 500 − R1 845.44 = R5 654.56. Use whichever you find easier and let the other check it.'
+      },
+      {
+        id: 'w6m4', type: 'steps', marks: 5,
+        scenario: 'Continuing that loan: the balance at the start of month 2 is R5 654.56, the rate is 1.0608% a month, and the payment is R1 925.',
+        prompt: 'Complete the second row of the amortisation table.',
+        steps: [
+          {
+            q: 'What is the interest for month 2, to two decimal places?',
+            pre: 'R', answer: 59.99, tol: 0.5,
+            explain: 'R5 654.56 × 0.010608 = R59.99. Less than month 1, because the balance is smaller.'
+          },
+          {
+            q: 'How much capital does the payment repay, to two decimal places?',
+            pre: 'R', answer: 1865.01, tol: 1,
+            explain: 'R1 925.00 − R59.99 = R1 865.01 — more capital than month 1 repaid.'
+          },
+          {
+            q: 'What is the balance at the end of month 2, to two decimal places?',
+            pre: 'R', answer: 3789.55, tol: 1,
+            explain: 'R5 654.56 + R59.99 − R1 925.00 = R3 789.55.'
+          }
+        ],
+        solution: [
+          { lab: 'Interest', val: 'R5 654.56 × 0.010608 = R59.99' },
+          { lab: 'Capital', val: 'R1 925.00 − R59.99 = R1 865.01' },
+          { lab: 'Closing', val: 'R5 654.56 − R1 865.01 = R3 789.55', final: true }
+        ],
+        why: 'Compare the two rows: interest fell from R79.56 to R59.99 and capital rose from R1 845.44 to R1 865.01. Every amortised loan does this, and it is why paying a little extra early is worth so much more than paying it late.'
+      },
+      {
+        id: 'w6m5', type: 'numeric', marks: 4,
+        prompt: 'A colleague borrows R10 000 at 19.05% per annum compounded monthly, repayable in 4 monthly instalments of R2 600. She settles at the end of the second month. How much does she still owe <b>after</b> making the second payment? Give your answer to two decimal places.',
+        pre: 'R', answer: 5078.75, tol: 2,
+        solution: [
+          { lab: 'Rate per period', val: '19.05% ÷ 12 = 1.5875% a month' },
+          { lab: 'Month 1', val: 'Interest R158.75, balance R10 000 + R158.75 − R2 600 = R7 558.75' },
+          { lab: 'Month 2', val: 'Interest R120.00, balance R7 558.75 + R120.00 − R2 600 = R5 078.75' },
+          { lab: 'Answer', val: 'R5 078.75', final: true }
+        ],
+        why: 'Two rows is quick enough by hand. Twenty-four would not be — which is exactly the problem the AMORT function in the next topic exists to solve.'
+      },
+      {
+        id: 'w6m6', type: 'mcq', marks: 2,
+        prompt: 'A completed amortisation table ends with a closing balance of <b>−R0.05</b> rather than exactly R0. What does that mean?',
+        options: [
+          'Nothing — it is rounding each row to the cent, accumulated over the table',
+          'The instalment was too large and she has overpaid by 5c',
+          'A row has been calculated wrongly',
+          'The interest rate used was slightly too high'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Every row', val: 'Is rounded to the nearest cent' },
+          { lab: 'Four rows of that', val: 'Adds up to a few cents by the end' },
+          { lab: 'Answer', val: 'Rounding, and safely ignored', final: true }
+        ],
+        why: 'Worth knowing so you do not spend twenty minutes hunting a mistake that is not there. A balance of −R50 would be a different matter entirely.'
+      },
+      {
+        id: 'w6m7', type: 'mcq', marks: 2,
+        prompt: 'Which of these is <b>not</b> one of the three reasonability checks on a completed amortisation table?',
+        options: [
+          'The payment column should total the amount borrowed',
+          'The capital paid column should total the amount borrowed',
+          'The two interest columns should agree',
+          'The final closing balance should be R0 or close to it'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The payments total', val: 'Capital AND interest together' },
+          { lab: 'So they come to more', val: 'Than the amount borrowed' },
+          { lab: 'Answer', val: 'The payment column totalling the loan is not a check', final: true }
+        ],
+        why: 'In the worked example the payments total R7 700 against R7 500 borrowed. The R200 gap is the interest — which is a useful number, just not a check.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ THE AMORT FUNCTION ═══════════════════════ */
+  {
+    id: 'w6-amortfn',
+    title: 'The AMORT Function',
+    emoji: '⚙️',
+    summary: 'Reading any row of a 240-row table without building the 239 above it.',
+    notes: [
+      {
+        heading: 'Why the table stops being an option',
+        emoji: '📉',
+        html:
+          '<p>Four rows by hand is fine. Twenty-four is an afternoon. A twenty-year home loan is <b>240 rows</b>, and ' +
+          'every one is a chance to make an arithmetic slip that quietly corrupts everything below it.</p>' +
+          '<p>The calculator\'s <b>AMORT</b> function reads any row you ask for without building the ones above it.</p>' +
+          '<div class="keybox">Enter the loan as usual — P/YR, PV, PMT, FV = 0, n, I/YR — then ask AMORT for a period. ' +
+          'Pressing = steps through the values for that period: <b>principal paid</b>, <b>interest paid</b>, and the ' +
+          '<b>balance</b> at the end of it.</div>' +
+          '<div class="watchout">Everything must already be in the registers before you reach for AMORT. It reports on ' +
+          'the loan the calculator is currently holding — if PMT or FV is stale, it will happily describe a loan that ' +
+          'does not exist.</div>'
+      },
+      {
+        heading: 'The outstanding balance, from the formula',
+        emoji: '📐',
+        html:
+          '<p>Without a calculator the same figure comes from the payments still to come:</p>' +
+          '<div class="keybox"><b>Balance after k payments = PMT × [ (1 − (1 + <span class="math">i</span>)<sup>−(n−k)</sup>) ÷ ' +
+          '<span class="math">i</span> ]</b></div>' +
+          '<div class="worked"><div class="worked-title">The pickup truck, two years in</div>' +
+          '<div class="solstep"><div class="solstep-lab">The loan</div>' +
+          '<div class="solstep-val">R499 950 over 72 months at 10% p.a. monthly, PMT R9 262</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Payments left after 24</div>' +
+          '<div class="solstep-val">72 − 24 = 48</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">The bracket</div>' +
+          '<div class="solstep-val">(1 − (1.008333)<sup>−48</sup>) ÷ 0.008333 = 39.42807</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Outstanding</div>' +
+          '<div class="solstep-val">R9 262 × 39.42807 ≈ R365 183</div></div></div>' +
+          '<div class="watchout"><b>The two routes differ by about 50c here, and AMORT is the one to trust.</b> ' +
+          'R9 262 is a rounded instalment; the formula treats it as exact, while AMORT rolls the loan forward a month ' +
+          'at a time exactly as the bank does. AMORT gives R365 183.13. On an exam answer either is accepted — but ' +
+          'know which one the bank is using.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'w6x1', type: 'mcq', marks: 2,
+        prompt: 'What does the <b>AMORT</b> function on a financial calculator give you?',
+        options: [
+          'The capital paid, interest paid and outstanding balance for a chosen period',
+          'The total interest over the whole loan',
+          'The instalment needed to repay a loan',
+          'The number of payments still to come'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'You give it a period', val: 'Or a range of them' },
+          { lab: 'It steps through', val: 'Principal, interest, then balance' },
+          { lab: 'Answer', val: 'All three, for the period you asked about', final: true }
+        ],
+        why: 'It is the amortisation table on demand — any row, without the rows above it. On a 240-month loan that is the difference between a calculation and an afternoon.'
+      },
+      {
+        id: 'w6x2', type: 'mcq', marks: 2,
+        prompt: 'Before pressing AMORT, what must already be in the calculator?',
+        options: [
+          'The whole loan — P/YR, PV, PMT, FV and I/YR',
+          'Only the period number you want to look at',
+          'Only PV and the interest rate',
+          'Nothing — AMORT asks for what it needs'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'AMORT reports on', val: 'The loan the calculator is holding' },
+          { lab: 'A stale PMT or FV', val: 'Describes a loan that does not exist' },
+          { lab: 'Answer', val: 'The whole loan must be entered first', final: true }
+        ],
+        why: 'And clear the registers before entering it, or a value from the last question is part of the loan without you knowing.'
+      },
+      {
+        id: 'w6x3', type: 'numeric', marks: 4,
+        prompt: 'A client borrows R150 000.00 at 8.5% per annum compounded monthly, repayable in equal monthly payments over <b>6 years</b>. Calculate the outstanding balance after <b>3 years</b>, to two decimal places.',
+        pre: 'R', answer: 84477.85, tol: 4,
+        solution: [
+          { lab: 'Rate per period', val: '8.5% ÷ 12 = 0.00708333' },
+          { lab: 'The instalment', val: 'R150 000 ÷ 46.99422 = R2 666.76' },
+          { lab: 'Payments left', val: '72 − 36 = 36' },
+          { lab: 'The bracket', val: '(1 − (1.00708333)⁻³⁶) ÷ 0.00708333 = 31.67723' },
+          { lab: 'Answer', val: 'R2 666.76 × 31.67723 = R84 477.85', final: true }
+        ],
+        why: 'Halfway through the term and R84 477.85 of R150 000 is still owing — more than half. Early instalments are mostly interest, which is the single most useful fact about how a loan actually behaves.'
+      },
+      {
+        id: 'w6x4', type: 'numeric', marks: 4,
+        prompt: 'A client borrows R300 000.00 at 9.4% per annum compounded monthly over <b>7 years</b>. Calculate the outstanding balance after <b>5 years</b>, to two decimal places.',
+        pre: 'R', answer: 106562.16, tol: 5,
+        solution: [
+          { lab: 'Rate per period', val: '9.4% ÷ 12 = 0.00783333' },
+          { lab: 'The instalment', val: 'R300 000 over 84 months = R4 887.85' },
+          { lab: 'Payments left', val: '84 − 60 = 24' },
+          { lab: 'Answer', val: 'R4 887.85 × 21.80 = R106 562.16', final: true }
+        ],
+        why: 'Two steps every time: find the instalment from the whole loan, then discount only the payments that are left. Skipping the first step is the usual reason this comes out wrong.'
+      },
+      {
+        id: 'w6x5', type: 'numeric', marks: 5,
+        prompt: 'A client borrows R1 500 000.00 at 11.5% per annum compounded monthly over <b>20 years</b>. Calculate the outstanding balance after <b>10 years</b>, to two decimal places.',
+        pre: 'R', answer: 1137764.07, tol: 12,
+        solution: [
+          { lab: 'Rate per period', val: '11.5% ÷ 12 = 0.00958333' },
+          { lab: 'The instalment', val: 'R1 500 000 over 240 months = R15 996.44' },
+          { lab: 'Payments left', val: '240 − 120 = 120' },
+          { lab: 'Answer', val: 'R15 996.44 × 71.12867 = R1 137 764.07', final: true }
+        ],
+        why: 'Ten years of payments — R1 919 572 of them — and the debt has fallen by R362 236. That is not a mistake; at 11.5% almost the whole of an early instalment is interest. It is the most important thing anyone can know before signing a bond.'
+      },
+      {
+        id: 'w6x6', type: 'numeric', marks: 5,
+        prompt: 'A client borrows R1 200 000.00 at 10.5% per annum compounded <b>quarterly</b> over 10 years. Calculate the outstanding balance after <b>8 years</b>, to two decimal places.',
+        pre: 'R', answer: 348153.96, tol: 6,
+        solution: [
+          { lab: 'Rate per period', val: '10.5% ÷ 4 = 0.02625' },
+          { lab: 'Periods', val: '10 × 4 = 40 quarters' },
+          { lab: 'The instalment', val: 'R1 200 000 over 40 quarters = R48 815.25' },
+          { lab: 'Payments left', val: '40 − 32 = 8 quarters' },
+          { lab: 'Answer', val: 'R48 815.25 × 7.13210 = R348 153.96', final: true }
+        ],
+        why: 'Quarterly, so everything is counted in quarters: 40 periods, not 10, and 8 left, not 2. Getting that conversion right is most of the work in these questions.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ WHEN THE RATE CHANGES ═══════════════════════ */
+  {
+    id: 'w6-ratechange',
+    title: 'When the Rate Changes',
+    emoji: '📉',
+    summary: 'What happens to the instalment when the prime rate moves, and how to work out the new one.',
+    notes: [
+      {
+        heading: 'Why a rate you agreed can change',
+        emoji: '🏦',
+        html:
+          '<p>Long-term loan agreements in South Africa are usually written against the <b>prime lending rate</b> — ' +
+          '"prime less 0.75%", or a fixed rate with a clause saying it moves with prime. When the Reserve Bank moves ' +
+          'prime, your rate moves with it, by the same number of percentage points.</p>' +
+          '<p>The capital does not change and neither does the term. What changes is the interest still to come, ' +
+          'so the instalment has to be recalculated for the rest of the loan.</p>' +
+          '<div class="keybox">Two steps, and they are the "mini-loan" idea from Week 5 again:<br><br>' +
+          '<b>Step 1</b> — find the outstanding balance on the day the rate changes.<br>' +
+          '<b>Step 2</b> — that balance is the PV of a fresh loan, over the periods that remain, at the new rate. ' +
+          'Solve for PMT.</div>'
+      },
+      {
+        heading: 'Worked example — the pickup truck, two years in',
+        emoji: '🚚',
+        html:
+          '<p>R499 950 over 72 months at 10% per annum compounded monthly, instalments of R9 262. After <b>24 ' +
+          'months</b> prime rises by 0.25%, so the rate becomes <b>10.25%</b>.</p>' +
+          '<div class="worked"><div class="worked-title">Step 1 — where the loan stands</div>' +
+          '<div class="solstep"><div class="solstep-lab">Use AMORT for period 24</div>' +
+          '<div class="solstep-val">Or discount the 48 payments still to come</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Outstanding</div>' +
+          '<div class="solstep-val">R365 183.13</div></div></div>' +
+          '<div class="worked"><div class="worked-title">Step 2 — a fresh loan at the new rate</div>' +
+          '<div class="solstep"><div class="solstep-lab">PV</div><div class="solstep-val">R365 183.13</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">n</div><div class="solstep-val">48 months left</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">I/YR</div><div class="solstep-val">10.25</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">FV</div><div class="solstep-val">0</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">New instalment</div>' +
+          '<div class="solstep-val">R9 305.89</div></div></div>' +
+          '<p>A quarter of a percent costs R43.89 a month — R2 106.72 over the remaining four years, on the same ' +
+          'truck for the same term.</p>' +
+          '<div class="watchout"><b>Clear the calculator between the two steps.</b> If the old PMT of R9 262 is still ' +
+          'in the register when you solve step 2, it is treated as part of the new loan and the answer is wrong. The ' +
+          'notes flag this, and it is the mistake people actually make.</div>'
+      },
+      {
+        heading: 'Exercise — the home loan',
+        emoji: '🎯',
+        html:
+          '<p><i>An employee bought a house for R1 000 000 ten years ago on a fifteen-year loan at prime less 1%, ' +
+          'paying R10 442.25 a month. Prime was 10.5% and has not moved in those ten years. It has just risen by ' +
+          '0.25%. What will the bank deduct for the 121st instalment?</i></p>' +
+          '<div class="worked"><div class="worked-title">Solution</div>' +
+          '<div class="solstep"><div class="solstep-lab">The old rate</div>' +
+          '<div class="solstep-val">Prime 10.5% less 1% = 9.5% per annum compounded monthly</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Step 1 — balance after 120 months</div>' +
+          '<div class="solstep-val">60 payments left, so R10 442.25 × 47.61 = R497 205.93</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">The new rate</div>' +
+          '<div class="solstep-val">9.5% + 0.25% = 9.75%</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Step 2 — the new instalment</div>' +
+          '<div class="solstep-val">R497 205.93 over 60 months at 9.75% = <b>R10 503.10</b></div></div></div>' +
+          '<p>R60.85 a month more. Small on its own; R3 651 over the five years that remain.</p>' +
+          '<div class="watchout"><b>"Prime less 1%" is a sum you have to do.</b> The rate in the calculation is 9.5%, ' +
+          'never 10.5%. And when prime moves 0.25 points, the loan rate moves 0.25 points too — not by 0.25% of ' +
+          'itself.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'w6k1', type: 'mcq', marks: 2,
+        prompt: 'A loan is written at "prime less 1%" and prime is 10.5%. Prime then rises by 0.25 percentage points. What is the new rate on the loan?',
+        options: ['9.75%', '10.75%', '9.5%', '9.52%'],
+        answer: 0,
+        solution: [
+          { lab: 'The rate was', val: '10.5% − 1% = 9.5%' },
+          { lab: 'Prime moves 0.25 points', val: 'So the loan moves 0.25 points' },
+          { lab: 'Answer', val: '9.5% + 0.25% = 9.75%', final: true }
+        ],
+        why: '10.75% forgets the "less 1%". 9.52% treats the rise as 0.25% OF the rate rather than 0.25 percentage points — a different thing, and a much smaller one.'
+      },
+      {
+        id: 'w6k2', type: 'mcq', marks: 2,
+        prompt: 'When the rate changes partway through an amortised loan, what becomes the <b>present value</b> of the second calculation?',
+        options: [
+          'The outstanding balance on the day the rate changed',
+          'The original amount borrowed',
+          'The total of the payments still to come',
+          'The original amount less everything paid so far'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The rest of the loan', val: 'Is a fresh loan starting that day' },
+          { lab: 'What is borrowed on that day', val: 'Is whatever is still owed' },
+          { lab: 'Answer', val: 'The outstanding balance', final: true }
+        ],
+        why: 'The original amount less the payments made would be far too low — most of those payments were interest, not capital, and never touched the debt.'
+      },
+      {
+        id: 'w6k3', type: 'numeric', marks: 5,
+        prompt: 'R499 950 is borrowed over 72 months at 10% per annum compounded monthly, instalments of R9 262. After 24 months the rate rises to 10.25%. Calculate the new monthly instalment for the remaining term, to two decimal places.',
+        pre: 'R', answer: 9305.89, tol: 3,
+        solution: [
+          { lab: 'Step 1 — balance after 24', val: 'R365 183.13' },
+          { lab: 'Payments left', val: '72 − 24 = 48' },
+          { lab: 'Step 2 — new PV, new rate', val: 'R365 183.13 over 48 months at 10.25%' },
+          { lab: 'Answer', val: 'R9 305.89', final: true }
+        ],
+        why: 'R43.89 a month more for a quarter of a percent — R2 106.72 over the four years left. Worth knowing before signing something linked to prime.'
+      },
+      {
+        id: 'w6k4', type: 'numeric', marks: 5,
+        prompt: 'A home loan of R1 000 000 runs for 15 years at 9.5% per annum compounded monthly, with instalments of R10 442.25. After 10 years the rate rises to 9.75%. Calculate the new monthly instalment, to two decimal places.',
+        pre: 'R', answer: 10503.10, tol: 3,
+        solution: [
+          { lab: 'Step 1 — balance after 120', val: '60 payments left, R10 442.25 × 47.61 = R497 205.93' },
+          { lab: 'Step 2 — the new loan', val: 'R497 205.93 over 60 months at 9.75%' },
+          { lab: 'Answer', val: 'R10 503.10', final: true }
+        ],
+        why: 'Ten years of payments totalling R1 253 070, and R497 205.93 of the original million is still owing. The instalment rise is the small news here.'
+      },
+      {
+        id: 'w6k5', type: 'numeric', marks: 5,
+        prompt: 'A client borrows R500 000.00 at 11.5% per annum compounded monthly over 5 years. After 2 years the rate changes to 11.0%. Calculate the new monthly payment for the remaining period, to two decimal places.',
+        pre: 'R', answer: 10917.18, tol: 4,
+        solution: [
+          { lab: 'Original instalment', val: 'R500 000 over 60 months at 11.5% = R10 996.30' },
+          { lab: 'Balance after 24', val: '36 payments left, R333 463.78' },
+          { lab: 'New instalment', val: 'R333 463.78 over 36 months at 11.0%' },
+          { lab: 'Answer', val: 'R10 917.18', final: true }
+        ],
+        why: 'The rate FELL here, so the instalment falls too — R79.12 a month. Everything works the same way in both directions; only the sign of the news changes.'
+      },
+      {
+        id: 'w6k6', type: 'numeric', marks: 5,
+        prompt: 'A client borrows R1 200 000.00 at 12.0% per annum compounded monthly over 10 years. After 6 years the rate changes to 9.0%. Calculate the new monthly payment for the remaining period, to two decimal places.',
+        pre: 'R', answer: 16269.32, tol: 6,
+        solution: [
+          { lab: 'Original instalment', val: 'R1 200 000 over 120 months at 12% = R17 216.51' },
+          { lab: 'Balance after 72', val: '48 payments left, R653 779.20' },
+          { lab: 'New instalment', val: 'R653 779.20 over 48 months at 9.0%' },
+          { lab: 'Answer', val: 'R16 269.32', final: true }
+        ],
+        why: 'A three-point drop and the instalment only falls R947.19 — about 5.5%. Late in a loan most of each payment is capital, and no interest rate can discount capital.'
+      },
+      {
+        id: 'w6k7', type: 'numeric', marks: 5,
+        prompt: 'A client borrows R1 600 000.00 at 12.0% per annum compounded monthly over 20 years. After 5 years the rate changes to 8.0%. Calculate the new monthly payment for the remaining period, to two decimal places.',
+        pre: 'R', answer: 14028.11, tol: 8,
+        solution: [
+          { lab: 'Original instalment', val: 'R1 600 000 over 240 months at 12% = R17 617.38' },
+          { lab: 'Balance after 60', val: '180 payments left, R1 467 909.26' },
+          { lab: 'New instalment', val: 'R1 467 909.26 over 180 months at 8.0%' },
+          { lab: 'Answer', val: 'R14 028.11', final: true }
+        ],
+        why: 'Five years of paying R17 617.38 a month — over a million Rand — and the debt has fallen by R132 091. Early in a long loan at a high rate, the capital barely moves.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ PAYING AT THE START ═══════════════════════ */
+  {
+    id: 'w6-due',
+    title: 'Paying at the Start of the Period',
+    emoji: '⏰',
+    summary: 'An annuity due: the same loan, the same rate, a smaller instalment.',
+    notes: [
+      {
+        heading: 'One day earlier, every time',
+        emoji: '📅',
+        html:
+          '<p>Everything so far has assumed payments at the <b>end</b> of each period — an <b>ordinary annuity</b>. ' +
+          'Move them to the <b>beginning</b> and it becomes an <b>annuity due</b>.</p>' +
+          '<p>It sounds like a technicality. It is not. Every payment now arrives one full period earlier, so every ' +
+          'payment has one more period to work — and the instalment needed to clear the same debt drops.</p>' +
+          '<div class="keybox"><b>PMT<sub>due</sub> = PMT<sub>ordinary</sub> ÷ (1 + <span class="math">i</span>)</b>' +
+          '<br><br>On the calculator: press <b>BEG</b> instead of END and enter everything exactly as before.</div>' +
+          '<div class="watchout">The HP10bII defaults to <b>END</b>. It stays where you left it, so a calculation set ' +
+          'to BEG for one question will still be in BEG for the next one — and nothing on the display shouts about ' +
+          'it. Check the mode before you trust an answer.</div>'
+      },
+      {
+        heading: 'Worked example — two scenarios, one loan',
+        emoji: '⚖️',
+        html:
+          '<p><b>R10 000 at 10% per annum compounded annually, repaid in two equal annual payments.</b> Once with ' +
+          'the payments at the end of each year, once at the beginning.</p>' +
+          '<div class="tablewrap"><table class="dtable">' +
+          '<tr><th></th><th>Paid at the END</th><th>Paid at the BEGINNING</th></tr>' +
+          '<tr><td>Instalment</td><td>R5 761.90</td><td>R5 238.10</td></tr>' +
+          '<tr><td>Total paid</td><td>R11 523.80</td><td>R10 476.20</td></tr>' +
+          '<tr><td>Total interest</td><td>R1 523.81</td><td>R476.19</td></tr>' +
+          '</table></div>' +
+          '<p>Same loan, same rate, same number of payments. Paying at the start of each year cuts the instalment by ' +
+          'R523.80 and the interest by <b>more than two thirds</b>.</p>' +
+          '<p>The reason is plain once you look at the first payment. Paid at the end of year 1, it does nothing for ' +
+          'twelve months while interest accrues on the whole R10 000. Paid on day one, it cuts the balance before a ' +
+          'single day\'s interest is charged.</p>'
+      },
+      {
+        heading: 'Exercise — the truck, paid in advance',
+        emoji: '🚚',
+        html:
+          '<p><i>The dealership\'s second quote on the pickup truck keeps everything the same — R499 950 over 72 ' +
+          'months at 10% per annum compounded monthly — but the instalments are payable at the <b>beginning</b> of ' +
+          'each month. What is the new instalment?</i></p>' +
+          '<div class="worked"><div class="worked-title">Solution</div>' +
+          '<div class="solstep"><div class="solstep-lab">Ordinary instalment</div>' +
+          '<div class="solstep-val">R9 262 (the first quote)</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Rate per period</div>' +
+          '<div class="solstep-val">10% ÷ 12 = 0.008333</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Paid at the beginning</div>' +
+          '<div class="solstep-val">R9 262 ÷ 1.008333 = <b>R9 185</b></div></div></div>' +
+          '<p>R77 a month less, for paying on the 1st rather than the 31st. Over 72 months that is R5 511.</p>'
+      }
+    ],
+    questions: [
+      {
+        id: 'w6d1', type: 'mcq', marks: 2,
+        prompt: 'What is an <b>annuity due</b>?',
+        options: [
+          'An annuity whose payments are made at the beginning of each period',
+          'An annuity that is overdue',
+          'An annuity where the payments increase each period',
+          'An annuity with a final lump sum'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Ordinary', val: 'Paid at the end of each period' },
+          { lab: 'Due', val: 'Paid at the beginning' },
+          { lab: 'Answer', val: 'Payments at the beginning of each period', final: true }
+        ],
+        why: 'The name is unhelpful — nothing is late. It means the payment falls due at the start of the period rather than at its close.'
+      },
+      {
+        id: 'w6d2', type: 'mcq', marks: 2,
+        prompt: 'Two identical loans differ only in that one is paid at the beginning of each period and the other at the end. Which needs the <b>larger</b> instalment?',
+        options: [
+          'The one paid at the end',
+          'The one paid at the beginning',
+          'They are the same',
+          'It depends on the interest rate'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Paid at the beginning', val: 'Every payment works one period longer' },
+          { lab: 'So each one does more', val: 'And fewer Rand are needed' },
+          { lab: 'Answer', val: 'The one paid at the end', final: true }
+        ],
+        why: 'In the worked example: R5 761.90 at the end against R5 238.10 at the beginning. The rate matters to how big the gap is, never to which way round it goes.'
+      },
+      {
+        id: 'w6d3', type: 'numeric', marks: 4,
+        prompt: 'R10 000 is borrowed at 10% per annum compounded annually and repaid in <b>two equal annual payments made at the beginning</b> of each year. Calculate the payment, to two decimal places.',
+        pre: 'R', answer: 5238.10, tol: 2,
+        solution: [
+          { lab: 'Paid at the end it would be', val: 'R10 000 ÷ 1.735537 = R5 761.90' },
+          { lab: 'Paid at the beginning', val: 'Divide by one more period of growth' },
+          { lab: 'Answer', val: 'R5 761.90 ÷ 1.10 = R5 238.10', final: true }
+        ],
+        why: 'Total interest falls from R1 523.81 to R476.19 — less than a third — for moving two payments twelve months earlier. Timing is worth more than most people expect.'
+      },
+      {
+        id: 'w6d4', type: 'numeric', marks: 4,
+        prompt: 'A client borrows R1 000 000.00 at 8.0% per annum compounded monthly over 5 years, payable at the <b>beginning</b> of each month with the first instalment payable immediately. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 20142.11, tol: 4,
+        solution: [
+          { lab: 'Rate per period', val: '8% ÷ 12 = 0.00666667' },
+          { lab: 'Paid at the end it would be', val: 'R1 000 000 over 60 months = R20 276.39' },
+          { lab: 'Answer', val: 'R20 276.39 ÷ 1.00666667 = R20 142.11', final: true }
+        ],
+        why: '"The first instalment is payable immediately" is the phrase that tells you it is an annuity due. Look for it — it is the only thing separating this from an ordinary question.'
+      },
+      {
+        id: 'w6d5', type: 'numeric', marks: 4,
+        prompt: 'A client borrows R400 000.00 at 9.0% per annum compounded monthly over 3 years, payable at the <b>beginning</b> of each month. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 12625.20, tol: 3,
+        solution: [
+          { lab: 'Rate per period', val: '9% ÷ 12 = 0.0075' },
+          { lab: 'Paid at the end it would be', val: 'R400 000 over 36 months = R12 719.89' },
+          { lab: 'Answer', val: 'R12 719.89 ÷ 1.0075 = R12 625.20', final: true }
+        ],
+        why: 'R94.69 a month, purely from paying on the 1st. Over 36 months that is R3 408.84 — real money for a change that costs nothing.'
+      },
+      {
+        id: 'w6d6', type: 'numeric', marks: 4,
+        prompt: 'A client borrows R350 000.00 at 11.0% per annum compounded monthly over 6 years, payable at the <b>beginning</b> of each month. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 6601.41, tol: 3,
+        solution: [
+          { lab: 'Rate per period', val: '11% ÷ 12 = 0.00916667' },
+          { lab: 'Paid at the end it would be', val: 'R350 000 over 72 months = R6 661.93' },
+          { lab: 'Answer', val: 'R6 661.93 ÷ 1.00916667 = R6 601.41', final: true }
+        ],
+        why: 'The higher the rate, the more a period of timing is worth: 11% here saves 0.91% of the instalment, where 8% saved only 0.66%.'
+      },
+      {
+        id: 'w6d7', type: 'numeric', marks: 4,
+        prompt: 'A pickup truck costing R499 950 is financed over 72 months at 10% per annum compounded monthly, with instalments payable at the <b>beginning</b> of each month. Calculate the instalment, to the nearest Rand.',
+        pre: 'R', answer: 9185, tol: 3,
+        solution: [
+          { lab: 'Paid at the end', val: 'R9 262 — the dealership\'s first quote' },
+          { lab: 'Rate per period', val: '10% ÷ 12 = 0.008333' },
+          { lab: 'Answer', val: 'R9 262 ÷ 1.008333 = R9 185', final: true }
+        ],
+        why: 'The dealership\'s second quote, and the same truck at the same rate over the same term. R77 a month for paying at the start of the month instead of the end — R5 511 across the agreement.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ DEPOSITS ═══════════════════════ */
+  {
+    id: 'w6-deposit',
+    title: 'Deposits Paid Upfront',
+    emoji: '💵',
+    summary: 'Money handed over on day one never gets financed, so it never earns the lender anything.',
+    notes: [
+      {
+        heading: 'The deposit simply is not borrowed',
+        emoji: '✂️',
+        html:
+          '<p>A deposit is paid on the day the agreement is signed, at the same moment the money for the purchase ' +
+          'changes hands. So the net amount owing on day one is the price <b>less</b> the deposit — and that is the ' +
+          'present value.</p>' +
+          '<div class="keybox"><b>PV = cash price − deposit</b><br><br>Everything else is unchanged: same rate, same ' +
+          'term, same method.</div>' +
+          '<p>There is no new mathematics here at all. The only trap is reaching for the price when the question has ' +
+          'already told you a deposit is being paid.</p>'
+      },
+      {
+        heading: 'Worked example — the truck with a deposit',
+        emoji: '🚚',
+        html:
+          '<p>The dealership\'s third quote: pay <b>R50 000</b> upfront on the R499 950 truck, finance the rest over ' +
+          '72 months at 10% per annum compounded monthly.</p>' +
+          '<div class="worked"><div class="worked-title">Solution</div>' +
+          '<div class="solstep"><div class="solstep-lab">Financed</div>' +
+          '<div class="solstep-val">R499 950 − R50 000 = R449 950</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Rate and periods</div>' +
+          '<div class="solstep-val">0.008333 a month, n = 72</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Instalment</div>' +
+          '<div class="solstep-val">R8 335.70</div></div></div>' +
+          '<p>The quote said R8 336, which is the same figure rounded to the nearest Rand.</p>' +
+          '<div class="keybox"><b>Reasonability first.</b> R8 336 against R9 262 for the same truck — lower, and it ' +
+          'should be, because there is R50 000 less to finance and so less to charge interest on. A quote that came ' +
+          'back <i>higher</i> after a deposit would be worth arguing about.</div>'
+      },
+      {
+        heading: 'Exercise — working backwards to the deposit',
+        emoji: '🎯',
+        html:
+          '<p><i>A friend is buying an apartment for R1 000 000. The bank offers a 15-year loan at 9.5% per annum ' +
+          'compounded monthly, which works out at R10 442.25 a month. He wants to keep the payment <b>below ' +
+          'R9 500</b>. How much must he put down?</i></p>' +
+          '<p>This one runs backwards, and the trick is to notice which of the three numbers the calculator can find.</p>' +
+          '<div class="worked"><div class="worked-title">Solution</div>' +
+          '<div class="solstep"><div class="solstep-lab">Ask what R9 500 a month buys</div>' +
+          '<div class="solstep-val">PMT = 9 500, n = 180, I/YR = 9.5, FV = 0 → solve for PV</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">Most that can be financed</div>' +
+          '<div class="solstep-val">R909 766</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Deposit needed</div>' +
+          '<div class="solstep-val">R1 000 000 − R909 766 = <b>R90 234</b></div></div></div>' +
+          '<div class="watchout">The calculator finds the <b>PV</b>. The deposit is what is left over when you take ' +
+          'that away from the price — one subtraction the calculator will not do for you, and the step people ' +
+          'forget.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'w6e1', type: 'mcq', marks: 2,
+        prompt: 'An item costing R400 000 is bought with a R50 000 deposit and the rest financed. What is the <b>PV</b> of the loan?',
+        options: ['R350 000', 'R400 000', 'R450 000', 'R50 000'],
+        answer: 0,
+        solution: [
+          { lab: 'The deposit is paid', val: 'On day one, so it is never borrowed' },
+          { lab: 'What is owing that day', val: 'R400 000 − R50 000' },
+          { lab: 'Answer', val: 'R350 000', final: true }
+        ],
+        why: 'Using the full R400 000 is the whole mistake this topic exists to prevent, and it inflates every instalment by about 14%.'
+      },
+      {
+        id: 'w6e2', type: 'numeric', marks: 4,
+        prompt: 'A pickup truck with a cash price of R499 950 is bought with a R50 000 deposit, the balance financed over 72 months at 10% per annum compounded monthly. Calculate the monthly instalment, to two decimal places.',
+        pre: 'R', answer: 8335.70, tol: 3,
+        solution: [
+          { lab: 'Financed', val: 'R499 950 − R50 000 = R449 950' },
+          { lab: 'Rate per period', val: '10% ÷ 12 = 0.008333, n = 72' },
+          { lab: 'Answer', val: 'R449 950 ÷ 53.97867 = R8 335.70', final: true }
+        ],
+        why: 'The dealership quoted R8 336, which is this rounded to the nearest Rand. Checking a quote yourself takes a minute and is the entire point of learning this.'
+      },
+      {
+        id: 'w6e3', type: 'numeric', marks: 4,
+        prompt: 'An item with a cost price of R400 000.00 is bought with a deposit of R50 000.00, the rest financed at 10.0% per annum compounded monthly over 5 years, payable at the end of each month. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 7436.47, tol: 3,
+        solution: [
+          { lab: 'Financed', val: 'R400 000 − R50 000 = R350 000' },
+          { lab: 'Rate and periods', val: '10% ÷ 12 = 0.008333, n = 60' },
+          { lab: 'Answer', val: 'R350 000 ÷ 47.06537 = R7 436.47', final: true }
+        ],
+        why: 'Reasonability: 60 × R7 436.47 is R446 188, plus the R50 000 deposit, for a R400 000 item. About R96 000 of interest over five years at 10% is the right shape.'
+      },
+      {
+        id: 'w6e4', type: 'numeric', marks: 4,
+        prompt: 'An item with a cost price of R250 000.00 is bought with a deposit of R25 000.00, the rest financed at 8.0% per annum compounded monthly over 4 years. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 5492.91, tol: 3,
+        solution: [
+          { lab: 'Financed', val: 'R250 000 − R25 000 = R225 000' },
+          { lab: 'Rate and periods', val: '8% ÷ 12 = 0.00666667, n = 48' },
+          { lab: 'Answer', val: 'R225 000 ÷ 40.96191 = R5 492.91', final: true }
+        ],
+        why: 'A 10% deposit cut the instalment by about 10% too. Over a short term at a modest rate the two move almost together — over twenty years they do not.'
+      },
+      {
+        id: 'w6e5', type: 'numeric', marks: 5,
+        prompt: 'An item with a cost price of R1 500 000.00 is bought with a deposit of R200 000.00, the rest financed at 9.0% per annum compounded monthly over <b>20 years</b>. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 11696.44, tol: 5,
+        solution: [
+          { lab: 'Financed', val: 'R1 500 000 − R200 000 = R1 300 000' },
+          { lab: 'Rate and periods', val: '9% ÷ 12 = 0.0075, n = 240' },
+          { lab: 'Answer', val: 'R1 300 000 ÷ 111.14495 = R11 696.44', final: true }
+        ],
+        why: '240 instalments of R11 696.44 is R2 807 145, plus the deposit, for a R1 500 000 item. Over twenty years the interest costs almost as much as the thing itself.'
+      },
+      {
+        id: 'w6e6', type: 'numeric', marks: 5,
+        prompt: 'A friend buying a R1 000 000 apartment wants his monthly payment to stay below R9 500. The bank offers 9.5% per annum compounded monthly over 15 years. How much must he pay as a deposit? Give your answer to the nearest Rand.',
+        pre: 'R', answer: 90234, tol: 4,
+        solution: [
+          { lab: 'What R9 500 a month buys', val: 'PMT = 9 500, n = 180, I/YR = 9.5, FV = 0 → PV' },
+          { lab: 'Most that can be financed', val: 'R909 766' },
+          { lab: 'Answer', val: 'R1 000 000 − R909 766 = R90 234', final: true }
+        ],
+        why: 'The calculator gives you the PV; the subtraction at the end is yours. Stopping at R909 766 and calling it the deposit is the standard way to lose the marks here.'
+      },
+      {
+        id: 'w6e7', type: 'mcq', marks: 2,
+        prompt: 'You have worked out that R909 766 is the most that can be financed if the payment is to stay under R9 500. On a R1 000 000 apartment, what is that figure?',
+        options: [
+          'The present value of the loan — the deposit is the R90 234 left over',
+          'The deposit he must pay',
+          'The total he will repay over the term',
+          'The outstanding balance after the first payment'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'The calculator solved for PV', val: 'The amount the payments can service' },
+          { lab: 'Price − PV', val: 'Is what he must find himself' },
+          { lab: 'Answer', val: 'The PV; the deposit is R90 234', final: true }
+        ],
+        why: 'Worth pausing on, because both numbers are plausible-looking answers to a question about a deposit. Only one of them is money he has to hand over.'
+      }
+    ]
+  },
+
+  /* ═══════════════════════ BALLOON PAYMENTS ═══════════════════════ */
+  {
+    id: 'w6-balloon',
+    title: 'Balloon Payments',
+    emoji: '🎈',
+    summary: 'A lump sum left owing at the end — the lowest instalment, and the highest total cost.',
+    notes: [
+      {
+        heading: 'A debt the instalments never clear',
+        emoji: '🎈',
+        html:
+          '<p>Every loan so far has been fully amortised: the last instalment leaves nothing owing, so <b>FV = 0</b>. ' +
+          'A <b>balloon payment</b> — sometimes called a residual — changes that. A lump sum is deliberately left ' +
+          'owing at the end, and the instalments only have to cover the rest.</p>' +
+          '<div class="keybox">The balloon is the <b>future value</b>. Enter it in FV instead of leaving FV at zero, ' +
+          'and solve for PMT as usual.<br><br>By hand: <b>PMT = [ PV − balloon ÷ (1 + <span class="math">i</span>)<sup>n</sup> ] ' +
+          '÷ annuity factor</b></div>' +
+          '<p>The two are the same statement. Immediately after the last instalment the outstanding balance is the ' +
+          'balloon; the balloon settles it; the balance goes to zero.</p>'
+      },
+      {
+        heading: 'Worked example — the fourth quote',
+        emoji: '🚚',
+        html:
+          '<p>The dealership\'s last offer on the R499 950 truck: 72 monthly instalments at 10% per annum compounded ' +
+          'monthly, plus <b>R100 000</b> payable on settlement.</p>' +
+          '<div class="worked"><div class="worked-title">Solution</div>' +
+          '<div class="solstep"><div class="solstep-lab">PV</div><div class="solstep-val">R499 950</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">FV</div>' +
+          '<div class="solstep-val">R100 000 — the balloon, still owing after instalment 72</div></div>' +
+          '<div class="solstep"><div class="solstep-lab">n, I/YR</div><div class="solstep-val">72 months, 10%</div></div>' +
+          '<div class="solstep final"><div class="solstep-lab">Instalment</div>' +
+          '<div class="solstep-val">R8 242.72</div></div></div>' +
+          '<p>The quote said R8 243. The lowest monthly payment of all four offers.</p>' +
+          '<div class="watchout"><b>And the most expensive of the four.</b> 72 × R8 242.72 + R100 000 = R693 476, ' +
+          'against R666 864 for the plain agreement. The R100 000 sits there accruing interest for six years, and ' +
+          'that is what you are paying for.</div>'
+      },
+      {
+        heading: 'Four quotes for one truck',
+        emoji: '⚖️',
+        html:
+          '<p>The whole week, in one table. Same truck, same R499 950 cash price, same 10% per annum compounded ' +
+          'monthly, same 72 months.</p>' +
+          '<div class="tablewrap"><table class="dtable">' +
+          '<tr><th>Quote</th><th>Monthly</th><th>Total paid</th></tr>' +
+          '<tr><td>1 — plain, paid at month end</td><td>R9 262</td><td>R666 864</td></tr>' +
+          '<tr><td>2 — paid at the start of the month</td><td>R9 185</td><td>R661 352</td></tr>' +
+          '<tr><td>3 — R50 000 deposit</td><td>R8 336</td><td>R650 170</td></tr>' +
+          '<tr><td>4 — R100 000 balloon</td><td>R8 243</td><td>R693 477</td></tr>' +
+          '</table></div>' +
+          '<p>Read the two columns against each other. The quote with the <b>lowest</b> monthly payment has the ' +
+          '<b>highest</b> total cost, and the difference between best and worst is R43 307 — nearly nine percent of ' +
+          'the truck.</p>' +
+          '<div class="keybox">A monthly instalment on its own tells you what you can afford, not what something ' +
+          'costs. Both questions matter, and they have different answers.</div>'
+      }
+    ],
+    questions: [
+      {
+        id: 'w6b1', type: 'mcq', marks: 2,
+        prompt: 'Where does a <b>balloon payment</b> go in a TVM calculation?',
+        options: [
+          'In FV — it is what is still owing after the last instalment',
+          'In PV — it reduces the amount borrowed',
+          'In PMT — it is added to each instalment',
+          'Nowhere; it is handled separately afterwards'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'After the last instalment', val: 'The balloon is still owing' },
+          { lab: 'An amount owing at the end', val: 'Is a future value' },
+          { lab: 'Answer', val: 'FV', final: true }
+        ],
+        why: 'It is the exact opposite of a deposit. A deposit is paid at the start and comes off PV; a balloon is paid at the end and goes into FV.'
+      },
+      {
+        id: 'w6b2', type: 'numeric', marks: 5,
+        prompt: 'A truck costing R499 950 is financed over 72 months at 10% per annum compounded monthly, with a further R100 000 payable on settlement. Calculate the monthly instalment, to two decimal places.',
+        pre: 'R', answer: 8242.72, tol: 4,
+        solution: [
+          { lab: 'PV', val: 'R499 950' },
+          { lab: 'FV', val: 'R100 000 — the balloon' },
+          { lab: 'Discount the balloon back', val: 'R100 000 ÷ (1.008333)⁷² = R54 848' },
+          { lab: 'The instalments must cover', val: 'R499 950 − R54 848 = R445 102' },
+          { lab: 'Answer', val: 'R445 102 ÷ 53.97867 = R8 242.72', final: true }
+        ],
+        why: 'Check it by rolling the loan forward 72 months at R8 242.72: the balance left is exactly R100 000, which the balloon then settles. That is the definition working.'
+      },
+      {
+        id: 'w6b3', type: 'numeric', marks: 5,
+        prompt: 'Equipment costing R400 000.00 is financed at 8.0% per annum compounded monthly over 5 years, payable at the end of each month, with a final settlement of R50 000.00. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 7430.07, tol: 3,
+        solution: [
+          { lab: 'Rate and periods', val: '8% ÷ 12 = 0.00666667, n = 60' },
+          { lab: 'Balloon discounted back', val: 'R50 000 ÷ (1.00666667)⁶⁰ = R33 560.52' },
+          { lab: 'Covered by instalments', val: 'R400 000 − R33 560.52 = R366 439.48' },
+          { lab: 'Answer', val: 'R366 439.48 ÷ 49.31843 = R7 430.07', final: true }
+        ],
+        why: 'Without the balloon the instalment would be R8 111.64. The R50 000 left to the end saves R681.57 a month and costs R9 099 in extra interest overall.'
+      },
+      {
+        id: 'w6b4', type: 'numeric', marks: 5,
+        prompt: 'Equipment costing R350 000.00 is financed at 8.0% per annum compounded monthly over 5 years, with a final settlement of R25 000.00. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 6756.49, tol: 3,
+        solution: [
+          { lab: 'Rate and periods', val: '0.00666667, n = 60' },
+          { lab: 'Balloon discounted back', val: 'R25 000 ÷ (1.00666667)⁶⁰ = R16 780.26' },
+          { lab: 'Covered by instalments', val: 'R350 000 − R16 780.26 = R333 219.74' },
+          { lab: 'Answer', val: 'R333 219.74 ÷ 49.31843 = R6 756.49', final: true }
+        ],
+        why: 'Half the balloon of the last question on a smaller loan, so a smaller saving. The balloon is worth exactly what it is worth TODAY — R16 780.26 — and nothing more.'
+      },
+      {
+        id: 'w6b5', type: 'numeric', marks: 5,
+        prompt: 'Equipment costing R600 000.00 is financed at 13.0% per annum compounded monthly over 5 years, with a final settlement of R200 000.00. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 11267.90, tol: 4,
+        solution: [
+          { lab: 'Rate and periods', val: '13% ÷ 12 = 0.01083333, n = 60' },
+          { lab: 'Balloon discounted back', val: 'R200 000 ÷ (1.01083333)⁶⁰ = R104 774.77' },
+          { lab: 'Covered by instalments', val: 'R600 000 − R104 774.77 = R495 225.23' },
+          { lab: 'Answer', val: 'R495 225.23 ÷ 43.95094 = R11 267.90', final: true }
+        ],
+        why: 'A third of the price left to the end at 13%. The instalments total R676 074, and then R200 000 more is due — R876 074 for a R600 000 machine.'
+      },
+      {
+        id: 'w6b6', type: 'numeric', marks: 5,
+        prompt: 'Equipment costing R1 200 000.00 is financed at 9.5% per annum compounded monthly over 5 years, with a final settlement of R500 000.00. Calculate each instalment, to two decimal places.',
+        pre: 'R', answer: 18659.64, tol: 6,
+        solution: [
+          { lab: 'Rate and periods', val: '9.5% ÷ 12 = 0.00791667, n = 60' },
+          { lab: 'Balloon discounted back', val: 'R500 000 ÷ (1.00791667)⁶⁰ = R311 524.64' },
+          { lab: 'Covered by instalments', val: 'R1 200 000 − R311 524.64 = R888 475.36' },
+          { lab: 'Answer', val: 'R888 475.36 ÷ 47.61553 = R18 659.64', final: true }
+        ],
+        why: 'The balloon is R500 000 of a R1 200 000 machine — and in five years it still has to be found. That is the risk the low instalment is hiding.'
+      },
+      {
+        id: 'w6b7', type: 'mcq', marks: 2,
+        prompt: 'Four quotes for the same R499 950 truck at the same rate over the same term: R9 262 a month plain, R9 185 paid at month start, R8 336 after a R50 000 deposit, and R8 243 with a R100 000 balloon. Which costs the most in total?',
+        options: [
+          'The balloon quote, at R693 477',
+          'The plain quote, at R666 864',
+          'The deposit quote, at R650 170',
+          'They all cost the same — only the timing differs'
+        ],
+        answer: 0,
+        solution: [
+          { lab: 'Lowest monthly', val: 'The balloon, at R8 243' },
+          { lab: 'But R100 000', val: 'Accrues interest for the whole six years' },
+          { lab: 'Total', val: '72 × R8 242.72 + R100 000 = R693 477' },
+          { lab: 'Answer', val: 'The balloon quote', final: true }
+        ],
+        why: 'The cheapest month and the dearest deal are the same quote. Monthly affordability and total cost are different questions with different answers, and a quote that only advertises the first is telling you half the story.'
+      }
+    ]
   }
 
   ]

@@ -209,18 +209,12 @@ nominal versus effective rates, the financial calculator.
 5. Present Value & Changing Terms — discounting back to a present value, terms where \
 the interest rate changes partway through, and terms where money is deposited or \
 withdrawn partway through.
-6. Annuities & Loan Repayments — what an annuity is, the FV formula for a simple \
-ordinary annuity, solving for the payment, the rate or the term on a financial \
-calculator, what a financed purchase really costs, and reading an outstanding balance \
-off a repayment schedule.
-
-Week 6 is only PARTLY written. Milpark lists five lessons for it; the notes cover \
-Lesson 1 in full and Lesson 2 up to section 2.6. Not yet written, and she should be \
-told so plainly rather than guessed at: compiling an amortisation table (2.7-2.8), \
-Lesson 3 on interest rate changes during the term of an amortised loan, Lesson 4 on \
-payments made at the beginning of a period, and Lesson 5 on deposits and balloon \
-payments. You may still explain those topics if she asks — just say the site has no \
-notes or questions for them yet.
+6. Annuities & Loan Repayments — what an annuity is and the FV formula for a simple \
+ordinary annuity, solving for the payment, rate or term on a financial calculator, \
+what a financed purchase really costs, repayment schedules and amortisation tables, \
+the AMORT function and reading an outstanding balance off it, recalculating the \
+instalment when the interest rate changes mid-term, annuities due (payments at the \
+beginning of a period), and the effect of deposits and balloon payments.
 
 This module is arithmetic throughout, so the rule about never doing her sums applies \
 to nearly everything she asks.`,
